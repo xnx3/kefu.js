@@ -1,0 +1,257 @@
+:root {
+    /* 聊天窗口中我发出去的消息的背景色 */
+    --user-chat-background-color: #9CFF1C;
+    /* 聊天窗口中，对方发过来的消息的背景色 */
+    --otherUser-chat-background-color: #FEFFFF;
+}
+html , body{
+	margin: 0px;
+    background-color: #EFF0F1;
+}
+a{
+    text-decoration: none;
+}
+/* 头部 */
+header{
+    text-align: center;
+    background-color: #4198FF;
+    color: #F5FFFD;
+    height: 2.7rem;
+    line-height: 2.7rem;
+    font-size: 1.1rem;
+    overflow: auto;
+    width: 100%;
+}
+/* 头部后退按钮 */
+header .back{
+    background-image: url(../images/back.png);
+    background-repeat: no-repeat;
+    background-size: 12px 22px;
+    width: 20px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 13px;
+    height: 27px;
+}
+header .title{
+	margin-right:20px;
+}
+
+
+/*  聊天列表， list.html  */
+#chatlist .item{
+    width: 100%;
+    overflow: hidden;
+    border-bottom-color: #e6e6e6;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.3rem;
+    box-sizing: border-box;
+}
+#chatlist .item .head{
+    float:left;
+    background-image: url(../images/head.png);
+    background-repeat: round;
+    width: 2.5rem;
+    margin-top: 0.3rem;
+    height: 2.5rem;
+    border-radius: 2rem;
+    margin-right: 1rem;
+}
+#chatlist .item .time{
+    float:right;
+}
+#chatlist .item .num{
+    float: right;
+    display: none;
+}
+/* 未读消息的点 */
+#chatlist .item .num>div{
+    background: #f00;
+    border-radius: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+}
+#chatlist .item .text{
+    width:10rem;
+    word-break:keep-all;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis; 
+}
+
+
+
+/* 在线聊天沟通，chat.html */
+.chat_header{
+	position: fixed;
+}
+.chat_header .title #onlineState{
+    font-size: 0.6rem;
+    margin-left: 0.3rem;
+}
+#chatcontent{
+    background-color: #EFF0F1;
+    font-size: 14px;
+    height: 100%;
+    overflow: scroll;
+    margin-bottom: 5rem;
+    padding-bottom: 44px;
+    max-height: 100%;
+    padding-top: 2.7rem;
+}
+.chat{
+	padding-left: 15px;
+    padding-top: 20px;
+    overflow: auto;
+}
+.chat .head{
+	background-repeat: no-repeat;
+    background-size: 40px 40px;
+    width: 40px;
+    margin-top: 9px;
+    height: 40px;
+    border-radius: 40px;
+}
+.chat .text{
+    background-color: #FEFFFF;
+    color: #1C1C1D;
+    max-width: 100%;
+    margin-left: 54px;
+    border-radius: 7px;
+    padding: 9px;
+    padding-left: 13px;
+    margin-top: 9px;
+    margin-right: 75px;
+}
+
+/* 沟通的对方，聊天左侧一方 */
+.otherUser .head{
+	float: left;
+	/* margin-left: 13px; */
+	background-image: url(chatbot_head.png);
+}
+.otherUser .sanjiao{
+	float: left;
+    margin-left: 0.3rem;
+    margin-top: 1.1rem;
+    width:0;
+    height:0;
+    border-width: 0.7rem 0.7rem 0.7rem 0;
+    border-style:solid;
+    border-color:transparent var(--otherUser-chat-background-color) transparent transparent ;/*透明 灰 透明 透明 */
+}
+
+/* 自己，聊天右侧的一方 */
+.user .head{
+	float: right;
+	margin-right: 13px;
+	background-image: url(../images/head.png);
+}
+.user .text{
+	background-color: var(--user-chat-background-color);
+}
+.user .sanjiao{
+	float: right;
+	margin-right: 0.8rem;
+    margin-top: 1.1rem;
+	width:0;
+    height:0;
+    border-width: 0.7rem 0 0.7rem 0.7rem;
+    border-style:solid;
+    border-color:transparent transparent transparent var(--user-chat-background-color);/*透明 灰 透明 透明 */
+}
+
+
+/* 系统消息 */
+.systemChat{
+    text-align:center;
+}
+.chat .systemText{
+    display: inline-block;
+    line-height: 30px;
+    padding: 0 15px;
+    border-radius: 3px;
+    background-color: #ddd;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+
+/* 底部输入 */
+#chat_footer {
+    height: auto;
+    background-color: #FEFFFF;
+    bottom: 0px;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+}
+#chat_footer #icon{
+	background-image: url(../images/chat_yuyin.png);
+	background-repeat: no-repeat;
+    background-size: 30px 30px;
+	width: 55px;
+    height: 100%;
+    background-position: center;
+    float: left;
+}
+#chat_footer #input_area{
+    width: 100%;
+}
+
+#chat_footer #input_area #luyin{
+	width:100%;
+	border: 1px solid #C6C7C8;
+	background-color: #FEFFFF;
+	width: 100%;
+    height: 33px;
+    border-radius: 2px;
+    font-size: 16px;
+}
+#chat_footer #input_area #text{
+    border: 1px solid #C6C7C8;
+    background-color: #FEFFFF;
+    width: 80%;
+    height: 2.1rem;
+    font-size: 18px;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+    box-sizing: border-box;
+    margin-top: 0.3rem;
+    margin-left: 0.3rem;
+    border-radius: 1em;
+}
+#chat_footer #input_area .send{
+    background-color: #4e62bbb5;
+    width: 17%;
+    height: 2.1rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: white;
+    border: 0px;
+}
+#inputExtend{
+    padding-left: 1rem;
+}
+#inputExtend span{
+    font-size: 0.9rem;
+    line-height: 2rem;
+    height: 1rem;
+    padding-right: 0.5rem;
+}
+
+
+/* inputExtend 输入扩展之表情 */
+#inputExtendShowArea #inputExtend_Face{
+    padding:0.6rem;
+}
+#inputExtendShowArea #inputExtend_Face span{
+    padding:0.5rem;
+}
+

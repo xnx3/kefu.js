@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Language" content="zh-CN">
+<meta name="author" content="管雷鸣">
+<title>聊天列表</title>
+<script src="http://res.weiunity.com/msg/msg.js"></script>
+<script src="im.js"></script>
+<link rel="stylesheet" type="text/css" href="./css/style.css" media="screen">
+<script type="text/javascript">
+/****** goods插件 *******/
+var goods_show = false; //是否已经显示过了，只显示一次商品发送提示就可以。false是未显示过，可以显示商品发送提示
+//根据url传入的goodsid，来弹出是否发送商品的提示
+im.extend.goods.goodsid = getUrlParams('goodsid');
+//显示商品发送窗口
+function showGoodsSendWindow(){
+    if(!goods_show){
+        if(im.extend.goods.goodsid != null && im.extend.goods.goodsid.length > 0){
+            //通过接口获取这个指定的商品信息，弹出显示，提醒用户是否发送这个商品
+            msg.loading('获取中');
+            request.get(goodsUrl+'goods.json',{token:im.getToken(), id:im.extend.goods.goodsid}, function(data){
+                msg.close();
+                im.extend.goods.goods = data;
+                msg.popups(im.extend.goods.getGoodsByTemplate(im.extend.goods.goods));
+            });
+        }
+        goods_show = true;
+        console.log('显示了goods');
+    }
+}
+/****** goods插件结束 *******/
+
+
+</script>
+</head>
+<body>
+</body>
+
+
+<script>
+//建立WebSocket通讯
+socket.connect(im.websocketUrl);
+
+//获取自己的信息
+im.chat.getMyUser();
+
+
+
+var mode = getUrlParams('mode');
+if(typeof(mode) == 'string' && mode == 'chat'){
+    //出现聊天页
+    var userid = getUrlParams('userid');
+    im.ui.chat.render(userid);
+}else{
+    //出现列表页
+    im.ui.list.render();
+}
+
+</script>
+</html>
