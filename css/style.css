@@ -3,6 +3,8 @@
     --user-chat-background-color: #9CFF1C;
     /* 聊天窗口中，对方发过来的消息的背景色 */
     --otherUser-chat-background-color: #FEFFFF;
+    /* 背景色-聊天列表的背景色、一对一聊天窗口底部的背景色 */
+    --background-color:#F0F8FF;
 }
 html , body{
 	margin: 0px;
@@ -201,6 +203,7 @@ header .title{
     float: left;
 }
 #chat_footer #input_area{
+	background: var(--background-color);
     width: 100%;
 }
 

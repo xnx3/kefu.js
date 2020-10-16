@@ -1,0 +1,15 @@
+#quickButton{
+    position: fixed;
+    bottom: 5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    display: inline;
+    white-space: nowrap;
+    overflow:scroll;
+}
+#quickButton button{
+    border-radius: 2rem;
+    background: aliceblue;
+	border-width: 1px;
+   	border-style: solid;
+}

@@ -221,8 +221,8 @@ var im = {
 	/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
 	token:null,
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
-	//初始化，当im.js 加载完毕后，自动执行这个
-	imLoadFinishInit:function(){
+	//初始化，当im.js 加载完毕后，可以执行这个，进行im的初始化
+	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
 
 		for(var key in im.extend){
@@ -370,8 +370,21 @@ var im = {
 			`,
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
+				//赋予chat聊天窗html的大框信息显示
 				document.body.innerHTML = im.ui.chat.html;
-
+				
+				//加载跟这个人聊天的历史对话记录。不过当前是在获取对方数据之前先拉历史记录，im.chat.otherUser 肯定是null，所以先赋予默认值
+				im.chat.otherUser = {
+						id:otherUserId,	
+						nickname:'加载中..',
+						head:'./images/head.png'
+				}
+		        var chatCacheList = im.cache.getUserMessageList(im.chat.otherUser.id);
+		        for(var i = 0; i<chatCacheList.length; i++){
+		            var message = chatCacheList[i];
+		            im.chat.ui.appendMessage(message);
+		        }
+				
 			    //获取聊天对方的用户信息
 			    im.chat.getOtherUser(otherUserId, function(data){
 			        console.log(data);
@@ -379,18 +392,21 @@ var im = {
 					document.getElementById('nickname').innerHTML = im.chat.otherUser.nickname;
 					//对方在线状态
 			        document.getElementById('onlineState').innerHTML = data.onlineState;
-
-			        //加载跟这个人聊天的历史对话记录
-			        var chatCacheList = im.cache.getUserMessageList(im.chat.otherUser.id);
-			        for(var i = 0; i<chatCacheList.length; i++){
-			            var message = chatCacheList[i];
-			            im.chat.ui.appendMessage(message);
+			        
+			        //将对方用户发言的头像换为接口拉取的真实头像。如果当前chat模板中显示头像的话
+			        try{
+			        	var heads = document.getElementsByClassName("otherUser");
+				        for(var i = 0; i < heads.length; i++){
+				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+im.chat.otherUser.head+'\')';
+				        }
+			        }catch(e){
+			        	console.log('当前chat聊天模板中没有显示头像吧？下面这个错误只是个提示，无需理会');
+			        	console.log(e);
 			        }
-
+			        
 			        //取得跟这个用户聊天时，聊天窗口中显示的聊天记录的开始时间，用这个时间来获取往上滑动时的更多消息记录
 			        if(chatCacheList.length > 0){
 			            var lastMsg = chatCacheList[0];
-			            console.log(lastMsg);
 			            if(lastMsg.time != null){
 			                im.chat.chatMessageStartTime = lastMsg.time;
 			            }
@@ -398,9 +414,8 @@ var im = {
 			        //如果im.chat.chatMessageStartTime还是0，那么赋予当前的13位时间戳
 			        if(im.chat.chatMessageStartTime < 1){
 			            im.chat.chatMessageStartTime = new Date().getTime();
-			            console.log('set');
 			        }
-			       
+
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(im.chat.otherUser.id) != 'undefined'){
@@ -471,10 +486,11 @@ var im = {
 				im.user = data;
 			});
 		},
-		//进入一对一聊天窗口时，先进行的初始化
+		//进入一对一聊天窗口时，先进行的初始化。主要是加载插件方面的设置
 		init:function(){
 			im.chat.currentLoadHistoryList=false;	//允许拉去所有历史聊天记录
-
+			
+			//聊天窗口最下方用户输入项的插件显示
 			var inputExtendHtml = '';
 			for(var key in im.extend){
 			    if(im.extend[key].chat != null && im.extend[key].chat.length > 0){
@@ -1116,10 +1132,3 @@ function uploadImage(){
 
 	document.getElementById('imageInput').click();
 }
-
-
-
-
-try{
-	im.imLoadFinishInit();
-}catch(e){ console.log(e); }
