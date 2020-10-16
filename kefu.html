@@ -8,6 +8,8 @@
 <script src="http://res.weiunity.com/msg/msg.js"></script>
 <script src="kefu.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen">
+</head>
+<body>
 <script type="text/javascript">
 /****** chatQuickButton插件 ******/
 kefu.extend.chatQuickButton = {
@@ -54,26 +56,23 @@ kefu.extend.goods.initChat = function(){
 /****** goods插件结束 *******/
 
 //kefu.js 接口设置
-//kefu.api.getMyUser = 'http://localhost:8080/user/init.json';
+kefu.api.getMyUser = 'http://localhost:8080/user/init.json';
 kefu.api.getChatOtherUser = 'http://localhost:8080/user/getUserById.json';
 kefu.api.chatLog = 'http://localhost:8080/chatLog.json';
+kefu.api.uploadImage = 'http://localhost:8080/uploadImage.json';
 
 //kefu.js 初始化
 kefu.init();
+kefu.getMyUser();	//获取我的信息
 
 </script>
-</head>
-<body>
+
 </body>
 
 
 <script>
 //建立WebSocket通讯
 socket.connect(kefu.websocketUrl);
-
-//获取自己的信息
-kefu.chat.getMyUser();
-
 
 var mode = getUrlParams('mode');
 if(typeof(mode) == 'string' && mode == 'chat'){

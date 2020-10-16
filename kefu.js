@@ -218,6 +218,7 @@ var kefu = {
 		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
 		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
 		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
+		uploadImage:''			//图片上传接口
 	},
 	//apiUrl:'http://119.3.209.5:80/', //api接口域名，格式如 http://xxxx.com/ 
 	apiUrl:'', //api接口域名，格式如 http://xxxx.com/ 
@@ -257,7 +258,7 @@ var kefu = {
 				}catch(e){ console.log(e); }
 			}
 		}
-	},	
+	},
 	/**
 	 * 获取token，也就是 session id。获取的字符串如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
 	 * 如果用户未登录，那么获取到的是  youke_uuid。 这个会设置成layim 的  mine.id
@@ -279,6 +280,18 @@ var kefu = {
 	setToken:function(t){
 		this.token = t;
 		localStorage.setItem('token',this.token);
+	},
+	/**
+	 * 获取当前用户(我)的User信息
+	 */
+	getMyUser:function(){
+		if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
+			msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
+			return;
+		}
+		request.post(kefu.api.getMyUser,{token:kefu.getToken()}, function(data){
+			kefu.user = data;
+		});
 	},
 	//UI界面方面
 	ui:{
@@ -486,18 +499,6 @@ var kefu = {
 		scrollToBottom:function(){
 			//console.log('height:'+document.getElementById('chatcontent').scrollHeight);
 			window.scrollTo(0,document.getElementById('chatcontent').scrollHeight);
-		},
-		/**
-		 * 获取自己的User信息
-		 */
-		getMyUser:function(){
-			if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
-				msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
-				return;
-			}
-			request.post(kefu.api.getMyUser,{token:kefu.getToken()}, function(data){
-				kefu.user = data;
-			});
 		},
 		//进入一对一聊天窗口时，先进行的初始化。主要是加载插件方面的设置
 		init:function(){
@@ -839,7 +840,7 @@ var kefu = {
 		/* 图片上传 */
 		image:{
 			name:'图片',
-			chat:'<span onclick="uploadImage();"><input type="file" id="imageInput" style="display:none;">图片</span>',
+			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" id="imageInput" style="display:none;">图片</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = '<img style="max-width: 100%;" src="'+message.extend.url+'" />';
@@ -869,6 +870,34 @@ var kefu = {
 				kefu.chat.ui.appendMessage(message);
 
 				kefu.cache.add(message);   //缓存
+			},
+			uploadImage:function(){
+				//添加input改动监听
+				if(document.getElementById('imageInput').oninput == null){
+					document.getElementById('imageInput').oninput = function(e){
+					    if(typeof(e.srcElement.files[0]) != 'undefined'){
+					        var file = e.srcElement.files[0];
+					        msg.loading('上传中');
+					        request.upload(kefu.api.uploadImage, {token:kefu.getToken()}, file,function(data){
+					            msg.close();
+					            console.log(data);
+					            if(data.result == '1'){
+					            	kefu.extend.image.send(data);
+					            }else{
+					            	msg.failure(data.info);
+					            }
+					            
+					        }, null, function(){
+					        	msg.close();
+					            msg.failure('异常');
+					        });
+					        //清理掉input记录，避免上传两张相同的照片时第二次上传无反应
+					        document.getElementById('imageInput').value = '';
+					    }    
+					}
+				}
+
+				document.getElementById('imageInput').click();
 			}
 		},
 		/* 订单 */
@@ -1104,38 +1133,4 @@ var socket = {
 		}
 		
 	}
-}
-
-
-
-
-
-//上传图片
-function uploadImage(){
-	//添加input改动监听
-	if(document.getElementById('imageInput').oninput == null){
-		document.getElementById('imageInput').oninput = function(e){
-		    if(typeof(e.srcElement.files[0]) != 'undefined'){
-		        var file = e.srcElement.files[0];
-		        msg.loading('上传中');
-		        request.upload(kefu.apiUrl+'uploadImage.json', {token:kefu.getToken()}, file,function(data){
-		            msg.close();
-		            console.log(data);
-		            if(data.result == '1'){
-		            	kefu.extend.image.send(data);
-		            }else{
-		            	msg.failure(data.info);
-		            }
-		            
-		        }, null, function(){
-		        	msg.close();
-		            msg.failure('异常');
-		        });
-		        //清理掉input记录，避免上传两张相同的照片时第二次上传无反应
-		        document.getElementById('imageInput').value = '';
-		    }    
-		}
-	}
-
-	document.getElementById('imageInput').click();
 }
