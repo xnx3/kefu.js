@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Language" content="zh-CN">
+<meta name="author" content="管雷鸣">
+<title>聊天列表</title>
+<script src="http://res.weiunity.com/msg/msg.js"></script>
+<script src="kefu.js"></script>
+<link rel="stylesheet" type="text/css" href="./css/style.css" media="screen">
+<script type="text/javascript">
+/****** chatQuickButton插件 ******/
+kefu.extend.chatQuickButton = {
+	css:'./extend/chatQuickButton/style.css',
+	//进入chat一对一聊天窗口时，自动执行这个方法初始化
+	initChat:function(){
+		var chatQuickButtonHtml = `
+				<section id="quickButton">
+				    <button>售后</button>
+				    <button>评价</button>
+				    <button>物流查询</button>
+				    <button>按钮1</button>
+				    <button>按钮2</button>
+				    <button>按钮3</button>
+				    <button>按钮4</button>
+				    <button>按钮5</button>
+				</section>
+			`;
+		document.getElementById('chat_footer').innerHTML = chatQuickButtonHtml+document.getElementById('chat_footer').innerHTML;
+	}
+}
+/****** chatQuickButton插件结束 ******/
+
+
+/****** goods插件 *******/
+kefu.extend.goods.goodsid = getUrlParams('goodsid');	//根据url传入的goodsid，来弹出是否发送商品的提示
+kefu.extend.goods.goods_show = false; //是否已经显示过了，只显示一次商品发送提示就可以。false是未显示过，可以显示商品发送提示
+//初始化，当打开chat窗口时，所有初始化的东西完事后，会自动执行此处
+kefu.extend.goods.initChat = function(){
+	if(kefu.extend.goods.goodsid != null && kefu.extend.goods.goodsid.length > 0){
+		if(!kefu.extend.goods.goods_show){
+			//通过接口获取这个指定的商品信息，弹出显示，提醒用户是否发送这个商品
+		    msg.loading('获取中');
+		    request.get(goodsUrl+'goods.json',{token:kefu.getToken(), id:kefu.extend.goods.goodsid}, function(data){
+		        msg.close();
+		        kefu.extend.goods.goods = data;
+		        msg.popups(kefu.extend.goods.getGoodsByTemplate(kefu.extend.goods.goods));
+		    });
+		    kefu.extend.goods.goods_show = true;
+		    console.log('显示了goods');
+    	}
+	}
+};
+/****** goods插件结束 *******/
+
+//kefu.js 接口设置
+//kefu.api.getMyUser = 'http://localhost:8080/user/init.json';
+kefu.api.getChatOtherUser = 'http://localhost:8080/user/getUserById.json';
+kefu.api.chatLog = 'http://localhost:8080/chatLog.json';
+
+//kefu.js 初始化
+kefu.init();
+
+</script>
+</head>
+<body>
+</body>
+
+
+<script>
+//建立WebSocket通讯
+socket.connect(kefu.websocketUrl);
+
+//获取自己的信息
+kefu.chat.getMyUser();
+
+
+var mode = getUrlParams('mode');
+if(typeof(mode) == 'string' && mode == 'chat'){
+    //出现聊天页
+    var userid = getUrlParams('userid');
+    kefu.ui.chat.render(userid);
+}else{
+    //出现列表页
+    kefu.ui.list.render();
+}
+
+</script>
+</html>

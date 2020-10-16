@@ -30,8 +30,8 @@ function getUrlParams(name){
 
 //时间戳转时间的数据转化
 function formatNumber(n) {
-  n = n.toString()
-  return n[1] ? n : '0' + n
+  n = n.toString();
+  return n[1] ? n : '0' + n;
 }
 /** 
  * 时间戳转化为年 月 日 时 分 秒 
@@ -213,42 +213,47 @@ var request = {
 
 }
 
-var im = {
+var kefu = {
+	api:{
+		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
+		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
+		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
+	},
 	//apiUrl:'http://119.3.209.5:80/', //api接口域名，格式如 http://xxxx.com/ 
-	apiUrl:'http://localhost:8080/', //api接口域名，格式如 http://xxxx.com/ 
+	apiUrl:'', //api接口域名，格式如 http://xxxx.com/ 
 	//websocketUrl:'ws://119.3.209.5:8081/',	//websocket的url，格式如 ws://xxxx.com:8081/
 	websocketUrl:'ws://localhost:8081/',	//websocket的url，格式如 ws://xxxx.com:8081/
 	/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
 	token:null,
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
-	//初始化，当im.js 加载完毕后，可以执行这个，进行im的初始化
+	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
 
-		for(var key in im.extend){
+		for(var key in kefu.extend){
 			console.log(key);
 			//加载模块的js
-			if(im.extend[key].js != null && im.extend[key].js.length > 0){
+			if(kefu.extend[key].js != null && kefu.extend[key].js.length > 0){
 				var script = document.createElement("script");  //创建一个script标签
 				script.type = "text/javascript";
-				script.src = im.extend[key].js;
+				script.src = kefu.extend[key].js;
 				head0.appendChild(script);
 			}
 
 			//加载模块的css
-			if(im.extend[key].css != null && im.extend[key].css.length > 0){
+			if(kefu.extend[key].css != null && kefu.extend[key].css.length > 0){
 				var link = document.createElement('link');
 				link.type='text/css';
 				link.rel = 'stylesheet';
-				link.href = im.extend[key].css;
+				link.href = kefu.extend[key].css;
 				head0.appendChild(link);
 			}
 			
 			//如果模块有初始化，那么执行其初始化 init() 方法的代码
-			if(im.extend[key].init != null){
+			if(kefu.extend[key].init != null){
 				try{
 					//避免某个模块中的初始化失败，导致整个im 初始化中断
-					im.extend[key].init();
+					kefu.extend[key].init();
 				}catch(e){ console.log(e); }
 			}
 		}
@@ -282,7 +287,7 @@ var im = {
 			html:`
 				<section id="chatlist">
 
-			        <section class="item" onclick="im.ui.chat.render('{id}');">
+			        <section class="item" onclick="kefu.ui.chat.render('{id}');">
 			            <div class="head" style="background-image: url({head});"></div>
 			            <div>
 			                <div class="nickname">
@@ -299,11 +304,11 @@ var im = {
 			    </section>
 
 			    <div style="position: absolute;bottom: 1rem;">
-			        <a href="javascript:im.ui.chat.render('243');" >测试聊天</a>
+			        <a href="javascript:kefu.ui.chat.render('243');" >测试聊天</a>
 			    </div>
 			`,
 			getListItemByTemplate:function(item){
-			    return im.ui.list.listItemTemplate
+			    return kefu.ui.list.listItemTemplate
 			            .replace(/{id}/g, item['id'])
 			            .replace(/{text}/g, item['text'])
 			            .replace(/{nickname}/g, item['nickname'])
@@ -312,16 +317,16 @@ var im = {
 			            .replace(/{num}/g, '<div>&nbsp;</div>');
 			},
 			render:function(){
-				document.body.innerHTML = im.ui.list.html;
+				document.body.innerHTML = kefu.ui.list.html;
 
-			    im.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   //某个用户聊天item的模板
+			    kefu.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   //某个用户聊天item的模板
 
-			    var chatList = im.cache.getChatList();
+			    var chatList = kefu.cache.getChatList();
 			    var chatListLength = chatList.length;
 			    var html = '';
 			    for (var i = 0; i < chatListLength; i++) {
 			        //console.log(chatList[i]);
-			        html = im.ui.list.getListItemByTemplate(chatList[i]) + html;
+			        html = kefu.ui.list.getListItemByTemplate(chatList[i]) + html;
 			    }
 			    document.getElementById('chatlist').innerHTML = html;
 
@@ -329,11 +334,11 @@ var im = {
 			    window.onscroll = null;
 
 			    //如果chat显示，那么自动执行插件的initChat 方法,如果插件设置了的话
-			    for(var key in im.extend){
-					if(im.extend[key].initList != null){
+			    for(var key in kefu.extend){
+					if(kefu.extend[key].initList != null){
 						try{
 							//避免某个模块中的初始化失败，导致整个im 初始化中断
-							im.extend[key].initList();
+							kefu.extend[key].initList();
 						}catch(e){ console.log(e); }
 					}
 				}
@@ -344,7 +349,7 @@ var im = {
 		chat:{
 			html:`
 				<header class="chat_header">
-			        <div class="back" id="back" onclick="im.ui.list.render();">&nbsp;</div>
+			        <div class="back" id="back" onclick="kefu.ui.list.render();">&nbsp;</div>
 			        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
 			    </header>
 
@@ -355,8 +360,8 @@ var im = {
 			        <div id="input_area">
 			            <div id="textInput">
 			                <!-- 键盘输入 -->
-			                <input type="text" id="text" onclick="im.chat.ui.textInputClick();">
-			                <input type="submit" value="发送" class="send" id="sendButton" onclick="im.chat.sendButtonClick();">
+			                <input type="text" id="text" onclick="kefu.chat.ui.textInputClick();">
+			                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 			            </div>
 			            <div id="inputExtend">
 			                <!-- 其他，如图片、商品、订单 -->
@@ -371,25 +376,25 @@ var im = {
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
 				//赋予chat聊天窗html的大框信息显示
-				document.body.innerHTML = im.ui.chat.html;
+				document.body.innerHTML = kefu.ui.chat.html;
 				
-				//加载跟这个人聊天的历史对话记录。不过当前是在获取对方数据之前先拉历史记录，im.chat.otherUser 肯定是null，所以先赋予默认值
-				im.chat.otherUser = {
+				//加载跟这个人聊天的历史对话记录。不过当前是在获取对方数据之前先拉历史记录，kefu.chat.otherUser 肯定是null，所以先赋予默认值
+				kefu.chat.otherUser = {
 						id:otherUserId,	
 						nickname:'加载中..',
 						head:'./images/head.png'
 				}
-		        var chatCacheList = im.cache.getUserMessageList(im.chat.otherUser.id);
+		        var chatCacheList = kefu.cache.getUserMessageList(kefu.chat.otherUser.id);
 		        for(var i = 0; i<chatCacheList.length; i++){
 		            var message = chatCacheList[i];
-		            im.chat.ui.appendMessage(message);
+		            kefu.chat.ui.appendMessage(message);
 		        }
 				
 			    //获取聊天对方的用户信息
-			    im.chat.getOtherUser(otherUserId, function(data){
+			    kefu.chat.getOtherUser(otherUserId, function(data){
 			        console.log(data);
 			        //设置网页聊天窗title 的对方昵称
-					document.getElementById('nickname').innerHTML = im.chat.otherUser.nickname;
+					document.getElementById('nickname').innerHTML = kefu.chat.otherUser.nickname;
 					//对方在线状态
 			        document.getElementById('onlineState').innerHTML = data.onlineState;
 			        
@@ -397,7 +402,7 @@ var im = {
 			        try{
 			        	var heads = document.getElementsByClassName("otherUser");
 				        for(var i = 0; i < heads.length; i++){
-				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+im.chat.otherUser.head+'\')';
+				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+kefu.chat.otherUser.head+'\')';
 				        }
 			        }catch(e){
 			        	console.log('当前chat聊天模板中没有显示头像吧？下面这个错误只是个提示，无需理会');
@@ -408,20 +413,20 @@ var im = {
 			        if(chatCacheList.length > 0){
 			            var lastMsg = chatCacheList[0];
 			            if(lastMsg.time != null){
-			                im.chat.chatMessageStartTime = lastMsg.time;
+			                kefu.chat.chatMessageStartTime = lastMsg.time;
 			            }
 			        }
-			        //如果im.chat.chatMessageStartTime还是0，那么赋予当前的13位时间戳
-			        if(im.chat.chatMessageStartTime < 1){
-			            im.chat.chatMessageStartTime = new Date().getTime();
+			        //如果kefu.chat.chatMessageStartTime还是0，那么赋予当前的13位时间戳
+			        if(kefu.chat.chatMessageStartTime < 1){
+			            kefu.chat.chatMessageStartTime = new Date().getTime();
 			        }
 
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
-			            if(typeof(im.chat.otherUser.id) != 'undefined'){
+			            if(typeof(kefu.chat.otherUser.id) != 'undefined'){
 			                socket.send(JSON.stringify({
-			                    token: im.getToken()
-			                    ,receiveId: im.chat.otherUser.id
+			                    token: kefu.getToken()
+			                    ,receiveId: kefu.chat.otherUser.id
 			                    ,type:"AUTO_REPLY"
 			                }));
 			                clearInterval(autoReplyInterval);//停止
@@ -429,14 +434,14 @@ var im = {
 			            }
 			        }, 200);
 			        
-			        im.chat.init(); //执行chat的初始化
+			        kefu.chat.init(); //执行chat的初始化
 
 			        //监听滚动条，如果上滑超过多少，那么从服务器拉历史聊天记录
 			        window.onscroll = function(){
 			            //console.log(document.documentElement.scrollTop);
 			            if(document.documentElement.scrollTop < 900){
 			                //还剩一页半了，那么提前开始加载上一页
-			                im.chat.loadHistoryList();
+			                kefu.chat.loadHistoryList();
 			            }
 			        }
 
@@ -444,11 +449,11 @@ var im = {
 
 				
 				//如果chat显示，那么自动执行插件的initChat 方法,如果插件设置了的话
-				for(var key in im.extend){
-					if(im.extend[key].initChat != null){
+				for(var key in kefu.extend){
+					if(kefu.extend[key].initChat != null){
 						try{
 							//避免某个模块中的初始化失败，导致整个im 初始化中断
-							im.extend[key].initChat();
+							kefu.extend[key].initChat();
 						}catch(e){ console.log(e); }
 					}
 				}
@@ -463,15 +468,19 @@ var im = {
 
 		/**
 		 * 获取当前聊天窗口中，跟我聊天的对方的user信息
+		 * @param userid 当前谁在跟谁聊天，对方的userid
 		 */
-		getOtherUser:function(userid,func){
-			request.post(im.apiUrl+'user/getUserById.json',{token:im.getToken(), id:userid}, function(data){
-				im.chat.otherUser = data.user;
+		getOtherUser:function(userid, func){
+			if(kefu.api.getChatOtherUser == null || kefu.api.getChatOtherUser.length < 1){
+				msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
+				return;
+			}
+			request.post(kefu.api.getChatOtherUser,{token:kefu.getToken(), id:userid}, function(data){
+				kefu.chat.otherUser = data.user;
 				if(typeof(func) != 'undefined'){
 					func(data);
 				}
 			});
-			
 		},
 		//聊天窗口滚动到最底部
 		scrollToBottom:function(){
@@ -482,19 +491,23 @@ var im = {
 		 * 获取自己的User信息
 		 */
 		getMyUser:function(){
-			request.post(im.apiUrl+'user/init.json',{token:im.getToken()}, function(data){
-				im.user = data;
+			if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
+				msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
+				return;
+			}
+			request.post(kefu.api.getMyUser,{token:kefu.getToken()}, function(data){
+				kefu.user = data;
 			});
 		},
 		//进入一对一聊天窗口时，先进行的初始化。主要是加载插件方面的设置
 		init:function(){
-			im.chat.currentLoadHistoryList=false;	//允许拉去所有历史聊天记录
+			kefu.chat.currentLoadHistoryList=false;	//允许拉去所有历史聊天记录
 			
 			//聊天窗口最下方用户输入项的插件显示
 			var inputExtendHtml = '';
-			for(var key in im.extend){
-			    if(im.extend[key].chat != null && im.extend[key].chat.length > 0){
-			        inputExtendHtml = inputExtendHtml + im.extend[key].chat;
+			for(var key in kefu.extend){
+			    if(kefu.extend[key].chat != null && kefu.extend[key].chat.length > 0){
+			        inputExtendHtml = inputExtendHtml + kefu.extend[key].chat;
 			    }
 			}
 			document.getElementById('inputExtend').innerHTML = inputExtendHtml;
@@ -504,25 +517,25 @@ var im = {
 			//console.log(message);
 			if(message.extend != null && message.extend.extend != null){
 				//如果是插件，那么将json变为插件显示的样式
-				message = im.extend[message.extend.extend].format(message);
+				message = kefu.extend[message.extend.extend].format(message);
 			}
 			//将[ul][li][br]等转化为html
 			message['text'] = message['text'].replace(/\[ul\]/g, '<ul>')
 									.replace(/\[\/ul\]/g, '</ul>')
-									.replace(/\[li\]/g, '<li onclick="im.chat.question(this);">')
+									.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
 									.replace(/\[\/li\]/g, '</li>')
 									.replace(/\[br\]/g, '<br>');
 		    //发送文本消息后绘制对话窗口
 		    var section = document.createElement("section");
-		    //要用im.chat.otherUser来判断，不能用 im.user, im.user 异步获取，有可能im.user 还没获取到
-		    if(message['receiveId'] == im.chat.otherUser.id){
+		    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
+		    if(message['receiveId'] == kefu.chat.otherUser.id){
 		        //是自己发送的这条消息，那么显示在右侧
 		        section.className = 'chat user';
 		        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
-		    }else if(message['sendId'] == im.chat.otherUser.id){
+		    }else if(message['sendId'] == kefu.chat.otherUser.id){
 		        //是自己接受的这个消息，那么显示在左侧
 		        section.className = 'chat otherUser';
-		        section.innerHTML = '<div class="head" style="background-image: url('+im.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+		        section.innerHTML = '<div class="head" style="background-image: url('+kefu.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
 		    }
 		    return section;
 		},
@@ -536,9 +549,9 @@ var im = {
 		currentLoadHistoryList:false,	//跟loadHistoryList() 一起用，当加载历史列表时，此处为true，加载完后，此处变为false
 		/* 加载历史聊天列表 */
 		loadHistoryList(){
-			if(!im.chat.currentLoadHistoryList){
-				im.chat.currentLoadHistoryList = true;	//标记正在请求历史记录中
-				if(im.cache.getUserMessageList(im.chat.otherUser.id).length < im.cache.ereryUserNumber){
+			if(!kefu.chat.currentLoadHistoryList){
+				kefu.chat.currentLoadHistoryList = true;	//标记正在请求历史记录中
+				if(kefu.cache.getUserMessageList(kefu.chat.otherUser.id).length < kefu.cache.ereryUserNumber){
 					//如果跟对方聊天的记录，本地缓存的几率条数小于本地缓存最大条数，那么就是刚开始聊天，都还没超过缓存最大数，那么也就没必要在从服务器拉更多聊天记录了
 					console.log('聊天记录不足，没必要再拉更多');
 					return;
@@ -555,8 +568,8 @@ var im = {
 				chatcontent.insertBefore(section,firstItem);
 
 				//创建网络请求
-				request.post(im.apiUrl+'chatLog.json',{token:im.getToken(),otherId:im.chat.otherUser.id, time:im.chat.chatMessageStartTime}, function(data){
-					im.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
+				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime}, function(data){
+					kefu.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
 
 					var chatcontent = document.getElementById('chatcontent');
 					//删除聊天记录加载中的提示
@@ -576,16 +589,16 @@ var im = {
 							//有消息记录，那么绘制出来
 							for(var i = data.list.length-1; i >= 0; i--){
 								var message = data.list[i];
-								var msgSection = im.chat.generateChatMessageSection(message);
+								var msgSection = kefu.chat.generateChatMessageSection(message);
 								chatcontent.insertBefore(msgSection,firstItem);
 							}
 							//重新标记历史消息的开始时间
-							im.chat.chatMessageStartTime = data.startTime;
+							kefu.chat.chatMessageStartTime = data.startTime;
 						}else{
 							//没有更多消息了
-							im.chat.currentLoadHistoryList = true;	//标记请求历史记录不再继续请求了，因为已经没有更多记录了
+							kefu.chat.currentLoadHistoryList = true;	//标记请求历史记录不再继续请求了，因为已经没有更多记录了
 							//msg.info('没有更多消息了');
-							chatcontent.insertBefore(im.chat.generateChatSystemMessageSection('没有更多了'),firstItem);
+							chatcontent.insertBefore(kefu.chat.generateChatSystemMessageSection('没有更多了'),firstItem);
 						}
 
 						
@@ -599,22 +612,22 @@ var im = {
 		question:function(obj){
 			var text = obj.innerHTML;
 			console.log(obj.innerHTML);
-			im.chat.sendTextMessage(text);
+			kefu.chat.sendTextMessage(text);
 		},
 		/* 发送文本格式消息  text:要发送的文本消息。 返回json对象的message */
 		sendTextMessage:function(text){
 			var data = {
-		    	token:im.getToken(),
+		    	token:kefu.getToken(),
 		    	type:'MSG',	//消息类型
-		    	sendId:im.user.id,		//发送者ID
-		    	receiveId:im.chat.otherUser.id,	//接受者id
+		    	sendId:kefu.user.id,		//发送者ID
+		    	receiveId:kefu.chat.otherUser.id,	//接受者id
 		    	text:text,
 		        time:new Date().getTime()      
 		    }
 		    var message = JSON.stringify(data);
-		    im.chat.ui.appendMessage(message);    //聊天窗口增加消息
+		    kefu.chat.ui.appendMessage(message);    //聊天窗口增加消息
 		    socket.send(message);       //socket发送
-		    im.cache.add(message);   //缓存
+		    kefu.cache.add(message);   //缓存
 
 		    return message;
 		},
@@ -629,13 +642,13 @@ var im = {
 		    //接口提交-文本对话，输入文字获取对话结果
 		    msg.loading("发送中");    //显示“更改中”的等待提示
 		    
-		    im.chat.sendTextMessage(document.getElementById('text').value);
+		    kefu.chat.sendTextMessage(document.getElementById('text').value);
 			msg.close();	//关闭发送中提示
 		    //清空内容区域
 		    document.getElementById('text').value = '';
 
 		    //隐藏表情等符号输入区域
-		    im.chat.ui.textInputClick();
+		    kefu.chat.ui.textInputClick();
 		},
 		ui:{
 			//发送一条消息，消息末尾追加消息
@@ -649,14 +662,14 @@ var im = {
 			    }
 			    if(message.type == 'SYSTEM'){
 			        //系统类型消息
-			        im.chat.ui.showSystemMessage(message.content);
+			        kefu.chat.ui.showSystemMessage(message.content);
 			    }else{
 			        //其他类型，那么出现对话框的
-			        var section = im.chat.generateChatMessageSection(message);
+			        var section = kefu.chat.generateChatMessageSection(message);
 			    
 			        document.getElementById('chatcontent').appendChild(section);
 			        //滚动条滚动到最底部
-			        im.chat.scrollToBottom();
+			        kefu.chat.scrollToBottom();
 			    }
 			},
 			//在当前ui界面显示一条系统消息
@@ -692,10 +705,10 @@ var im = {
 				var message = JSON.parse(message);	//转成json
 			}
 			var otherUserId = 0;	//聊天对方的userid
-			if(message['sendId'] == im.user.id){
+			if(message['sendId'] == kefu.user.id){
 				//这条消息是自己发送出去的
 				otherUserId = message['receiveId'];
-			}else if(message['receiveId'] == im.user.id){
+			}else if(message['receiveId'] == kefu.user.id){
 				//自己是消息接收者，别人发过来的消息
 				otherUserId = message['sendId'];
 			}
@@ -738,15 +751,15 @@ var im = {
 			//聊天内容
 			var text = message.text;
 		    if(message.type == 'EXTEND'){
-		        text = im.extend[message.extend.extend].name;
+		        text = kefu.extend[message.extend.extend].name;
 		    }
 
 			//组合新的消息
 			var newMessage = {
 				id:otherUserId,	//对方的userid
 				text:text,		//最后一次沟通的内容
-				nickname:im.chat.otherUser.nickname,	//对方的昵称
-				head:im.chat.otherUser.head, 	//对方的头像
+				nickname:kefu.chat.otherUser.nickname,	//对方的昵称
+				head:kefu.chat.otherUser.head, 	//对方的头像
 				time:message.time 			//消息产生的时间。
 			}
 			if(newMessage.time == null){
@@ -775,7 +788,7 @@ var im = {
 		/* 表情 */
 		face:{
 			name:'表情',
-			chat:'<span onclick="im.extend.face.show();">表情</span>',
+			chat:'<span onclick="kefu.extend.face.show();">表情</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				return message;
@@ -806,8 +819,8 @@ var im = {
 			/* 点击后显示表情选择 */
 			show:function (){
 				var html = '<div id="inputExtend_Face">';
-				for(var key in im.extend.face.faces){
-					html = html + '<span onclick="im.extend.face.insert(\''+key+'\');">'+im.extend.face.faces[key]+'</span>';
+				for(var key in kefu.extend.face.faces){
+					html = html + '<span onclick="kefu.extend.face.insert(\''+key+'\');">'+kefu.extend.face.faces[key]+'</span>';
 				};
 				html = html+'</div>';
 
@@ -819,7 +832,7 @@ var im = {
 			},
 			/* 向输入框中插入表情 */
 			insert:function (key){
-				document.getElementById('text').value = document.getElementById('text').value + im.extend.face.faces[key];
+				document.getElementById('text').value = document.getElementById('text').value + kefu.extend.face.faces[key];
 			}
 
 		},
@@ -842,9 +855,9 @@ var im = {
             		url:data.url
             	}
 				var message = {
-					token:im.getToken(),
-					receiveId:im.chat.otherUser.id,
-					sendId:im.user.id,
+					token:kefu.getToken(),
+					receiveId:kefu.chat.otherUser.id,
+					sendId:kefu.user.id,
 					type:'EXTEND',
 					time:new Date().getTime(),
 					extend:image
@@ -853,24 +866,24 @@ var im = {
 
 				//更新聊天窗口
 				message.text = '<img style="max-width: 100%;" src="'+data.url+'" />';
-				im.chat.ui.appendMessage(message);
+				kefu.chat.ui.appendMessage(message);
 
-				im.cache.add(message);   //缓存
+				kefu.cache.add(message);   //缓存
 			}
 		},
 		/* 订单 */
 		order:{
 			name:'订单',
-			chat:'<span onclick="im.extend.order.showOrder();">订单</span>',
-			js:'./extend/order/order.js',	//引入这个扩展的自定义js。引入的这个js会在加载完im.js后立马加载引入这里的js
-			css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完im.js后立马加载引入这里的css
-			//初始化，im.js 加载完毕后会先引入指定路径的js，再执行此方法
+			chat:'<span onclick="kefu.extend.order.showOrder();">订单</span>',
+			js:'./extend/order/order.js',	//引入这个扩展的自定义js。引入的这个js会在加载完kefu.js后立马加载引入这里的js
+			css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
+			//初始化，kefu.js 加载完毕后会先引入指定路径的js，再执行此方法
 			init:function(){
 
 			},
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				message.text = im.extend.order.getOrderByTemplate(message.extend);
+				message.text = kefu.extend.order.getOrderByTemplate(message.extend);
 				return message;
 			},
 			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
@@ -879,18 +892,18 @@ var im = {
 			send:function(data){
 				data.extend = 'order';
 				var message = {
-					token:im.getToken(),
-					receiveId:im.chat.otherUser.id,
-					sendId:im.user.id,
+					token:kefu.getToken(),
+					receiveId:kefu.chat.otherUser.id,
+					sendId:kefu.user.id,
 					type:'EXTEND',
 					time:new Date().getTime(),
 					extend:data
 				};
 				socket.send(message);
-				im.cache.add(message);   //缓存
+				kefu.cache.add(message);   //缓存
 
-				message.text = im.extend.order.getOrderByTemplate(data);
-				im.chat.ui.appendMessage(message);
+				message.text = kefu.extend.order.getOrderByTemplate(data);
+				kefu.chat.ui.appendMessage(message);
 			},
 
 			/*
@@ -902,7 +915,7 @@ var im = {
 				订单的状态 {order.state}
 			*/
 			listTemplate:`
-				<div class="extend_order_item" onclick="im.extend.order.sendOrder('{order.no}', this);">  
+				<div class="extend_order_item" onclick="kefu.extend.order.sendOrder('{order.no}', this);">  
 				    <div class="orderInfo">
 				        <div class="order_no">订单号：{order.no}</div>
 				        <div class="order_time">{order.time}</div>
@@ -924,7 +937,7 @@ var im = {
 			orderMap:{},	//key: goodsid
 
 			getOrderByTemplate:function(order){
-				return im.extend.order.listTemplate
+				return kefu.extend.order.listTemplate
 							.replace(/{order.no}/g, order['no'])
 							.replace(/{order.time}/g, order['time'])
 							.replace(/{goods.image}/g, order['image'])
@@ -934,12 +947,12 @@ var im = {
 			},
 			showOrder:function (){
 				msg.loading('获取中');
-				request.get(goodsUrl+'orderList.json',{token:im.getToken()}, function(data){
+				request.get(goodsUrl+'orderList.json',{token:kefu.getToken()}, function(data){
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
-						im.extend.order.orderMap[data[i]['no']] = data[i];
-						html = html + im.extend.order.getOrderByTemplate(data[i]);
+						kefu.extend.order.orderMap[data[i]['no']] = data[i];
+						html = html + kefu.extend.order.getOrderByTemplate(data[i]);
 					};
 					msg.popups({
 						text:html,
@@ -957,28 +970,24 @@ var im = {
 					alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
 					return;
 				}
-				var order = im.extend.order.orderMap[orderid];
+				var order = kefu.extend.order.orderMap[orderid];
 				msg.close();
 				
-				im.extend.order.send(order);
+				kefu.extend.order.send(order);
 			}
 		},
 		/* 商品 */
 		goods:{
 			name:'商品',
 			//chat:'<span onclick="">商品</span>',
-			css:'./extend/goods/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完im.js后立马加载引入这里的css
-			//初始化，im.js 加载完毕后会先引入指定路径的js，再执行此方法
+			css:'./extend/goods/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
+			//初始化，kefu.js 加载完毕后会先引入指定路径的js，再执行此方法
 			init:function(){
 
 			},
-			//初始化，当打开chat窗口时，所有初始化的东西完事后，会自动执行此处
-			initChat:function(){
-				showGoodsSendWindow();
-			},
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				message.text = im.extend.goods.getGoodsByTemplate(message.extend);
+				message.text = kefu.extend.goods.getGoodsByTemplate(message.extend);
 				return message;
 			},
 			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
@@ -987,18 +996,18 @@ var im = {
 			send:function(data){
 				data.extend = 'goods';
 				var message = {
-					token:im.getToken(),
-					receiveId:im.chat.otherUser.id,
-					sendId:im.user.id,
+					token:kefu.getToken(),
+					receiveId:kefu.chat.otherUser.id,
+					sendId:kefu.user.id,
 					type:'EXTEND',
 					time:new Date().getTime(),
 					extend:data
 				};
 				socket.send(message);
-				im.cache.add(message);   //缓存
+				kefu.cache.add(message);   //缓存
 
-				message.text = im.extend.goods.format(message).text;
-				im.chat.ui.appendMessage(message);
+				message.text = kefu.extend.goods.format(message).text;
+				kefu.chat.ui.appendMessage(message);
 			},
 			/*
 				商品图片 {image}
@@ -1007,7 +1016,7 @@ var im = {
 			*/
 			template : `
 				<!-- 弹出的商品发送 -->
-			    <div class="extend_goods_item" onclick="im.extend.goods.sendGoods('{id}', this);">  
+			    <div class="extend_goods_item" onclick="kefu.extend.goods.sendGoods('{id}', this);">  
 			        <img class="image" src="{image}" />
 			        <div class="goodsInfo">
 			            <div class="name">{name}</div>
@@ -1019,7 +1028,7 @@ var im = {
 			`,
 			goods:{},
 			getGoodsByTemplate : function (goods){
-				return im.extend.goods.template
+				return kefu.extend.goods.template
 						.replace(/{id}/g, goods['id'])
 						.replace(/{name}/g, goods['name'])
 						.replace(/{price}/g, goods['price'])
@@ -1036,15 +1045,14 @@ var im = {
 					return;
 				}
 
-				if(goodsid != im.extend.goods.goods.id){
+				if(goodsid != kefu.extend.goods.goods.id){
 					msg.failure('商品id异常！');
 				}
-				console.log(im.extend.goods.goods);
+				console.log(kefu.extend.goods.goods);
 				msg.close();
 				
-				im.extend.goods.send(im.extend.goods.goods);
+				kefu.extend.goods.send(kefu.extend.goods.goods);
 			}
-
 
 		}
 	}
@@ -1057,14 +1065,14 @@ var socket = {
 	onopen:function(){
 		socket.send(JSON.stringify({
 	        'type': 'CONNECT' //第一次联通，登录
-	        ,'token':im.getToken()
+	        ,'token':kefu.getToken()
 	    })); 
 	},
 	//监听收到的消息的function
 	onmessage:function(res){ 
 		var json = JSON.parse(res.data);
-	    im.chat.ui.appendMessage(json);    //聊天窗口增加消息
-	    im.cache.add(json);   //缓存
+	    kefu.chat.ui.appendMessage(json);    //聊天窗口增加消息
+	    kefu.cache.add(json);   //缓存
 	},
 	
 	connect:function(url){
@@ -1106,16 +1114,15 @@ var socket = {
 function uploadImage(){
 	//添加input改动监听
 	if(document.getElementById('imageInput').oninput == null){
-		console.log('input');
 		document.getElementById('imageInput').oninput = function(e){
 		    if(typeof(e.srcElement.files[0]) != 'undefined'){
 		        var file = e.srcElement.files[0];
 		        msg.loading('上传中');
-		        request.upload(im.apiUrl+'uploadImage.json', {token:im.getToken()}, file,function(data){
+		        request.upload(kefu.apiUrl+'uploadImage.json', {token:kefu.getToken()}, file,function(data){
 		            msg.close();
 		            console.log(data);
 		            if(data.result == '1'){
-		            	im.extend.image.send(data);
+		            	kefu.extend.image.send(data);
 		            }else{
 		            	msg.failure(data.info);
 		            }
