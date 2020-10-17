@@ -22,6 +22,13 @@ kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
 kefu.api.chatLog = 'http://'+host+'/chatLog.json';
 kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
 
+//重写存储方式
+kefu.storage.get = function(key){
+	return localStorage.getItem(key);
+};
+kefu.storage.set = function(key, value){
+	localStorage.setItem(key,value);
+}
 
 
 /****** chatQuickButton插件 ******/
@@ -67,6 +74,17 @@ kefu.extend.goods.initChat = function(){
 	}
 };
 /****** goods插件结束 *******/
+
+
+/******* 爱送达定制 ********/
+kefu.extend.aisongda = {
+	//进入chat一对一聊天窗口时，自动执行这个方法初始化
+	initChat:function(){
+		//隐藏chat页面的头部
+		//document.getElementById('head').style.display = 'none';
+	}
+}
+/******* 爱送达定制结束 ********/
 
 
 

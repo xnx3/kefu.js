@@ -256,13 +256,22 @@ var kefu = {
 			}
 		}
 	},
+	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
+	storage:{
+		get:function(key){
+			return localStorage.getItem(key);
+		},
+		set:function(key, value){
+			localStorage.setItem(key,value);
+		}
+	},
 	/**
 	 * 获取token，也就是 session id。获取的字符串如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
 	 * 如果用户未登录，那么获取到的是  youke_uuid。 这个会设置成layim 的  mine.id
 	 */
 	getToken:function(){
 		if(this.token == null){
-			this.token = localStorage.getItem('token');
+			this.token = kefu.storage.get('token');
 		}
 		if(this.token == null || this.token.length < 5){
 			this.token = 'youke_'+generateUUID();
@@ -276,7 +285,7 @@ var kefu = {
 	 */
 	setToken:function(t){
 		this.token = t;
-		localStorage.setItem('token',this.token);
+		kefu.storage.set('token',this.token);
 	},
 	/**
 	 * 获取当前用户(我)的User信息
@@ -373,7 +382,7 @@ var kefu = {
 		
 		chat:{
 			html:`
-				<header class="chat_header">
+				<header class="chat_header" id="head">
 			        <div class="back" id="back" onclick="kefu.ui.list.render();">&nbsp;</div>
 			        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
 			    </header>
@@ -696,7 +705,7 @@ var kefu = {
 		ereryUserNumber:20,	//每个用户缓存20条最后的聊天记录
 		/* 根据userid，获取跟这个用户的本地缓存的20条最近聊天记录 */
 		getUserMessageList:function(userid){
-			var chatListStr = localStorage.getItem('userid:'+userid);
+			var chatListStr = kefu.storage.get('userid:'+userid);
 			if(chatListStr == null || chatListStr.length < 1){
 				chatListStr = '[]';
 			}
@@ -716,11 +725,15 @@ var kefu = {
 				//自己是消息接收者，别人发过来的消息
 				otherUserId = message['sendId'];
 			}
+			//判断一下消息类型，如果是系统提示消息， type = 'SYSTEM' ，没意义的提醒，那么不保存
+			if(message['type'] == 'SYSTEM'){
+				return;
+			}
 			//console.log(otherUserId);
 			if(otherUserId != '0' && otherUserId.length > 0){
 
 				//保存单独跟这个用户的聊天记录
-				var chatUserStr = localStorage.getItem('userid:'+otherUserId);
+				var chatUserStr = kefu.storage.get('userid:'+otherUserId);
 				if(chatUserStr == null || chatUserStr.length < 1){
 					chatUserStr = '[]';
 				}
@@ -730,7 +743,7 @@ var kefu = {
 					//console.log('移除：'+chatUser[0]);
 					chatUser.splice(0, 1);	//移除最后一个
 				}
-				localStorage.setItem('userid:'+otherUserId, JSON.stringify(chatUser));
+				kefu.storage.set('userid:'+otherUserId, JSON.stringify(chatUser));
 				//console.log('保存：'+JSON.stringify(chatList))
 
 				//保存聊天列表的最后一条聊天消息
@@ -739,7 +752,7 @@ var kefu = {
 		},
 		/* 获取聊天列表的缓存 */
 		getChatList:function(){
-			var chatListStr = localStorage.getItem('list');
+			var chatListStr = kefu.storage.get('list');
 			if(chatListStr == null || chatListStr.length < 1){
 				chatListStr = '[]';
 			}
@@ -786,16 +799,15 @@ var kefu = {
 			}
 			chatList.push(newMessage);
 			//console.log(chatList);
-			localStorage.setItem('list', JSON.stringify(chatList));
+			kefu.storage.set('list', JSON.stringify(chatList));
 		},
 		//通过userid，获取user对象信息 ,未完成
 		getUser(userid){
 			var user;
-			var userStr = localStorage.getItem('user_id_'+userid);
+			var userStr = kefu.storage.get('user_id_'+userid);
 			if(userStr == null){
 				//从网络获取
 				kefu.cache.getUser_linshijiluUser = null;
-				
 				
 				new Promise((resolve, reject) => {
 					console.log('Promise'+userid);
@@ -876,7 +888,7 @@ var kefu = {
 		/* 图片上传 */
 		image:{
 			name:'图片',
-			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" id="imageInput" style="display:none;">图片</span>',
+			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;">图片</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = '<img style="max-width: 100%;" src="'+message.extend.url+'" />';
