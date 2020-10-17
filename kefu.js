@@ -220,13 +220,10 @@ var kefu = {
 		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
 		uploadImage:''			//图片上传接口
 	},
-	//apiUrl:'http://119.3.209.5:80/', //api接口域名，格式如 http://xxxx.com/ 
-	apiUrl:'', //api接口域名，格式如 http://xxxx.com/ 
-	//websocketUrl:'ws://119.3.209.5:8081/',	//websocket的url，格式如 ws://xxxx.com:8081/
-	websocketUrl:'ws://localhost:8081/',	//websocket的url，格式如 ws://xxxx.com:8081/
 	/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
 	token:null,
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
+	currentPage:'',	//当前所在哪个页面， 有 list 、 chat
 	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
@@ -293,6 +290,20 @@ var kefu = {
 			kefu.user = data;
 		});
 	},
+	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
+	getReceiveMessageText:function(message){
+		if(message.extend != null && message.extend.extend != null){
+			//如果是插件，那么将json变为插件显示的样式
+			message = kefu.extend[message.extend.extend].format(message);
+		}
+		//将[ul][li][br]等转化为html
+		message['text'] = message['text'].replace(/\[ul\]/g, '<ul>')
+								.replace(/\[\/ul\]/g, '</ul>')
+								.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
+								.replace(/\[\/li\]/g, '</li>')
+								.replace(/\[br\]/g, '<br>');
+		return message['text'];
+	},
 	//UI界面方面
 	ui:{
 		list:{
@@ -355,7 +366,8 @@ var kefu = {
 						}catch(e){ console.log(e); }
 					}
 				}
-
+			    
+			    kefu.currentPage = 'list';	//赋予当前所在页面为list
 			}
 		},
 		
@@ -386,6 +398,51 @@ var kefu = {
 			        </div>
 			    </footer>
 			`,
+			//发送一条消息，在双方聊天的消息末尾追加消息
+			appendMessage: function(message){
+				if(typeof(message) == 'string'){
+			        message = JSON.parse(message);   //转成json
+			    }
+			    //判断一下，消息的类型。
+			    if(message == null){
+			        return;
+			    }
+			    if(message.type == 'SYSTEM'){
+			        //系统类型消息
+			        kefu.chat.ui.showSystemMessage(message['text']);
+			    }else{
+			        //其他类型，那么出现对话框的
+			        var section = kefu.ui.chat.generateChatMessageSection(message);
+			    
+			        document.getElementById('chatcontent').appendChild(section);
+			        //滚动条滚动到最底部
+			        kefu.chat.scrollToBottom();
+			    }
+			},
+			//创建聊天正常沟通收发消息的 section dom 元素
+			generateChatMessageSection:function(message){
+				message['text'] = kefu.getReceiveMessageText(message);
+			    //发送文本消息后绘制对话窗口
+			    var section = document.createElement("section");
+			    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
+			    if(message['receiveId'] == kefu.chat.otherUser.id){
+			        //是自己发送的这条消息，那么显示在右侧
+			        section.className = 'chat user';
+			        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			    }else if(message['sendId'] == kefu.chat.otherUser.id){
+			        //是自己接受的这个消息，那么显示在左侧
+			        section.className = 'chat otherUser';
+			        section.innerHTML = '<div class="head" style="background-image: url('+kefu.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			    }
+			    return section;
+			},
+			//创建聊天系统提示消息的 section dom 元素 
+			generateChatSystemMessageSection:function(text){
+				var section = document.createElement("section");
+				section.className = 'chat bot systemChat';
+				section.innerHTML = '<div class="text systemText">'+text+'</div>';
+				return section;
+			},
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
 				//赋予chat聊天窗html的大框信息显示
@@ -400,7 +457,7 @@ var kefu = {
 		        var chatCacheList = kefu.cache.getUserMessageList(kefu.chat.otherUser.id);
 		        for(var i = 0; i<chatCacheList.length; i++){
 		            var message = chatCacheList[i];
-		            kefu.chat.ui.appendMessage(message);
+		            kefu.ui.chat.appendMessage(message);
 		        }
 				
 			    //获取聊天对方的用户信息
@@ -470,7 +527,8 @@ var kefu = {
 						}catch(e){ console.log(e); }
 					}
 				}
-
+				
+				kefu.currentPage = 'chat';	//赋予当前所在页面为chat
 			}
 		}
 	},
@@ -512,40 +570,6 @@ var kefu = {
 			    }
 			}
 			document.getElementById('inputExtend').innerHTML = inputExtendHtml;
-		},
-		/* 创建聊天正常沟通收发消息的 section dom 元素 */
-		generateChatMessageSection:function(message){
-			//console.log(message);
-			if(message.extend != null && message.extend.extend != null){
-				//如果是插件，那么将json变为插件显示的样式
-				message = kefu.extend[message.extend.extend].format(message);
-			}
-			//将[ul][li][br]等转化为html
-			message['text'] = message['text'].replace(/\[ul\]/g, '<ul>')
-									.replace(/\[\/ul\]/g, '</ul>')
-									.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
-									.replace(/\[\/li\]/g, '</li>')
-									.replace(/\[br\]/g, '<br>');
-		    //发送文本消息后绘制对话窗口
-		    var section = document.createElement("section");
-		    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
-		    if(message['receiveId'] == kefu.chat.otherUser.id){
-		        //是自己发送的这条消息，那么显示在右侧
-		        section.className = 'chat user';
-		        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
-		    }else if(message['sendId'] == kefu.chat.otherUser.id){
-		        //是自己接受的这个消息，那么显示在左侧
-		        section.className = 'chat otherUser';
-		        section.innerHTML = '<div class="head" style="background-image: url('+kefu.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
-		    }
-		    return section;
-		},
-		/* 创建聊天系统提示消息的 section dom 元素 */
-		generateChatSystemMessageSection:function(text){
-			var section = document.createElement("section");
-			section.className = 'chat bot systemChat';
-			section.innerHTML = '<div class="text systemText">'+text+'</div>';
-			return section;
 		},
 		currentLoadHistoryList:false,	//跟loadHistoryList() 一起用，当加载历史列表时，此处为true，加载完后，此处变为false
 		/* 加载历史聊天列表 */
@@ -590,7 +614,7 @@ var kefu = {
 							//有消息记录，那么绘制出来
 							for(var i = data.list.length-1; i >= 0; i--){
 								var message = data.list[i];
-								var msgSection = kefu.chat.generateChatMessageSection(message);
+								var msgSection = kefu.ui.chat.generateChatMessageSection(message);
 								chatcontent.insertBefore(msgSection,firstItem);
 							}
 							//重新标记历史消息的开始时间
@@ -599,7 +623,7 @@ var kefu = {
 							//没有更多消息了
 							kefu.chat.currentLoadHistoryList = true;	//标记请求历史记录不再继续请求了，因为已经没有更多记录了
 							//msg.info('没有更多消息了');
-							chatcontent.insertBefore(kefu.chat.generateChatSystemMessageSection('没有更多了'),firstItem);
+							chatcontent.insertBefore(kefu.ui.chat.generateChatSystemMessageSection('没有更多了'),firstItem);
 						}
 
 						
@@ -626,7 +650,7 @@ var kefu = {
 		        time:new Date().getTime()      
 		    }
 		    var message = JSON.stringify(data);
-		    kefu.chat.ui.appendMessage(message);    //聊天窗口增加消息
+		    kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
 		    socket.send(message);       //socket发送
 		    kefu.cache.add(message);   //缓存
 
@@ -652,32 +676,11 @@ var kefu = {
 		    kefu.chat.ui.textInputClick();
 		},
 		ui:{
-			//发送一条消息，消息末尾追加消息
-			appendMessage: function(message){
-				if(typeof(message) == 'string'){
-			        message = JSON.parse(message);   //转成json
-			    }
-			    //判断一下，消息的类型。
-			    if(message == null){
-			        return;
-			    }
-			    if(message.type == 'SYSTEM'){
-			        //系统类型消息
-			        kefu.chat.ui.showSystemMessage(message.content);
-			    }else{
-			        //其他类型，那么出现对话框的
-			        var section = kefu.chat.generateChatMessageSection(message);
-			    
-			        document.getElementById('chatcontent').appendChild(section);
-			        //滚动条滚动到最底部
-			        kefu.chat.scrollToBottom();
-			    }
-			},
-			//在当前ui界面显示一条系统消息
-			showSystemMessage:function(msg){
+			//在当前ui界面显示一条系统消息, messageText:要显示的消息内容
+			showSystemMessage:function(messageText){
 				chatcontent = document.getElementById('chatcontent');
 				chatcontent.innerHTML =  chatcontent.innerHTML + 
-					'<section class="chat bot systemChat"><div class="text systemText">'+msg+'</div></section>';
+					'<section class="chat bot systemChat"><div class="text systemText">'+messageText+'</div></section>';
 				window.scrollTo(0,chatcontent.scrollHeight);
 			},
 			//文字输入框被点击，隐藏扩展功能区域
@@ -731,10 +734,8 @@ var kefu = {
 				//console.log('保存：'+JSON.stringify(chatList))
 
 				//保存聊天列表的最后一条聊天消息
-				this.pushChatList(otherUserId, message);
+				kefu.cache.pushChatList(kefu.chat.otherUser, message);
 			}
-
-			
 		},
 		/* 获取聊天列表的缓存 */
 		getChatList:function(){
@@ -745,8 +746,12 @@ var kefu = {
 			var chatList = JSON.parse(chatListStr);
 			return chatList;
 		},
-		/* 往聊天列表中添加最后一次沟通的记录 */
-		pushChatList:function(otherUserId, message){
+		// 往聊天列表中添加最后一次沟通的记录 otherUser 用户对象信息    message:消息json
+		pushChatList:function(otherUser, message){
+			if(otherUser == null){
+				msg.popups('出错，kefu.cache.pushChatList 传入的 otherUser 为null');
+				return;
+			}
 			var chatList = this.getChatList();
 
 			//聊天内容
@@ -757,10 +762,10 @@ var kefu = {
 
 			//组合新的消息
 			var newMessage = {
-				id:otherUserId,	//对方的userid
+				id:otherUser.id,	//对方的userid
 				text:text,		//最后一次沟通的内容
-				nickname:kefu.chat.otherUser.nickname,	//对方的昵称
-				head:kefu.chat.otherUser.head, 	//对方的头像
+				nickname:otherUser.nickname,	//对方的昵称
+				head:otherUser.head, 	//对方的头像
 				time:message.time 			//消息产生的时间。
 			}
 			if(newMessage.time == null){
@@ -772,7 +777,7 @@ var kefu = {
 				// console.log(i);
 				// console.log(chatList[i]);
 				
-				if(chatList[i] != null && chatList[i]['id'] == otherUserId){
+				if(chatList[i] != null && chatList[i]['id'] == otherUser.id){
 					// console.log(chatList[i]);
 					// console.log('delete');
 					chatList.splice(i, 1);	//移除跟这个用户的上一条记录。以便存最新的
@@ -782,6 +787,37 @@ var kefu = {
 			chatList.push(newMessage);
 			//console.log(chatList);
 			localStorage.setItem('list', JSON.stringify(chatList));
+		},
+		//通过userid，获取user对象信息 ,未完成
+		getUser(userid){
+			var user;
+			var userStr = localStorage.getItem('user_id_'+userid);
+			if(userStr == null){
+				//从网络获取
+				kefu.cache.getUser_linshijiluUser = null;
+				
+				
+				new Promise((resolve, reject) => {
+					console.log('Promise'+userid);
+					request.send(kefu.api.getChatOtherUser,{token:kefu.getToken(), id:userid}, function(data){
+						//请求完成
+						console.log(data);
+						kefu.cache.getUser_linshijiluUser = data.user;
+						user = data.user;
+						resolve(data);
+					},'post', true, {'content-type':'application/x-www-form-urlencoded'}, function(xhr){
+						//异常
+						alert('异常');
+					})
+				}).then(function(data){
+					console.log('then'+data.user.id);
+					user = data.user;
+				});
+				console.log('2');
+			}else{
+				user = JSON.parse(userStr);
+			}
+			return user;
 		}
 	},
 	/* 扩展，比如表情、图片、订单、商品 */
@@ -867,7 +903,7 @@ var kefu = {
 
 				//更新聊天窗口
 				message.text = '<img style="max-width: 100%;" src="'+data.url+'" />';
-				kefu.chat.ui.appendMessage(message);
+				kefu.ui.chat.appendMessage(message);
 
 				kefu.cache.add(message);   //缓存
 			},
@@ -932,7 +968,7 @@ var kefu = {
 				kefu.cache.add(message);   //缓存
 
 				message.text = kefu.extend.order.getOrderByTemplate(data);
-				kefu.chat.ui.appendMessage(message);
+				kefu.ui.chat.appendMessage(message);
 			},
 
 			/*
@@ -1036,7 +1072,7 @@ var kefu = {
 				kefu.cache.add(message);   //缓存
 
 				message.text = kefu.extend.goods.format(message).text;
-				kefu.chat.ui.appendMessage(message);
+				kefu.ui.chat.appendMessage(message);
 			},
 			/*
 				商品图片 {image}
@@ -1099,9 +1135,22 @@ var socket = {
 	},
 	//监听收到的消息的function
 	onmessage:function(res){ 
-		var json = JSON.parse(res.data);
-	    kefu.chat.ui.appendMessage(json);    //聊天窗口增加消息
-	    kefu.cache.add(json);   //缓存
+		var message = JSON.parse(res.data);
+		console.log(message);
+		message.text = kefu.getReceiveMessageText(message);
+		console.log(message);
+		kefu.cache.add(message);   //消息缓存
+		
+		if(kefu.currentPage == 'list'){
+			//当前在list列表页
+			kefu.ui.list.render();	//重新渲染页面
+			//弹出新消息提醒
+			msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
+		}else{
+			//当前在chat
+			kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+		}
+	    
 	},
 	
 	connect:function(url){

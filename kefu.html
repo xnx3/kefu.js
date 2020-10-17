@@ -11,6 +11,19 @@
 </head>
 <body>
 <script type="text/javascript">
+//var host = '119.3.209.5:80';
+//var socketUrl = 'ws://119.3.209.5:8081/';
+var host = 'localhost:8080';
+var socketUrl = 'ws://localhost:8081/';
+
+//kefu.js 接口设置
+kefu.api.getMyUser = 'http://'+host+'/user/init.json';
+kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
+kefu.api.chatLog = 'http://'+host+'/chatLog.json';
+kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
+
+
+
 /****** chatQuickButton插件 ******/
 kefu.extend.chatQuickButton = {
 	css:'./extend/chatQuickButton/style.css',
@@ -55,11 +68,7 @@ kefu.extend.goods.initChat = function(){
 };
 /****** goods插件结束 *******/
 
-//kefu.js 接口设置
-kefu.api.getMyUser = 'http://localhost:8080/user/init.json';
-kefu.api.getChatOtherUser = 'http://localhost:8080/user/getUserById.json';
-kefu.api.chatLog = 'http://localhost:8080/chatLog.json';
-kefu.api.uploadImage = 'http://localhost:8080/uploadImage.json';
+
 
 //kefu.js 初始化
 kefu.init();
@@ -71,8 +80,8 @@ kefu.getMyUser();	//获取我的信息
 
 
 <script>
-//建立WebSocket通讯
-socket.connect(kefu.websocketUrl);
+//建立WebSocket通讯，传入websocket的url，格式如 ws://xxxx.com:8081/
+socket.connect(socketUrl);
 
 var mode = getUrlParams('mode');
 if(typeof(mode) == 'string' && mode == 'chat'){
