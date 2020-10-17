@@ -1148,9 +1148,7 @@ var socket = {
 	//监听收到的消息的function
 	onmessage:function(res){ 
 		var message = JSON.parse(res.data);
-		console.log(message);
 		message.text = kefu.getReceiveMessageText(message);
-		console.log(message);
 		kefu.cache.add(message);   //消息缓存
 		
 		if(kefu.currentPage == 'list'){
@@ -1164,24 +1162,43 @@ var socket = {
 		}
 	    
 	},
-	
+	//连接
 	connect:function(url){
 		this.url = url;
-		this.socket = new WebSocket(url);
-
-		this.socket.onopen = function(){
-			socket.onopen();
-		};
-		this.socket.onmessage = function(res){
-			//res为接受到的值，如 {"emit": "messageName", "data": {}}
-			socket.onmessage(res);
-		};
+		this.reconnect.connect();
+		
+		//socket断线重连
+        var socketCloseAgainConnectInterval = setInterval(function(){
+        	if(socket.socket.readyState == socket.socket.CLOSED){
+                console.log('socketCloseAgainConnectInterval : socket closed , again connect ...');
+                socket.reconnect.connect();
+            }
+        }, 3000);
 	},
 	//重新连接，主要用于断线重连
-	reconnect:function(){
-		this.connect(this.url);
+	reconnect:{
+		connecting:false,	//当前websocket是否是正在连接中,断线重连使用
+		//重新连接
+		connect:function(){
+			if(!this.connecting){
+				console.log('socket...');
+				this.connecting = true;	//标记已经有socket正在尝试连接了
+				socket.socket = new WebSocket(socket.url);
+				socket.socket.onopen = function(){
+					socket.onopen();
+				};
+				socket.socket.onmessage = function(res){
+					//res为接受到的值，如 {"emit": "messageName", "data": {}}
+					socket.onmessage(res);
+				};
+				this.connecting = false;
+				console.log('failure');
+			}else{
+				console.log('false');
+			}
+		},
 	},
-	
+	//发送消息
 	send:function(text){
 		if(this.socket.readyState == this.socket.OPEN){
 			if(typeof(text) == 'object'){
@@ -1189,9 +1206,9 @@ var socket = {
 			}
 			this.socket.send(text);
 		}else if(this.socket.readyState == this.socket.CLOSED || this.socket.readyState == this.socket.CLOSING){
-			alert('socket 已关闭，正在开启重连');
-			this.reconnect();
+			msg.info('socket 已关闭，正在开启重连');
+			this.reconnect.connect();
+			this.send(text);	//重新发送
 		}
-		
 	}
 }
