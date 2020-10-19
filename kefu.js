@@ -891,7 +891,7 @@ var kefu = {
 			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;">图片</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				message.text = '<img style="max-width: 100%;" src="'+message.extend.url+'" />';
+				message.text = '<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\''+message.extend.url+'\');" src="'+message.extend.url+'" />';
 				return message;
 			},
 			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
@@ -914,7 +914,7 @@ var kefu = {
 				socket.send(message);
 
 				//更新聊天窗口
-				message.text = '<img style="max-width: 100%;" src="'+data.url+'" />';
+				message.text = kefu.extend.image.format(message);
 				kefu.ui.chat.appendMessage(message);
 
 				kefu.cache.add(message);   //缓存
@@ -946,6 +946,15 @@ var kefu = {
 				}
 
 				document.getElementById('imageInput').click();
+			},
+			//放大全屏查看图片
+			fullScreen:function(imageUrl){
+				msg.popups({
+					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; max-height: 100%;" />',
+					top:'20%',
+					width:'100%',
+					left:'0px'
+				});
 			}
 		},
 		/* 订单 */
@@ -1181,7 +1190,7 @@ var socket = {
 		//重新连接
 		connect:function(){
 			if(!this.connecting){
-				console.log('socket...');
+				console.log('socket connect ...');
 				this.connecting = true;	//标记已经有socket正在尝试连接了
 				socket.socket = new WebSocket(socket.url);
 				socket.socket.onopen = function(){
@@ -1192,9 +1201,6 @@ var socket = {
 					socket.onmessage(res);
 				};
 				this.connecting = false;
-				console.log('failure');
-			}else{
-				console.log('false');
 			}
 		},
 	},
