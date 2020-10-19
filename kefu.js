@@ -229,7 +229,6 @@ var kefu = {
 		var head0 = document.getElementsByTagName('head')[0];
 
 		for(var key in kefu.extend){
-			console.log(key);
 			//加载模块的js
 			if(kefu.extend[key].js != null && kefu.extend[key].js.length > 0){
 				var script = document.createElement("script");  //创建一个script标签
@@ -358,7 +357,6 @@ var kefu = {
 			    var chatListLength = chatList.length;
 			    var html = '';
 			    for (var i = 0; i < chatListLength; i++) {
-			        //console.log(chatList[i]);
 			        html = kefu.ui.list.getListItemByTemplate(chatList[i]) + html;
 			    }
 			    document.getElementById('chatlist').innerHTML = html;
@@ -471,7 +469,6 @@ var kefu = {
 				
 			    //获取聊天对方的用户信息
 			    kefu.chat.getOtherUser(otherUserId, function(data){
-			        console.log(data);
 			        //设置网页聊天窗title 的对方昵称
 					document.getElementById('nickname').innerHTML = kefu.chat.otherUser.nickname;
 					//对方在线状态
@@ -611,7 +608,6 @@ var kefu = {
 					//删除聊天记录加载中的提示section后，取第一个正常聊天沟通的section，用来作为插入的定位
 					var firstItem = chatcontent.getElementsByTagName("section")[0];
 
-					console.log(data);
 					if(data.result == '0'){
 						//失败，弹出提示
 						msg.failure(data.info);
@@ -645,7 +641,6 @@ var kefu = {
 		/* 常见问题 */
 		question:function(obj){
 			var text = obj.innerHTML;
-			console.log(obj.innerHTML);
 			kefu.chat.sendTextMessage(text);
 		},
 		/* 发送文本格式消息  text:要发送的文本消息。 返回json对象的message */
@@ -787,18 +782,12 @@ var kefu = {
 
 			var chatListLength = chatList.length;
 			for (var i = 0; i < chatListLength; i++) {
-				// console.log(i);
-				// console.log(chatList[i]);
-				
 				if(chatList[i] != null && chatList[i]['id'] == otherUser.id){
-					// console.log(chatList[i]);
-					// console.log('delete');
 					chatList.splice(i, 1);	//移除跟这个用户的上一条记录。以便存最新的
 					continue;
 				}
 			}
 			chatList.push(newMessage);
-			//console.log(chatList);
 			kefu.storage.set('list', JSON.stringify(chatList));
 		},
 		//通过userid，获取user对象信息 ,未完成
@@ -813,7 +802,6 @@ var kefu = {
 					console.log('Promise'+userid);
 					request.send(kefu.api.getChatOtherUser,{token:kefu.getToken(), id:userid}, function(data){
 						//请求完成
-						console.log(data);
 						kefu.cache.getUser_linshijiluUser = data.user;
 						user = data.user;
 						resolve(data);
@@ -825,7 +813,6 @@ var kefu = {
 					console.log('then'+data.user.id);
 					user = data.user;
 				});
-				console.log('2');
 			}else{
 				user = JSON.parse(userStr);
 			}
@@ -928,7 +915,6 @@ var kefu = {
 					        msg.loading('上传中');
 					        request.upload(kefu.api.uploadImage, {token:kefu.getToken()}, file,function(data){
 					            msg.close();
-					            console.log(data);
 					            if(data.result == '1'){
 					            	kefu.extend.image.send(data);
 					            }else{
@@ -1033,7 +1019,7 @@ var kefu = {
 			},
 			showOrder:function (){
 				msg.loading('获取中');
-				request.get(goodsUrl+'orderList.json',{token:kefu.getToken()}, function(data){
+				request.get(goodsUrl+'orderList.json',{token:kefu.getToken(), userid:kefu.chat.otherUser.id}, function(data){
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
@@ -1123,7 +1109,6 @@ var kefu = {
 			//发送商品
 			sendGoods : function (goodsid, obj){
 				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
-				console.log(parentClassName);
 				if(parentClassName == 'text'){
 					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
 					//...
@@ -1134,7 +1119,6 @@ var kefu = {
 				if(goodsid != kefu.extend.goods.goods.id){
 					msg.failure('商品id异常！');
 				}
-				console.log(kefu.extend.goods.goods);
 				msg.close();
 				
 				kefu.extend.goods.send(kefu.extend.goods.goods);
