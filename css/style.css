@@ -10,6 +10,10 @@ html , body{
 	margin: 0px;
     background-color: #EFF0F1;
 }
+/* 去掉点击外围的大黄色框框 */
+input,button{
+	outline: none;
+}
 a{
     text-decoration: none;
 }

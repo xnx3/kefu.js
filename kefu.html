@@ -12,10 +12,10 @@
 </head>
 <body>
 <script type="text/javascript">
-//var host = '119.3.209.5:80';
-//var socketUrl = 'ws://119.3.209.5:8081/';
-var host = 'localhost:8080';
-var socketUrl = 'ws://localhost:8081/';
+var host = 'kefu.wfyuntu.com';
+var socketUrl = 'ws://kefu.wfyuntu.com:8081/';
+//var host = 'localhost:8080';
+//var socketUrl = 'ws://localhost:8081/';
 
 //kefu.js 接口设置
 kefu.api.getMyUser = 'http://'+host+'/user/init.json';
@@ -23,13 +23,21 @@ kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
 kefu.api.chatLog = 'http://'+host+'/chatLog.json';
 kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
 
-//重写存储方式
-kefu.storage.get = function(key){
-	return localStorage.getItem(key);
-};
-kefu.storage.set = function(key, value){
-	localStorage.setItem(key,value);
+//重写存储方式，以原生方式存。
+if(typeof(messageHandlers) != 'undefined' && typeof(messageHandlers.appStorageGet) == 'function'){
+	//如果是安卓手机
+	
+	kefu.storage.get = function(key){
+		var v = messageHandlers.appStorageGet(key);
+		//msg.popups('kefu.storage.get:'+v);
+		return v;
+	};
+	kefu.storage.set = function(key, value){
+		//msg.popups('kefu.storage.set  '+key+"="+value);
+		messageHandlers.appStorageSet(key,value);
+	}
 }
+
 
 
 /****** chatQuickButton插件 ******/
@@ -76,8 +84,11 @@ kefu.extend.goods.initChat = function(){
 };
 /****** goods插件结束 *******/
 
+/****** order插件开始 *******/
+/****** order插件结束 *******/
 
 /******* 爱送达定制 ********/
+
 kefu.extend.aisongda = {
 	//进入chat一对一聊天窗口时，自动执行这个方法初始化
 	initChat:function(){

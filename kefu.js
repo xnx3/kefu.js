@@ -937,9 +937,11 @@ var kefu = {
 			fullScreen:function(imageUrl){
 				msg.popups({
 					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; max-height: 100%;" />',
-					top:'20%',
+					top:'15%',
+					bottom:'5%',
 					width:'100%',
-					left:'0px'
+					left:'0px',
+					opacity:100
 				});
 			}
 		},
@@ -1028,8 +1030,8 @@ var kefu = {
 					};
 					msg.popups({
 						text:html,
-						top:'20%',
-						bottom:'5rem'
+						top:'10%',
+						bottom:'10%'
 					});
 				});
 			},
