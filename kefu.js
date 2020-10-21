@@ -224,6 +224,7 @@ var kefu = {
 	token:null,
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
 	currentPage:'',	//当前所在哪个页面， 有 list 、 chat
+	mode:'mobile',	//pc、mobile  两种模式。 pc模式是左侧是list、右侧是chat，  mobile是一栏要么是list要么是chat。  默认是mobile模式
 	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
@@ -315,6 +316,7 @@ var kefu = {
 	//UI界面方面
 	ui:{
 		list:{
+			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
 			listItemTemplate:'', //当list页面渲染出来后，这里自动从html中取
 			html:`
 				<section id="chatlist">
@@ -349,8 +351,13 @@ var kefu = {
 			            .replace(/{num}/g, '<div>&nbsp;</div>');
 			},
 			render:function(){
-				document.body.innerHTML = kefu.ui.list.html;
-
+				if(kefu.ui.list.renderAreaId.length > 0){
+					//有设置渲染区域，那么渲染到设置的id上
+					document.getElementById(kefu.ui.list.renderAreaId).innerHTML = kefu.ui.list.html;
+				}else{
+					document.body.innerHTML = kefu.ui.list.html;
+				}
+				
 			    kefu.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   //某个用户聊天item的模板
 
 			    var chatList = kefu.cache.getChatList();
@@ -374,11 +381,12 @@ var kefu = {
 					}
 				}
 			    
-			    kefu.currentPage = 'list';	//赋予当前所在页面为list
+			    //kefu.currentPage = 'list';	//赋予当前所在页面为list
 			}
 		},
 		
 		chat:{
+			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
 			html:`
 				<header class="chat_header" id="head">
 			        <div class="back" id="back" onclick="kefu.ui.list.render();">&nbsp;</div>
@@ -387,7 +395,7 @@ var kefu = {
 
 			    <section id="chatcontent">
 			    </section>
-
+			    
 			    <footer id="chat_footer">
 			        <div id="input_area">
 			            <div id="textInput">
@@ -423,7 +431,7 @@ var kefu = {
 			    
 			        document.getElementById('chatcontent').appendChild(section);
 			        //滚动条滚动到最底部
-			        kefu.chat.scrollToBottom();
+			        kefu.ui.chat.scrollToBottom();
 			    }
 			},
 			//创建聊天正常沟通收发消息的 section dom 元素
@@ -450,10 +458,20 @@ var kefu = {
 				section.innerHTML = '<div class="text systemText">'+text+'</div>';
 				return section;
 			},
+			//聊天窗口滚动到最底部
+			scrollToBottom:function(){
+				//console.log('height:'+document.getElementById('chatcontent').scrollHeight);
+				document.getElementById('chatcontent').scrollTo(0,document.getElementById('chatcontent').scrollHeight);
+			},
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
-				//赋予chat聊天窗html的大框信息显示
-				document.body.innerHTML = kefu.ui.chat.html;
+				if(kefu.ui.list.renderAreaId.length > 0){
+					//有设置渲染区域，那么渲染到设置的id上
+					document.getElementById(kefu.ui.chat.renderAreaId).innerHTML = kefu.ui.chat.html;
+				}else{
+					//赋予chat聊天窗html的大框信息显示
+					document.body.innerHTML = kefu.ui.chat.html;
+				}
 				
 				//加载跟这个人聊天的历史对话记录。不过当前是在获取对方数据之前先拉历史记录，kefu.chat.otherUser 肯定是null，所以先赋予默认值
 				kefu.chat.otherUser = {
@@ -496,7 +514,8 @@ var kefu = {
 			        if(kefu.chat.chatMessageStartTime < 1){
 			            kefu.chat.chatMessageStartTime = new Date().getTime();
 			        }
-
+			        console.log('getOtherUser:');
+			        console.log(kefu.chat.otherUser);
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(kefu.chat.otherUser.id) != 'undefined'){
@@ -513,9 +532,9 @@ var kefu = {
 			        kefu.chat.init(); //执行chat的初始化
 
 			        //监听滚动条，如果上滑超过多少，那么从服务器拉历史聊天记录
-			        window.onscroll = function(){
-			            //console.log(document.documentElement.scrollTop);
-			            if(document.documentElement.scrollTop < 900){
+			        document.getElementById('chatcontent').onscroll = function(){
+			            //console.log(document.getElementById('chatcontent').scrollTop);
+			            if(document.getElementById('chatcontent').scrollTop < 900){
 			                //还剩一页半了，那么提前开始加载上一页
 			                kefu.chat.loadHistoryList();
 			            }
@@ -558,11 +577,6 @@ var kefu = {
 					func(data);
 				}
 			});
-		},
-		//聊天窗口滚动到最底部
-		scrollToBottom:function(){
-			//console.log('height:'+document.getElementById('chatcontent').scrollHeight);
-			window.scrollTo(0,document.getElementById('chatcontent').scrollHeight);
 		},
 		//进入一对一聊天窗口时，先进行的初始化。主要是加载插件方面的设置
 		init:function(){
@@ -1146,16 +1160,32 @@ var socket = {
 		message.text = kefu.getReceiveMessageText(message);
 		kefu.cache.add(message);   //消息缓存
 		
-		if(kefu.currentPage == 'list'){
-			//当前在list列表页
-			kefu.ui.list.render();	//重新渲染页面
-			//弹出新消息提醒
-			msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
+		if(kefu.mode == 'pc'){
+			//pc
+			
+			kefu.ui.list.render();	//渲染list页面
+			if(kefu.currentPage == 'chat'){
+				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+				if(message.sendId == kefu.chat.otherUser.id){
+					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+				}else{
+					//不是这个人的，不再这个chat中显示消息
+					console.log('不是这个人的，不再这个chat中显示消息');
+				}
+			}
 		}else{
-			//当前在chat
-			kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+			//mobile
+			
+			if(kefu.currentPage == 'list'){
+				//当前在list列表页
+				kefu.ui.list.render();	//重新渲染页面
+				//弹出新消息提醒
+				msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
+			}else{
+				//当前在chat
+				kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+			}
 		}
-	    
 	},
 	//连接
 	connect:function(url){

@@ -27,6 +27,7 @@ header{
     font-size: 1.1rem;
     overflow: auto;
     width: 100%;
+    z-index: 99999;
 }
 /* 头部后退按钮 */
 header .back{
@@ -104,10 +105,17 @@ header .title{
     font-size: 0.8rem;
     height: 100%;
     overflow: scroll;
-    padding-bottom: 9rem;
     max-height: 100%;
-    padding-top: 2.7rem;
+    margin-top: 2.7rem;
+    position: fixed;
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 15rem;
 }
+.chats:last-child{
+	margin-bottom:14rem
+}
+
 .chat{
 	padding-left: 15px;
     padding-top: 20px;
