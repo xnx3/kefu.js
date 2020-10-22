@@ -256,6 +256,13 @@ var kefu = {
 			}
 		}
 	},
+	//消息提醒,有新消息的提醒声音
+	voice:function(){
+		var audio = document.createElement("audio");
+		//https://www.huiyi8.com/sc/83766.html QQ叮咚
+		audio.src = "http://data.huiyi8.com/yinxiao/mp3/83766.mp3";
+		audio.play();
+	},
 	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
 	storage:{
 		get:function(key){
@@ -889,7 +896,7 @@ var kefu = {
 		/* 图片上传 */
 		image:{
 			name:'图片',
-			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;">图片</span>',
+			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;" />图片</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = '<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\''+message.extend.url+'\');" src="'+message.extend.url+'" />';
@@ -1035,7 +1042,7 @@ var kefu = {
 			},
 			showOrder:function (){
 				msg.loading('获取中');
-				request.get(goodsUrl+'orderList.json',{token:kefu.getToken(), userid:kefu.chat.otherUser.id}, function(data){
+				request.get(goodsUrl+'orderList.json',{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
@@ -1045,7 +1052,7 @@ var kefu = {
 					msg.popups({
 						text:html,
 						top:'10%',
-						bottom:'10%'
+						bottom:'15%'
 					});
 				});
 			},
