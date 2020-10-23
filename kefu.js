@@ -306,6 +306,13 @@ var kefu = {
 			kefu.user = data;
 		});
 	},
+	//过滤html标签，防XSS攻击
+	filterXSS:function (text) {
+		text = text.replace(/<\/?[^>]*>/g, ''); //去除HTML Tag
+		text = text.replace(/[|]*\n/, '') //去除行尾空格
+		text = text.replace(/&npsp;/ig, ''); //去掉npsp
+		return text;
+	},
 	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
 	getReceiveMessageText:function(message){
 		if(message.extend != null && message.extend.extend != null){
@@ -431,7 +438,7 @@ var kefu = {
 			    }
 			    if(message.type == 'SYSTEM'){
 			        //系统类型消息
-			        kefu.chat.ui.showSystemMessage(message['text']);
+			        kefu.chat.ui.showSystemMessage(kefu.filterXSS(message['text']));
 			    }else{
 			        //其他类型，那么出现对话框的
 			        var section = kefu.ui.chat.generateChatMessageSection(message);
@@ -899,7 +906,8 @@ var kefu = {
 			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;" />图片</span>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				message.text = '<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\''+message.extend.url+'\');" src="'+message.extend.url+'" />';
+				var imgurl = kefu.filterXSS(message.extend.url);
+				message.text = '<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\''+imgurl+'\');" src="'+imgurl+'" />';
 				return message;
 			},
 			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
@@ -976,6 +984,8 @@ var kefu = {
 			init:function(){
 
 			},
+			//请求的api接口
+			requestApi:goodsUrl+'orderList.json',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = kefu.extend.order.getOrderByTemplate(message.extend);
@@ -1033,16 +1043,16 @@ var kefu = {
 
 			getOrderByTemplate:function(order){
 				return kefu.extend.order.listTemplate
-							.replace(/{order.no}/g, order['no'])
-							.replace(/{order.time}/g, order['time'])
-							.replace(/{goods.image}/g, order['image'])
-							.replace(/{goods.name}/g, order['name'])
-							.replace(/{goods.price}/g, order['price'])
-							.replace(/{order.state}/g, order['state']);
+							.replace(/{order.no}/g, kefu.filterXSS(order['no']))
+							.replace(/{order.time}/g, kefu.filterXSS(order['time']))
+							.replace(/{goods.image}/g, kefu.filterXSS(order['image']))
+							.replace(/{goods.name}/g, kefu.filterXSS(order['name']))
+							.replace(/{goods.price}/g, kefu.filterXSS(order['price']))
+							.replace(/{order.state}/g, kefu.filterXSS(order['state']));
 			},
 			showOrder:function (){
 				msg.loading('获取中');
-				request.get(goodsUrl+'orderList.json',{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
+				request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
@@ -1061,14 +1071,17 @@ var kefu = {
 				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
 				if(parentClassName == 'text'){
 					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
-					//...
-					alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
+					kefu.extend.order.otherShow(orderid);
 					return;
 				}
 				var order = kefu.extend.order.orderMap[orderid];
 				msg.close();
 				
 				kefu.extend.order.send(order);
+			},
+			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
+			otherShow:function(orderid){
+				alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
 			}
 		},
 		/* 商品 */
@@ -1124,18 +1137,17 @@ var kefu = {
 			goods:{},
 			getGoodsByTemplate : function (goods){
 				return kefu.extend.goods.template
-						.replace(/{id}/g, goods['id'])
-						.replace(/{name}/g, goods['name'])
-						.replace(/{price}/g, goods['price'])
-						.replace(/{image}/g, goods['image']);
+						.replace(/{id}/g, kefu.filterXSS(goods['id']))
+						.replace(/{name}/g, kefu.filterXSS(goods['name']))
+						.replace(/{price}/g, kefu.filterXSS(goods['price']))
+						.replace(/{image}/g, kefu.filterXSS(goods['image']));
 			},
 			//发送商品
 			sendGoods : function (goodsid, obj){
 				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
 				if(parentClassName == 'text'){
 					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
-					//...
-					alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
+					kefu.extend.goods.otherShow(goodsid);
 					return;
 				}
 
@@ -1145,6 +1157,10 @@ var kefu = {
 				msg.close();
 				
 				kefu.extend.goods.send(kefu.extend.goods.goods);
+			},
+			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
+			otherShow:function(goodsid){
+				alert('待编写。这里应该是跳转到原生app的商品详情中进行查看');
 			}
 
 		}
@@ -1181,7 +1197,7 @@ var socket = {
 				}
 			}
 		}else{
-			//mobile
+			//mobile模式，也就是要么在list页面，要么在chat页面
 			
 			if(kefu.currentPage == 'list'){
 				//当前在list列表页
@@ -1189,8 +1205,13 @@ var socket = {
 				//弹出新消息提醒
 				msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
 			}else{
-				//当前在chat
-				kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+				if(message.sendId == kefu.chat.otherUser.id || message.type == 'SYSTEM'){
+					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+				}else{
+					//消息发送方跟当前chat聊天的用户不是同一个人，那么弹出个提醒吧
+					msg.popups('<div onclick="kefu.ui.chat.render(\''+message.sendId+'\');">有新消息</div>');
+				}
 			}
 		}
 	},

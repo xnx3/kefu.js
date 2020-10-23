@@ -4,7 +4,8 @@
     padding-right: 0.5rem;
     white-space: nowrap;
     overflow:scroll;
-    margin-top: 0.3rem;
+	margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
 }
 #quickButton button{
     border-radius: 2rem;

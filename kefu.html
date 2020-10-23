@@ -18,26 +18,50 @@ var socketUrl = 'ws://kefu.wfyuntu.com:8081/';
 //var socketUrl = 'ws://localhost:8081/';
 
 //kefu.js 接口设置
-kefu.api.getMyUser = 'http://'+host+'/user/init.json';
+//kefu.api.getMyUser = 'http://'+host+'/user/init.json';
+kefu.api.getMyUser = 'http://'+host+'/inset/chat/login.json';
 kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
 kefu.api.chatLog = 'http://'+host+'/chatLog.json';
 kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
+kefu.extend.order.requestApi = 'http://test.wfyuntu.com/plugin/kefu/getOrderList.json';
 
-//重写存储方式，以原生方式存。
+
+//在APP中初始化，传入如 window.webkit.messageHandlers
+function appInit(obj){
+	if(typeof(obj.appStorageSet) == 'function'){
+		console.log('重写 appStorageGet(orderid)');
+		kefu.storage.get = function(key){
+			return obj.appStorageGet(key);
+		};
+	}
+	if(typeof(obj.appStorageSet) == 'function'){
+		console.log('重写 appStorageSet(orderid)');
+		kefu.storage.set = function(key, value){
+			obj.appStorageSet(key,value);
+		}
+	}
+	if(typeof(obj.appShowGoods) == 'function'){
+		console.log('重写 appShowGoods(goodsid)');
+		kefu.extend.goods.otherShow=function(goodsid){
+			obj.appShowGoods(goodsid);
+		}
+	}
+	if(typeof(obj.appShowOrder) == 'function'){
+		console.log('重写 appShowOrder(orderid)');
+		kefu.extend.order.otherShow=function(orderid){
+			obj.appShowOrder(orderid);
+		}
+	}
+	
+}
+//在原生APP中使用，重写android、ios的某些方法
 if(typeof(messageHandlers) != 'undefined' && typeof(messageHandlers.appStorageGet) == 'function'){
 	//如果是安卓手机
-	
-	kefu.storage.get = function(key){
-		var v = messageHandlers.appStorageGet(key);
-		//msg.popups('kefu.storage.get:'+v);
-		return v;
-	};
-	kefu.storage.set = function(key, value){
-		//msg.popups('kefu.storage.set  '+key+"="+value);
-		messageHandlers.appStorageSet(key,value);
-	}
+	appInit(messageHandlers);
+}else if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
+	//ios中使用
+	appInit(window.webkit.messageHandlers);
 }
-
 
 
 /****** chatQuickButton插件 ******/
@@ -47,6 +71,7 @@ kefu.extend.chatQuickButton = {
 	initChat:function(){
 		var chatQuickButtonHtml = `
 				<section id="quickButton">
+					<button onclick="kefu.chat.sendTextMessage('otherToken:'+getUrlParams('otherToken'));">发token</button>
 				    <button>售后</button>
 				    <button>评价</button>
 				    <button>物流查询</button>
@@ -72,9 +97,9 @@ kefu.extend.goods.initChat = function(){
 		if(!kefu.extend.goods.goods_show){
 			//通过接口获取这个指定的商品信息，弹出显示，提醒用户是否发送这个商品
 		    msg.loading('获取中');
-		    request.get(goodsUrl+'goods.json',{token:kefu.getToken(), id:kefu.extend.goods.goodsid}, function(data){
+		    request.post('http://test.wfyuntu.com/plugin/kefu/getGoods.json',{token:kefu.getToken(), goodsid:kefu.extend.goods.goodsid}, function(data){
 		        msg.close();
-		        kefu.extend.goods.goods = data;
+		        kefu.extend.goods.goods = data.data;
 		        msg.popups(kefu.extend.goods.getGoodsByTemplate(kefu.extend.goods.goods));
 		    });
 		    kefu.extend.goods.goods_show = true;
@@ -85,6 +110,32 @@ kefu.extend.goods.initChat = function(){
 /****** goods插件结束 *******/
 
 /****** order插件开始 *******/
+kefu.extend.order.showOrder=function (){
+	msg.loading('获取中');
+	request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
+		msg.close();
+		if(data.result != '1'){
+			msg.failure(data.info);
+			return;
+		}
+		if(data.data.length == 0){
+			msg.info('您在当前店铺没有订单');
+			return;
+		}
+		
+		var html = '';
+		for (var i = 0; i < data.data.length; i++) {
+			kefu.extend.order.orderMap[data.data[i]['no']] = data.data[i];
+			html = html + kefu.extend.order.getOrderByTemplate(data.data[i]);
+		};
+		msg.popups({
+			text:html,
+			top:'10%',
+			bottom:'15%'
+		});
+		
+	});
+};
 /****** order插件结束 *******/
 
 /******* 爱送达定制 ********/
@@ -94,6 +145,7 @@ kefu.extend.aisongda = {
 	initChat:function(){
 		//隐藏chat页面的头部
 		//document.getElementById('head').style.display = 'none';
+		//document.getElementById('chatcontent').style.paddingTop='0rem';
 	}
 }
 /******* 爱送达定制结束 ********/
@@ -102,7 +154,30 @@ kefu.extend.aisongda = {
 
 //kefu.js 初始化
 kefu.init();
-kefu.getMyUser();	//获取我的信息
+
+/***** 爱送达专用 *****/
+//kefu.getMyUser();	//获取我的信息
+var urlOtherToken = getUrlParams('otherToken');
+if(urlOtherToken == null || urlOtherToken.length < 1){
+	console.log('未传入otherToken');
+	//alert('未传入otherToken');
+}
+kefu.getMyUser = function(){
+	if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
+		msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
+		return;
+	}
+	request.post(kefu.api.getMyUser,{token:kefu.getToken(), otherToken:urlOtherToken}, function(data){
+		if(data.result == '0'){
+			msg.failure(data.info);
+		}else{
+			kefu.user = data.user;
+			socket.connect(socketUrl);	//建立 socket 通讯
+		}
+	});
+}
+kefu.getMyUser();
+/***** 爱送达专用结束 *****/
 
 </script>
 
@@ -110,11 +185,8 @@ kefu.getMyUser();	//获取我的信息
 
 
 <script>
-//建立WebSocket通讯，传入websocket的url，格式如 ws://xxxx.com:8081/
-socket.connect(socketUrl);
-
-var mode = getUrlParams('mode');
-if(typeof(mode) == 'string' && mode == 'chat'){
+var page = getUrlParams('page');
+if(typeof(page) == 'string' && page == 'chat'){
     //出现聊天页
     var userid = getUrlParams('userid');
     kefu.ui.chat.render(userid);
