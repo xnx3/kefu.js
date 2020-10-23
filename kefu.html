@@ -49,6 +49,7 @@ function appInit(obj){
 	if(typeof(obj.appShowOrder) == 'function'){
 		console.log('重写 appShowOrder(orderid)');
 		kefu.extend.order.otherShow=function(orderid){
+			alert('appShowOrder');
 			obj.appShowOrder(orderid);
 		}
 	}
@@ -112,7 +113,7 @@ kefu.extend.goods.initChat = function(){
 /****** order插件开始 *******/
 kefu.extend.order.showOrder=function (){
 	msg.loading('获取中');
-	request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
+	request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.otherUserId}, function(data){
 		msg.close();
 		if(data.result != '1'){
 			msg.failure(data.info);
@@ -130,8 +131,8 @@ kefu.extend.order.showOrder=function (){
 		};
 		msg.popups({
 			text:html,
-			top:'10%',
-			bottom:'15%'
+			top:'2rem',
+			height:'30rem'
 		});
 		
 	});
@@ -144,8 +145,8 @@ kefu.extend.aisongda = {
 	//进入chat一对一聊天窗口时，自动执行这个方法初始化
 	initChat:function(){
 		//隐藏chat页面的头部
-		//document.getElementById('head').style.display = 'none';
-		//document.getElementById('chatcontent').style.paddingTop='0rem';
+		document.getElementById('head').style.display = 'none';
+		document.getElementById('chatcontent').style.paddingTop='0rem';
 	}
 }
 /******* 爱送达定制结束 ********/
@@ -167,11 +168,12 @@ kefu.getMyUser = function(){
 		msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
 		return;
 	}
-	request.post(kefu.api.getMyUser,{token:kefu.getToken(), otherToken:urlOtherToken}, function(data){
+	request.post(kefu.api.getMyUser,{token:kefu.getToken(), otherToken:urlOtherToken, }, function(data){
 		if(data.result == '0'){
 			msg.failure(data.info);
 		}else{
 			kefu.user = data.user;
+			kefu.user.otherUserId = data.otherUserId;
 			socket.connect(socketUrl);	//建立 socket 通讯
 		}
 	});

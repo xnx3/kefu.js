@@ -351,9 +351,9 @@ var kefu = {
 
 			    </section>
 
-			    <div style="position: absolute;bottom: 1rem;">
+			    <!-- <div style="position: absolute;bottom: 1rem;">
 			        <a href="javascript:kefu.ui.chat.render('243');" >测试聊天</a>
-			    </div>
+			    </div> -->
 			`,
 			getListItemByTemplate:function(item){
 			    return kefu.ui.list.listItemTemplate
@@ -1043,12 +1043,12 @@ var kefu = {
 
 			getOrderByTemplate:function(order){
 				return kefu.extend.order.listTemplate
-							.replace(/{order.no}/g, kefu.filterXSS(order['no']))
-							.replace(/{order.time}/g, kefu.filterXSS(order['time']))
+							.replace(/{order.no}/g, kefu.filterXSS(order['no']+''))
+							.replace(/{order.time}/g, kefu.filterXSS(order['time']+''))
 							.replace(/{goods.image}/g, kefu.filterXSS(order['image']))
 							.replace(/{goods.name}/g, kefu.filterXSS(order['name']))
-							.replace(/{goods.price}/g, kefu.filterXSS(order['price']))
-							.replace(/{order.state}/g, kefu.filterXSS(order['state']));
+							.replace(/{goods.price}/g, kefu.filterXSS(order['price']+''))
+							.replace(/{order.state}/g, kefu.filterXSS(order['state']+''));
 			},
 			showOrder:function (){
 				msg.loading('获取中');
@@ -1062,7 +1062,7 @@ var kefu = {
 					msg.popups({
 						text:html,
 						top:'10%',
-						bottom:'15%'
+						height:'20rem'
 					});
 				});
 			},
