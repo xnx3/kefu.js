@@ -15,19 +15,22 @@
 	float: right;
 }
 .extend_order_item .goodsInfo .image{
-	width: 6rem;
+	width: 4rem;
     height: 4rem;
     float: left;
     border-radius: 0.2rem;
 }
 .extend_order_item .goodsInfo .goodsAttr{
-	margin-left: 6.7rem;
+	margin-left: 4.7rem;
     display: inherit;
 }
 .extend_order_item .goodsInfo .goodsAttr .name{
     height: 2.4rem;
     line-height: 1.2rem;
     overflow: hidden;
+}
+.extend_order_item .goodsInfo .goodsAttr .priceState{
+	margin-top:0.3rem;
 }
 .extend_order_item .goodsInfo .goodsAttr .price{
     float: left;
@@ -55,5 +58,8 @@
 .chat .extend_order_item .order_time{
     max-width: 5rem;
     white-space: nowrap;
+}
+.chat .extend_order_item .goodsInfo .goodsAttr .state{
+	display:none;
 }
     

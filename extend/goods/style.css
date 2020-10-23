@@ -2,10 +2,10 @@
 	width: 100%;height: 4rem;
 }
 .extend_goods_item .image{
-	width: 6rem;
+	width: 4rem;
     height: 4rem; 
     float:left; 
-    border-radius: 2px;
+	border-radius: 0.2rem;
 }
 .extend_goods_item .goodsInfo{
 	padding-left: 10px; 
@@ -38,10 +38,13 @@
 }
 .extend_goods_item .goodsInfo .priceDiv .sendButtonDiv{
     float:right;
+	margin-right: 0.3rem;
 }
 .extend_goods_item .goodsInfo .priceDiv .sendButtonDiv>button{
-	background-color: aliceblue;
+	background-color: cadetblue;
     border-style: none;
+    border-radius: 0.15rem;
+    color: aliceblue;
 }
 
 /* 在chat聊天框中，隐藏发送按钮 */

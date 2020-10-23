@@ -414,7 +414,8 @@ var kefu = {
 			        <div id="input_area">
 			            <div id="textInput">
 			                <!-- 键盘输入 -->
-			                <input type="text" id="text" onclick="kefu.chat.ui.textInputClick();">
+			                <!-- <input type="text" id="text111" onclick="kefu.chat.ui.textInputClick();"> -->
+			                <div id="text" contenteditable="true" data-text="输入内容..."></div>
 			                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 			            </div>
 			            <div id="inputExtend">
@@ -532,7 +533,7 @@ var kefu = {
 			        console.log(kefu.chat.otherUser);
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
-			            if(typeof(kefu.chat.otherUser.id) != 'undefined'){
+			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
 			                socket.send(JSON.stringify({
 			                    token: kefu.getToken()
 			                    ,receiveId: kefu.chat.otherUser.id
@@ -690,7 +691,7 @@ var kefu = {
 		},
 		//text文本，打字沟通交流， 点击提交按钮后发送
 		sendButtonClick:function (){
-		    var value = document.getElementById('text').value;
+		    var value = document.getElementById('text').innerHTML;
 		    if(value.length == 0){
 		        msg.info('尚未输入');
 		        return;
@@ -699,10 +700,10 @@ var kefu = {
 		    //接口提交-文本对话，输入文字获取对话结果
 		    msg.loading("发送中");    //显示“更改中”的等待提示
 		    
-		    kefu.chat.sendTextMessage(document.getElementById('text').value);
+		    kefu.chat.sendTextMessage(document.getElementById('text').innerHTML);
 			msg.close();	//关闭发送中提示
 		    //清空内容区域
-		    document.getElementById('text').value = '';
+		    document.getElementById('text').innerHTML = '';
 
 		    //隐藏表情等符号输入区域
 		    kefu.chat.ui.textInputClick();
@@ -896,7 +897,7 @@ var kefu = {
 			},
 			/* 向输入框中插入表情 */
 			insert:function (key){
-				document.getElementById('text').value = document.getElementById('text').value + kefu.extend.face.faces[key];
+				document.getElementById('text').innerHTML = document.getElementById('text').innerHTML + kefu.extend.face.faces[key];
 			}
 
 		},
@@ -904,10 +905,10 @@ var kefu = {
 		image:{
 			name:'图片',
 			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;" />图片</span>',
+			template:'<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\'{url}\');" src="{url}" />',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				var imgurl = kefu.filterXSS(message.extend.url);
-				message.text = '<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\''+imgurl+'\');" src="'+imgurl+'" />';
+				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(message.extend.url));
 				return message;
 			},
 			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
@@ -965,11 +966,11 @@ var kefu = {
 			//放大全屏查看图片
 			fullScreen:function(imageUrl){
 				msg.popups({
-					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; max-height: 100%;" />',
-					top:'15%',
-					bottom:'5%',
+					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; " />',
+					top:'1rem',
 					width:'100%',
-					left:'0px',
+					left:'0rem',
+					height:'30rem',
 					opacity:100
 				});
 			}
@@ -1029,7 +1030,7 @@ var kefu = {
 				    	<img class="image" src="{goods.image}" />
 					    <div class="goodsAttr">
 					        <div class="name">{goods.name}</div>
-					        <div>
+					        <div class="priceState">
 					            <div class="price">{goods.price}</div>
 					            <div class="state">{order.state}</div>
 					        </div>
