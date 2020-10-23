@@ -4,7 +4,7 @@
     /* 聊天窗口中，对方发过来的消息的背景色 */
     --otherUser-chat-background-color: #FEFFFF;
     /* 背景色-聊天列表的背景色、一对一聊天窗口底部的背景色 */
-    --background-color:#F0F8FF;
+    --background-color:white;
 }
 html , body{
 	margin: 0px;
@@ -110,7 +110,7 @@ header .title{
     position: fixed;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 15rem;
+    padding-bottom: 12rem;
 }
 .chats:last-child{
 	margin-bottom:14rem
@@ -198,7 +198,7 @@ header .title{
 /* 底部输入 */
 #chat_footer {
     height: auto;
-    background-color: #FEFFFF;
+	background: var(--background-color);
     bottom: 0px;
     position: fixed;
     overflow: hidden;
@@ -235,10 +235,10 @@ header .title{
     border: 1px solid #C6C7C8;
     background-color: #FEFFFF;
     width: 83%;
-    min-height: 1.8rem;
+    min-height: 2rem;
     font-size: 0.9rem;
-    padding-left: 0.6rem;
-    padding-right: 0.6rem;
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
     box-sizing: border-box;
     margin-left: 0.3rem;
     border-radius: 1em;
@@ -247,13 +247,13 @@ header .title{
 	overflow-y: auto;
 	-webkit-user-modify: read-write-plaintext-only;
 	display: inline-flex;
-	padding-top:0.2rem;
+	padding-top:0.3rem;
 	padding-bottom:0.2rem;
 }
 #chat_footer #input_area .send{
     background-color: #4e62bbb5;
     width: 17%;
-    height: 1.8rem;
+    height: 2rem;
     border-radius: 1rem;
     font-size: 0.9rem;
     text-align: center;
@@ -266,7 +266,7 @@ header .title{
     padding-left: 1rem;
 }
 #inputExtend span{
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     line-height: 2rem;
     height: 1rem;
     padding-right: 0.5rem;

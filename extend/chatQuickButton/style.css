@@ -6,10 +6,11 @@
     overflow:scroll;
 	margin-top: 0.2rem;
     margin-bottom: 0.2rem;
+    background: var(--background-color);
 }
 #quickButton button{
     border-radius: 2rem;
-    background: aliceblue;
+    background: var(--background-color);
 	border-width: 1px;
    	border-style: solid;
 }

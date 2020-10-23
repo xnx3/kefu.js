@@ -415,7 +415,7 @@ var kefu = {
 			            <div id="textInput">
 			                <!-- 键盘输入 -->
 			                <!-- <input type="text" id="text111" onclick="kefu.chat.ui.textInputClick();"> -->
-			                <div id="text" contenteditable="true" data-text="输入内容..."></div>
+			                <div id="text" contenteditable="true" onclick="kefu.chat.ui.textInputClick();"></div>
 			                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 			            </div>
 			            <div id="inputExtend">
