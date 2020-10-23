@@ -1021,7 +1021,7 @@ var kefu = {
 				订单的状态 {order.state}
 			*/
 			listTemplate:`
-				<div class="extend_order_item" onclick="kefu.extend.order.sendOrder('{order.no}', this);">  
+				<div class="extend_order_item" onclick="kefu.extend.order.sendOrder('{order.no}', this, '{id}');">  
 				    <div class="orderInfo">
 				        <div class="order_no">订单号：{order.no}</div>
 				        <div class="order_time">{order.time}</div>
@@ -1047,6 +1047,7 @@ var kefu = {
 							.replace(/{order.no}/g, kefu.filterXSS(order['no']+''))
 							.replace(/{order.time}/g, kefu.filterXSS(order['time']+''))
 							.replace(/{goods.image}/g, kefu.filterXSS(order['image']))
+							.replace(/{id}/g, kefu.filterXSS(order['id']+''))		//唯一标识，仅此而已
 							.replace(/{goods.name}/g, kefu.filterXSS(order['name']))
 							.replace(/{goods.price}/g, kefu.filterXSS(order['price']+''))
 							.replace(/{order.state}/g, kefu.filterXSS(order['state']+''));
@@ -1057,7 +1058,7 @@ var kefu = {
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
-						kefu.extend.order.orderMap[data[i]['no']] = data[i];
+						kefu.extend.order.orderMap[data[i]['id']] = data[i];
 						html = html + kefu.extend.order.getOrderByTemplate(data[i]);
 					};
 					msg.popups({
@@ -1067,15 +1068,15 @@ var kefu = {
 					});
 				});
 			},
-			//发送某个订单
-			sendOrder:function (orderid, obj){
+			//发送某个订单 orderid: 订单id、或订单号， obj:点击的当前dom对象， uniqueId:当前点击项在这个订单列表中的唯一id标识，在这些订单列表中是唯一
+			sendOrder:function (orderid, obj, uniqueId){
 				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
 				if(parentClassName == 'text'){
 					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
 					kefu.extend.order.otherShow(orderid);
 					return;
 				}
-				var order = kefu.extend.order.orderMap[orderid];
+				var order = kefu.extend.order.orderMap[uniqueId];
 				msg.close();
 				
 				kefu.extend.order.send(order);

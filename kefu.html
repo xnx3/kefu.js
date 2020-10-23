@@ -126,7 +126,7 @@ kefu.extend.order.showOrder=function (){
 		
 		var html = '';
 		for (var i = 0; i < data.data.length; i++) {
-			kefu.extend.order.orderMap[data.data[i]['no']] = data.data[i];
+			kefu.extend.order.orderMap[data.data[i]['id']] = data.data[i];
 			html = html + kefu.extend.order.getOrderByTemplate(data.data[i]);
 		};
 		msg.popups({
