@@ -100,6 +100,23 @@ header .title{
     font-size: 0.6rem;
     margin-left: 0.3rem;
 }
+/* 新消息提醒 */
+#newMessageRemind{
+    position: fixed;
+    margin-top: 2.7rem;
+    z-index: 999999;
+    font-size: 0.7rem;
+    padding-left: 1rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+    background: var(--background-color);
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    box-sizing: border-box;
+    display:none;
+}
 #chatcontent{
     background-color: #EFF0F1;
     font-size: 0.8rem;

@@ -406,7 +406,10 @@ var kefu = {
 			        <div class="back" id="back" onclick="kefu.ui.list.render();">&nbsp;</div>
 			        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
 			    </header>
-
+				<div id="newMessageRemind">
+					<!-- 新消息：消息内容消息内容 -->
+				</div>
+				
 			    <section id="chatcontent">
 			    </section>
 			    
@@ -457,11 +460,11 @@ var kefu = {
 			    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
 			    if(message['receiveId'] == kefu.chat.otherUser.id){
 			        //是自己发送的这条消息，那么显示在右侧
-			        section.className = 'chat user';
+			        section.className = 'chat user '+message['type'];
 			        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
 			    }else if(message['sendId'] == kefu.chat.otherUser.id){
 			        //是自己接受的这个消息，那么显示在左侧
-			        section.className = 'chat otherUser';
+			        section.className = 'chat otherUser '+message['type'];
 			        section.innerHTML = '<div class="head" style="background-image: url('+kefu.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
 			    }
 			    return section;
@@ -534,13 +537,70 @@ var kefu = {
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
-			                socket.send(JSON.stringify({
-			                    token: kefu.getToken()
-			                    ,receiveId: kefu.chat.otherUser.id
-			                    ,type:"AUTO_REPLY"
-			                }));
-			                clearInterval(autoReplyInterval);//停止
-			                console.log('autoReplyInterval stop');
+			            	if(typeof(socket.socket) != 'undefined' && socket.socket.readyState == socket.socket.OPEN){
+			            		//socket也已经打开了
+			            		//拉对方的自动回复欢迎语
+			            		socket.send(JSON.stringify({
+				                    token: kefu.getToken()
+				                    ,receiveId: kefu.chat.otherUser.id
+				                    ,type:"AUTO_REPLY"
+				                }));
+			            		
+			            		
+			            		
+			            		//拉取历史记录。 这个暂时用离线消息取代
+//			            		console.log('---');
+//			            		if(chatCacheList != null && chatCacheList.length > 0){
+//			            			//取出本地缓存的最新的一条记录
+//			            			var lastMessage = chatCacheList[chatCacheList.length-1];
+//			            			console.log(lastMessage);
+//			            			//拉取当前时间以后的离线消息。这个应该是socket在拉取离线消息结束后，再执行这个
+//				    				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:lastMessage.time, type:'after'}, function(data){
+//				    					if(data.result == '0'){
+//				    						//失败，弹出提示
+//				    						msg.failure(data.info);
+//				    					}else if(data.result == '1'){
+//				    						//成功
+//				    						//判断一下请求到的消息记录有多少条
+//
+//				    						if(data.number > 0){
+//				    							//有消息记录，那么绘制出来
+//				    							
+//				    							//判断一下当前是否已经有自动回复了，如果有先删除掉自动回复的消息，同步完在显示自动回复
+//				    							var auto = document.getElementsByClassName('AUTO_REPLY')[0];
+//				    							if(typeof(auto) != 'undefined'){
+//				    								auto.parentElement.removeChild(auto);
+//				    							}
+//				    							
+//				    							//绘制同步过来的消息
+//				    							var chatcontent = document.getElementById('chatcontent');
+//						    					//取第一个正常聊天沟通的section，用来作为插入的定位
+//						    					var firstItem = chatcontent.getElementsByTagName("section")[0];
+//						    					//遍历最新消息，绘制到界面，也加入本地缓存
+//				    							for(var i = data.list.length-1; i >= 0; i--){
+//				    								var message = data.list[i];
+//				    								console.log(message);
+//				    								var msgSection = kefu.ui.chat.generateChatMessageSection(message);
+//				    								chatcontent.appendChild(msgSection);	//在聊天最后插入这条发言信息
+//				    								kefu.cache.add(message) //将这条消息加入本地缓存
+//				    							}
+//				    							
+//				    							//同步消息结束，再将自动回复加入进来
+//				    							chatcontent.appendChild(auto);
+//				    							
+//				    							kefu.ui.chat.scrollToBottom()	//滚动到最底部
+//				    						}else{
+//				    							//没有离线消息
+//				    							console.log('信息同步检测完毕，没有离线消息');
+//				    						}
+//				    					}
+//				    				});
+//			            		}
+			            		
+			            		
+			            		clearInterval(autoReplyInterval);//停止
+				                console.log('autoReplyInterval stop');
+			            	}
 			            }
 			        }, 200);
 			        
@@ -628,7 +688,7 @@ var kefu = {
 				chatcontent.insertBefore(section,firstItem);
 
 				//创建网络请求
-				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime}, function(data){
+				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
 					kefu.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
 
 					var chatcontent = document.getElementById('chatcontent');
