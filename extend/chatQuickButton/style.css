@@ -7,10 +7,13 @@
 	margin-top: 0.2rem;
     margin-bottom: 0.2rem;
     background: var(--background-color);
+    
+    display:none;
 }
 #quickButton button{
     border-radius: 2rem;
     background: var(--background-color);
 	border-width: 1px;
    	border-style: solid;
+   	border-color: pink;
 }

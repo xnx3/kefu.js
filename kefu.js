@@ -1143,7 +1143,13 @@ var kefu = {
 			},
 			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
 			otherShow:function(orderid){
-				alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
+				if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
+					if(typeof(window.webkit.messageHandlers.appShowOrder.postMessage) == 'function'){
+						window.webkit.messageHandlers.appShowOrder.postMessage(orderid);
+					}
+				}else{
+					alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
+				}
 			}
 		},
 		/* 商品 */
@@ -1222,9 +1228,15 @@ var kefu = {
 			},
 			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
 			otherShow:function(goodsid){
-				alert('待编写。这里应该是跳转到原生app的商品详情中进行查看');
+				if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
+					//ios上用
+					if(typeof(window.webkit.messageHandlers.appShowGoods.postMessage) == 'function'){
+						window.webkit.messageHandlers.appShowGoods.postMessage(goodsid);
+					}
+				}else{
+					alert('待编写。这里应该是跳转到原生app的商品详情中进行查看');
+				}
 			}
-
 		}
 	}
 }

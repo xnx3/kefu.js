@@ -23,7 +23,7 @@ kefu.api.getMyUser = 'http://'+host+'/inset/chat/login.json';
 kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
 kefu.api.chatLog = 'http://'+host+'/chatLog.json';
 kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
-kefu.extend.order.requestApi = 'http://test.wfyuntu.com/plugin/kefu/getOrderList.json';
+kefu.extend.order.requestApi = 'http://cust.wfyuntu.com/plugin/kefu/getOrderList.json';
 
 
 //在APP中初始化，传入如 window.webkit.messageHandlers
@@ -50,20 +50,60 @@ function appInit(obj){
 		console.log('重写 appShowOrder(orderid)');
 		kefu.extend.order.otherShow=function(orderid){
 			//alert('appShowOrder');
+			console.log('click orderid : '+orderid);
 			obj.appShowOrder(orderid);
 		}
 	}
-	
 }
 //在原生APP中使用，重写android、ios的某些方法
 if(typeof(messageHandlers) != 'undefined' && typeof(messageHandlers.appStorageGet) == 'function'){
 	//如果是安卓手机
-	appInit(messageHandlers);
-}else if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
-	//ios中使用
-	appInit(window.webkit.messageHandlers);
+	//appInit(messageHandlers);
+	if(typeof(messageHandlers.appStorageSet) == 'function'){
+		kefu.storage.get = function(key){
+			return messageHandlers.appStorageGet(key);
+		};
+	}
+	if(typeof(messageHandlers.appStorageSet) == 'function'){
+		kefu.storage.set = function(key, value){
+			messageHandlers.appStorageSet(key,value);
+		}
+	}
+	if(typeof(messageHandlers.appShowGoods) == 'function'){
+		kefu.extend.goods.otherShow=function(goodsid){
+			messageHandlers.appShowGoods(goodsid);
+		}
+	}
+	if(typeof(messageHandlers.appShowOrder) == 'function'){
+		kefu.extend.order.otherShow=function(orderid){
+			messageHandlers.appShowOrder(orderid);
+		}
+	}
+	
+}else if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined' && false){
+	//ios中使用 不在这里写了，直接写到 kefu.js 中
+	//appInit(window.webkit.messageHandlers);
+	/* if(typeof(window.webkit.messageHandlers.appStorageSet.postMessage) == 'function'){
+		kefu.storage.get = function(key){
+			return window.webkit.messageHandlers.appStorageGet.postMessage(key);
+		};
+	}
+	if(typeof(window.webkit.messageHandlers.appStorageSet.postMessage) == 'function'){
+		kefu.storage.set = function(key, value){
+			window.webkit.messageHandlers.appStorageSet.postMessage(key,value);
+		}
+	} */
+	if(typeof(window.webkit.messageHandlers.appShowGoods.postMessage) == 'function'){
+		kefu.extend.goods.otherShow=function(goodsid){
+			window.webkit.messageHandlers.appShowGoods.postMessage(goodsid);
+		}
+	}
+	if(typeof(window.webkit.messageHandlers.appShowOrder.postMessage) == 'function'){
+		kefu.extend.order.otherShow=function(orderid){
+			window.webkit.messageHandlers.appShowOrder.postMessage(orderid);
+		}
+	}
 }
-
 
 /****** chatQuickButton插件 ******/
 kefu.extend.chatQuickButton = {
