@@ -225,6 +225,7 @@ var kefu = {
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
 	currentPage:'',	//当前所在哪个页面， 有 list 、 chat
 	mode:'mobile',	//pc、mobile  两种模式。 pc模式是左侧是list、右侧是chat，  mobile是一栏要么是list要么是chat。  默认是mobile模式
+	extendIconColor:'#808080',	//插件图标的颜色，在chat底部显示的插件图标。 16进制颜色编码
 	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
@@ -329,6 +330,13 @@ var kefu = {
 	},
 	//UI界面方面
 	ui:{
+		//图片
+		images:{
+			//chat底部的更多，chat底部的输入方式切换
+			more:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880506122" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7418" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512.512 112.384c-219.6992 0-398.4896 178.7392-398.4896 398.4896 0 219.6992 178.7392 398.4896 398.4896 398.4896 219.6992 0 398.4896-178.7392 398.4896-398.4896s-178.7392-398.4896-398.4896-398.4896z m167.8848 424.0384H538.112v142.2848c0 14.1312-11.4688 25.6-25.6 25.6s-25.6-11.4688-25.6-25.6v-142.2848H344.6784c-14.1312 0-25.6-11.4688-25.6-25.6s11.4688-25.6 25.6-25.6H486.912V342.9888c0-14.1312 11.4688-25.6 25.6-25.6s25.6 11.4688 25.6 25.6v142.2848h142.2848c14.1312 0 25.6 11.4688 25.6 25.6s-11.4688 25.5488-25.6 25.5488z" fill="#1296db" p-id="7419"></path></svg>',
+			//键盘输入，chat底部的输入方式切换
+			jianpan:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880701592" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10768" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M513.788813 938.289925c-113.566274 0-220.223734-44.167967-300.444149-124.388381-80.220415-80.220415-124.388382-186.877876-124.388382-300.44415s44.167967-220.227983 124.388382-300.448398c165.543834-165.548083 435.348714-165.548083 600.892548 0 165.548083 165.548083 165.548083 435.348714 0 600.892548-80.220415 80.220415-186.877876 124.388382-300.44415 124.388381z m0-785.973112c-92.538158 0-185.072066 35.453344-255.379651 105.756681-68.2001 68.204349-105.75668 158.63927-105.756681 255.3839s37.556581 187.175303 105.756681 255.379652c68.204349 68.2001 158.936697 106.054108 255.379651 105.75668 96.74888 0 187.179552-37.556581 255.379652-105.75668 140.912598-140.912598 140.912598-369.850954 0-510.759303-70.303336-70.307585-162.841494-105.75668-255.379652-105.756681z" p-id="10769" fill="#1296db"></path><path d="M318.672199 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545229 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.73859c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM318.672199 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332H318.672199c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM458.887967 660.378025h106.224066c17.420747 0 31.86722 14.446473 31.86722 31.86722s-14.446473 31.86722-31.86722 31.86722h-106.224066c-17.420747 0-31.86722-14.446473-31.86722-31.86722s14.446473-31.86722 31.86722-31.86722z" p-id="10770" fill="#1296db"></path></svg>'
+		},
 		list:{
 			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
 			listItemTemplate:'', //当list页面渲染出来后，这里自动从html中取
@@ -410,12 +418,13 @@ var kefu = {
 					<!-- 新消息：消息内容消息内容 -->
 				</div>
 				
-			    <section id="chatcontent">
+			    <section id="chatcontent" onclick="kefu.chat.ui.textInputClick();">
 			    </section>
 			    
 			    <footer id="chat_footer">
 			        <div id="input_area">
 			            <div id="textInput">
+			            	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
 			                <!-- 键盘输入 -->
 			                <!-- <input type="text" id="text111" onclick="kefu.chat.ui.textInputClick();"> -->
 			                <div id="text" contenteditable="true" onclick="kefu.chat.ui.textInputClick();"></div>
@@ -636,7 +645,8 @@ var kefu = {
 	chat:{
 		otherUser:{},	//当前用户正在跟谁聊天，对方的user信息。每当打开一个跟某人的聊天窗时，会自动初始化此信息
 		chatMessageStartTime:0,	//当前正在跟这个用户聊天时，聊天窗口中显示的消息列表的开始时间，13位时间戳，会根据这个来加载用户的网上滑动的消息
-
+		shuruType:'jianpan',	//当前输入方式，默认进入是键盘方式输入。取值两个， jianpan:键盘方式输入； more:更多输入方式
+		
 		/**
 		 * 获取当前聊天窗口中，跟我聊天的对方的user信息
 		 * @param userid 当前谁在跟谁聊天，对方的userid
@@ -658,13 +668,19 @@ var kefu = {
 			kefu.chat.currentLoadHistoryList=false;	//允许拉去所有历史聊天记录
 			
 			//聊天窗口最下方用户输入项的插件显示
-			var inputExtendHtml = '';
-			for(var key in kefu.extend){
-			    if(kefu.extend[key].chat != null && kefu.extend[key].chat.length > 0){
-			        inputExtendHtml = inputExtendHtml + kefu.extend[key].chat;
-			    }
+//			var inputExtendHtml = '';
+//			for(var key in kefu.extend){
+//				if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+//			        inputExtendHtml = inputExtendHtml + '<span onclick="kefu.extend[\''+key+'\'].onclick();">'+ kefu.extend[key].name + '</span>';
+//			    }
+//			}
+//			document.getElementById('inputExtend').innerHTML = inputExtendHtml;
+			
+			
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') != null){
+				document.getElementById('shuruType').innerHTML = kefu.ui.images.more;
 			}
-			document.getElementById('inputExtend').innerHTML = inputExtendHtml;
 		},
 		currentLoadHistoryList:false,	//跟loadHistoryList() 一起用，当加载历史列表时，此处为true，加载完后，此处变为false
 		/* 加载历史聊天列表 */
@@ -768,6 +784,44 @@ var kefu = {
 		    //隐藏表情等符号输入区域
 		    kefu.chat.ui.textInputClick();
 		},
+		//输入类型改变，切换，比如有更多切换到键盘输入
+		shuruTypeChange:function(){
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') == null){
+				return;
+			}
+			if(kefu.chat.shuruType == 'jianpan'){
+				//当前是键盘输入，切换到更多输入方式
+				kefu.chat.shuruType = 'more';
+				document.getElementById('shuruType').innerHTML = kefu.ui.images.jianpan;
+				
+				//更多输入放大
+				var inputExtendHtml = '';
+				for(var key in kefu.extend){
+				    if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+				    	inputExtendHtml = inputExtendHtml + 
+					    	'<div class="item" onclick="kefu.extend[\''+key+'\'].onclick();"><div class="iconButton">'+(kefu.extend[key].icon.replace("{color}", kefu.extendIconColor))+'</div><div class="iconName">'+kefu.extend[key].name+'</div></div>'; 
+				    }
+				}
+				document.getElementById('inputExtend').innerHTML = inputExtendHtml;
+				
+			}else{
+				//当前是更多输入，切换到键盘输入方式
+				kefu.chat.shuruType = 'jianpan';
+				document.getElementById('shuruType').innerHTML = kefu.ui.images.more;
+				
+				//更多简化缩小
+				var inputExtendHtml = '';
+				for(var key in kefu.extend){
+					if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+						inputExtendHtml = inputExtendHtml + '<span class="smallIcon" onclick="kefu.extend[\''+key+'\'].onclick();">'+ (kefu.extend[key].icon.replace("{color}", kefu.extendIconColor)) + '</span>';
+				    }
+				}
+				//document.getElementById('inputExtend').innerHTML = '<div class="extendSmallIcon">'+inputExtendHtml+'</div>';
+				document.getElementById('inputExtend').innerHTML = '';	//缩小时不显示
+				
+			}
+		},
 		ui:{
 			//在当前ui界面显示一条系统消息, messageText:要显示的消息内容
 			showSystemMessage:function(messageText){
@@ -781,6 +835,10 @@ var kefu = {
 				//隐藏扩展功能输入区域
 				document.getElementById('inputExtend').style.display = '';
 				document.getElementById('inputExtendShowArea').style.display = 'none';
+				if(kefu.chat.shuruType != 'jianpan'){
+					kefu.chat.shuruTypeChange();
+				}
+				
 			}
 		}
 
@@ -913,7 +971,7 @@ var kefu = {
 		/* 表情 */
 		face:{
 			name:'表情',
-			chat:'<span onclick="kefu.extend.face.show();">表情</span>',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894373099" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2514" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512 979C263.472 979 62 777.528 62 529S263.472 79 512 79s450 201.472 450 450-201.472 450-450 450zM337 479c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75z m350 0c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75zM312 629c0 110.457 89.543 200 200 200s200-89.543 200-200H312z" fill="{color}" p-id="2515"></path></svg>',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				return message;
@@ -942,7 +1000,7 @@ var kefu = {
 				shenshetou:'😝'
 			},
 			/* 点击后显示表情选择 */
-			show:function (){
+			onclick:function (){
 				var html = '<div id="inputExtend_Face">';
 				for(var key in kefu.extend.face.faces){
 					html = html + '<span onclick="kefu.extend.face.insert(\''+key+'\');">'+kefu.extend.face.faces[key]+'</span>';
@@ -964,8 +1022,16 @@ var kefu = {
 		/* 图片上传 */
 		image:{
 			name:'图片',
-			chat:'<span onclick="kefu.extend.image.uploadImage();"><input type="file" accept="image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp" id="imageInput" style="display:none;" />图片</span>',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894900121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2954" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M955.733333 136.533333H68.266667c-37.546667 0-68.266667 30.72-68.266667 68.266667v614.4c0 37.546667 30.72 68.266667 68.266667 68.266667h887.466666c37.546667 0 68.266667-30.72 68.266667-68.266667V204.8c0-37.546667-30.72-68.266667-68.266667-68.266667z m-154.146133 171.485867a51.2 51.2 0 1 1 0 102.4 51.2 51.2 0 0 1 0-102.4z m48.520533 442.282667H174.1312c-32.392533 0-50.193067-37.6832-29.610667-62.702934l186.504534-226.781866a38.3488 38.3488 0 0 1 59.2384 0L556.373333 662.818133a38.3488 38.3488 0 0 0 59.2384 0l92.2624-112.1792a38.3488 38.3488 0 0 1 59.2384 0l112.64 136.977067c20.548267 25.002667 2.7648 62.685867-29.6448 62.685867z" fill="{color}" p-id="2955"></path></svg>',
 			template:'<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\'{url}\');" src="{url}" />',
+			initChat:function(){
+				var inputEle = document.createElement("input");
+				inputEle.setAttribute("accept", "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp");
+				inputEle.id = 'imageInput';
+				inputEle.style.display = 'none';
+				inputEle.type = 'file';
+				document.body.appendChild(inputEle);
+			},
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(message.extend.url));
@@ -996,7 +1062,7 @@ var kefu = {
 
 				kefu.cache.add(message);   //缓存
 			},
-			uploadImage:function(){
+			onclick:function(){
 				//添加input改动监听
 				if(document.getElementById('imageInput').oninput == null){
 					document.getElementById('imageInput').oninput = function(e){
@@ -1038,7 +1104,7 @@ var kefu = {
 		/* 订单 */
 		order:{
 			name:'订单',
-			chat:'<span onclick="kefu.extend.order.showOrder();">订单</span>',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894275814" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1559" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M128 891.663059h768a128 128 0 0 0 128-128V260.336941a128 128 0 0 0-128-128H128A128 128 0 0 0 0 260.336941v503.326118a128 128 0 0 0 128 128z m83.425882-475.376941v281.178353c0 31.051294-57.705412 31.171765-57.705411 0V334.697412c0-21.202824 7.589647-31.051294 22.64847-31.834353 12.137412-0.632471 25.057882 5.692235 38.701177 24.244706l202.390588 275.365647v-272.323765c0-37.255529 55.898353-37.225412 55.898353 0v362.767059c0 18.100706-7.559529 26.383059-22.648471 27.196235-13.673412 0.722824-24.786824-6.746353-36.261647-22.64847L211.425882 416.286118z m292.352 149.62447c0-213.232941 272.022588-212.781176 272.022589 0 0 206.667294-272.022588 208.956235-272.022589 0z m52.555294 0c0 128.813176 165.586824 133.782588 165.586824 0 0-73.667765-40.749176-103.695059-83.245176-102.912-42.496 0.783059-82.341647 32.406588-82.341648 102.912z m285.093648 97.249883c15.872 0 28.822588 12.950588 28.822588 28.822588s-12.950588 28.822588-28.822588 28.822588-28.822588-12.950588-28.822589-28.822588 12.950588-28.822588 28.822589-28.822588z" fill="{color}" p-id="1560"></path></svg>',
 			js:'./extend/order/order.js',	//引入这个扩展的自定义js。引入的这个js会在加载完kefu.js后立马加载引入这里的js
 			css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
 			//初始化，kefu.js 加载完毕后会先引入指定路径的js，再执行此方法
@@ -1112,7 +1178,7 @@ var kefu = {
 							.replace(/{goods.price}/g, kefu.filterXSS(order['price']+''))
 							.replace(/{order.state}/g, kefu.filterXSS(order['state']+''));
 			},
-			showOrder:function (){
+			onclick:function (){
 				msg.loading('获取中');
 				request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
 					msg.close();

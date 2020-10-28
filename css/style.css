@@ -150,12 +150,11 @@ header .title{
     background-color: #FEFFFF;
     color: #1C1C1D;
     max-width: 100%;
-    margin-left: 54px;
-    border-radius: 7px;
+    margin-left: 3.4rem;;
+    border-radius: 0.3rem;
     padding: 9px;
-    padding-left: 13px;
-    margin-top: 9px;
-    margin-right: 75px;
+    margin-top: 0.6rem;
+    margin-right: 4.2rem;;
 }
 
 /* 沟通的对方，聊天左侧一方 */
@@ -186,7 +185,7 @@ header .title{
 }
 .user .sanjiao{
 	float: right;
-	margin-right: 0.8rem;
+	margin-right: 0.3rem;
     margin-top: 1.1rem;
 	width:0;
     height:0;
@@ -220,7 +219,48 @@ header .title{
     position: fixed;
     overflow: hidden;
     width: 100%;
+    box-shadow: 1px 1px 4px #BBBBBB;
 }
+/* 输入方式 */
+#chat_footer #shuruType{
+	background-image: url(./images/chat_jianpan.png。。。。。。);
+    width: 2.3rem;
+    height: 2rem;
+    background-repeat: round;
+    margin-left: 0.3rem;
+}
+/* 扩展输入项，小图标 */
+#chat_footer #input_area #inputExtend .extendSmallIcon{
+	padding-left:1.5rem;
+	padding-top: 0.4rem;
+}
+#chat_footer #input_area #inputExtend .extendSmallIcon .smallIcon{
+	padding-left:0.8rem;
+}
+#chat_footer #input_area #inputExtend .smallIcon > svg{
+	height: 1.5rem;
+}
+
+
+#chat_footer #input_area #inputExtend .item{
+	width: 5rem;
+    float: left;
+    padding: 0.5rem;
+    padding-top: 0.2rem;
+}
+#chat_footer #input_area #inputExtend .item .iconButton{
+	text-align: center;
+}
+#chat_footer #input_area #inputExtend .item .iconButton>svg{
+	width:2.3rem;
+}
+#chat_footer #input_area #inputExtend .item .iconName{
+	width:100%;
+	text-align:center;
+	font-size: 0.8rem;
+}
+
+
 #chat_footer #icon{
 	background-image: url(../images/chat_yuyin.png);
 	background-repeat: no-repeat;
@@ -265,7 +305,8 @@ header .title{
 	-webkit-user-modify: read-write-plaintext-only;
 	display: inline-flex;
 	padding-top:0.3rem;
-	padding-bottom:0.2rem;
+	padding-bottom:0.3rem;
+	margin-bottom: 0.3rem;
 }
 #chat_footer #input_area .send{
     background-color: #4e62bbb5;

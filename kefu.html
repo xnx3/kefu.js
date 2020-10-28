@@ -151,7 +151,7 @@ kefu.extend.goods.initChat = function(){
 /****** goods插件结束 *******/
 
 /****** order插件开始 *******/
-kefu.extend.order.showOrder=function (){
+kefu.extend.order.onclick=function (){
 	msg.loading('获取中');
 	request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.otherUserId}, function(data){
 		msg.close();
