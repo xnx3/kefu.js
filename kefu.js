@@ -220,12 +220,11 @@ var kefu = {
 		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
 		uploadImage:''			//图片上传接口
 	},
-	/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
-	token:null,
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
 	currentPage:'',	//当前所在哪个页面， 有 list 、 chat
 	mode:'mobile',	//pc、mobile  两种模式。 pc模式是左侧是list、右侧是chat，  mobile是一栏要么是list要么是chat。  默认是mobile模式
 	extendIconColor:'#808080',	//插件图标的颜色，在chat底部显示的插件图标。 16进制颜色编码
+	remindVoicePath:'./media/voice.mp3',	//声音提醒的声音路径，可传入如  https://xxxxxx.com/a.mp3
 	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
@@ -258,10 +257,14 @@ var kefu = {
 		}
 	},
 	//消息提醒,有新消息的提醒声音
-	voice:function(){
+	remindVoice:function(){
+		if(this.remindVoicePath == null || this.remindVoicePath.length < 1){
+			msg.popups('您设置的 kefu.remindVoicePath 音频路径错误。请重新设置，或者不要设置，使用默认提醒音频');
+			return;
+		}
 		var audio = document.createElement("audio");
 		//https://www.huiyi8.com/sc/83766.html QQ叮咚
-		audio.src = "http://data.huiyi8.com/yinxiao/mp3/83766.mp3";
+		audio.src = this.remindVoicePath;
 		audio.play();
 	},
 	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
@@ -273,27 +276,31 @@ var kefu = {
 			localStorage.setItem(key,value);
 		}
 	},
-	/**
-	 * 获取token，也就是 session id。获取的字符串如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
-	 * 如果用户未登录，那么获取到的是  youke_uuid。 这个会设置成layim 的  mine.id
-	 */
-	getToken:function(){
-		if(this.token == null){
-			this.token = kefu.storage.get('token');
+	token:{
+		/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
+		token:null,
+		/**
+		 * 获取token，也就是 session id。获取的字符串如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
+		 * 如果用户未登录，那么获取到的是  youke_uuid。 这个会设置成layim 的  mine.id
+		 */
+		get:function(){
+			if(this.token == null){
+				this.token = kefu.storage.get('token');
+			}
+			if(this.token == null || this.token.length < 5){
+				this.token = 'youke_'+generateUUID();
+			}
+			this.set(this.token);
+			return this.token;
+		},
+		/**
+		 * 设置token，也就是session id
+		 * 格式如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
+		 */
+		set:function(t){
+			this.token = t;
+			kefu.storage.set('token',this.token);
 		}
-		if(this.token == null || this.token.length < 5){
-			this.token = 'youke_'+generateUUID();
-		}
-		this.setToken(this.token);
-		return this.token;
-	},
-	/**
-	 * 设置token，也就是session id
-	 * 格式如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
-	 */
-	setToken:function(t){
-		this.token = t;
-		kefu.storage.set('token',this.token);
 	},
 	/**
 	 * 获取当前用户(我)的User信息
@@ -303,7 +310,7 @@ var kefu = {
 			msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
 			return;
 		}
-		request.post(kefu.api.getMyUser,{token:kefu.getToken()}, function(data){
+		request.post(kefu.api.getMyUser,{token:kefu.token.get()}, function(data){
 			kefu.user = data;
 		});
 	},
@@ -314,6 +321,14 @@ var kefu = {
 		text = text.replace(/&npsp;/ig, ''); //去掉npsp
 		return text;
 	},
+	//将[ul][li][br]等转化为html
+	ubb:function(text){
+		return text.replace(/\[ul\]/g, '<ul>')
+			.replace(/\[\/ul\]/g, '</ul>')
+			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
+			.replace(/\[\/li\]/g, '</li>')
+			.replace(/\[br\]/g, '<br>');
+	},
 	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
 	getReceiveMessageText:function(message){
 		if(message.extend != null && message.extend.extend != null){
@@ -321,11 +336,7 @@ var kefu = {
 			message = kefu.extend[message.extend.extend].format(message);
 		}
 		//将[ul][li][br]等转化为html
-		message['text'] = message['text'].replace(/\[ul\]/g, '<ul>')
-								.replace(/\[\/ul\]/g, '</ul>')
-								.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
-								.replace(/\[\/li\]/g, '</li>')
-								.replace(/\[br\]/g, '<br>');
+		message['text'] = kefu.ubb(message['text']);
 		return message['text'];
 	},
 	//UI界面方面
@@ -380,7 +391,10 @@ var kefu = {
 					document.body.innerHTML = kefu.ui.list.html;
 				}
 				
-			    kefu.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   //某个用户聊天item的模板
+				if(kefu.ui.list.listItemTemplate.length < 1){
+					//设置某个用户聊天item的模板
+					kefu.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   
+				}
 
 			    var chatList = kefu.cache.getChatList();
 			    var chatListLength = chatList.length;
@@ -390,18 +404,18 @@ var kefu = {
 			    }
 			    document.getElementById('chatlist').innerHTML = html;
 
+			    //下面注释的这写应该是在chat中的，待测试正常后删除
 			    //去掉chat一对一聊天窗中的监听
-			    window.onscroll = null;
-
+			    //window.onscroll = null;
 			    //如果chat显示，那么自动执行插件的initChat 方法,如果插件设置了的话
-			    for(var key in kefu.extend){
-					if(kefu.extend[key].initList != null){
-						try{
-							//避免某个模块中的初始化失败，导致整个im 初始化中断
-							kefu.extend[key].initList();
-						}catch(e){ console.log(e); }
-					}
-				}
+//			    for(var key in kefu.extend){
+//					if(kefu.extend[key].initList != null){
+//						try{
+//							//避免某个模块中的初始化失败，导致整个im 初始化中断
+//							kefu.extend[key].initList();
+//						}catch(e){ console.log(e); }
+//					}
+//				}
 			    
 			    //kefu.currentPage = 'list';	//赋予当前所在页面为list
 			}
@@ -454,7 +468,7 @@ var kefu = {
 			        kefu.chat.ui.showSystemMessage(kefu.filterXSS(message['text']));
 			    }else{
 			        //其他类型，那么出现对话框的
-			        var section = kefu.ui.chat.generateChatMessageSection(message);
+			        var section = kefu.ui.chat.generateMessageSection(message);
 			    
 			        document.getElementById('chatcontent').appendChild(section);
 			        //滚动条滚动到最底部
@@ -462,7 +476,7 @@ var kefu = {
 			    }
 			},
 			//创建聊天正常沟通收发消息的 section dom 元素
-			generateChatMessageSection:function(message){
+			generateMessageSection:function(message){
 				message['text'] = kefu.getReceiveMessageText(message);
 			    //发送文本消息后绘制对话窗口
 			    var section = document.createElement("section");
@@ -479,7 +493,7 @@ var kefu = {
 			    return section;
 			},
 			//创建聊天系统提示消息的 section dom 元素 
-			generateChatSystemMessageSection:function(text){
+			generateSystemMessageSection:function(text){
 				var section = document.createElement("section");
 				section.className = 'chat bot systemChat';
 				section.innerHTML = '<div class="text systemText">'+text+'</div>';
@@ -550,7 +564,7 @@ var kefu = {
 			            		//socket也已经打开了
 			            		//拉对方的自动回复欢迎语
 			            		socket.send(JSON.stringify({
-				                    token: kefu.getToken()
+				                    token: kefu.token.get()
 				                    ,receiveId: kefu.chat.otherUser.id
 				                    ,type:"AUTO_REPLY"
 				                }));
@@ -564,7 +578,7 @@ var kefu = {
 //			            			var lastMessage = chatCacheList[chatCacheList.length-1];
 //			            			console.log(lastMessage);
 //			            			//拉取当前时间以后的离线消息。这个应该是socket在拉取离线消息结束后，再执行这个
-//				    				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:lastMessage.time, type:'after'}, function(data){
+//				    				request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:lastMessage.time, type:'after'}, function(data){
 //				    					if(data.result == '0'){
 //				    						//失败，弹出提示
 //				    						msg.failure(data.info);
@@ -589,7 +603,7 @@ var kefu = {
 //				    							for(var i = data.list.length-1; i >= 0; i--){
 //				    								var message = data.list[i];
 //				    								console.log(message);
-//				    								var msgSection = kefu.ui.chat.generateChatMessageSection(message);
+//				    								var msgSection = kefu.ui.chat.generateMessageSection(message);
 //				    								chatcontent.appendChild(msgSection);	//在聊天最后插入这条发言信息
 //				    								kefu.cache.add(message) //将这条消息加入本地缓存
 //				    							}
@@ -656,7 +670,7 @@ var kefu = {
 				msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
 				return;
 			}
-			request.post(kefu.api.getChatOtherUser,{token:kefu.getToken(), id:userid}, function(data){
+			request.post(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
 				kefu.chat.otherUser = data.user;
 				if(typeof(func) != 'undefined'){
 					func(data);
@@ -704,7 +718,7 @@ var kefu = {
 				chatcontent.insertBefore(section,firstItem);
 
 				//创建网络请求
-				request.post(kefu.api.chatLog,{token:kefu.getToken(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
+				request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
 					kefu.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
 
 					var chatcontent = document.getElementById('chatcontent');
@@ -724,7 +738,7 @@ var kefu = {
 							//有消息记录，那么绘制出来
 							for(var i = data.list.length-1; i >= 0; i--){
 								var message = data.list[i];
-								var msgSection = kefu.ui.chat.generateChatMessageSection(message);
+								var msgSection = kefu.ui.chat.generateMessageSection(message);
 								chatcontent.insertBefore(msgSection,firstItem);
 							}
 							//重新标记历史消息的开始时间
@@ -733,7 +747,7 @@ var kefu = {
 							//没有更多消息了
 							kefu.chat.currentLoadHistoryList = true;	//标记请求历史记录不再继续请求了，因为已经没有更多记录了
 							//msg.info('没有更多消息了');
-							chatcontent.insertBefore(kefu.ui.chat.generateChatSystemMessageSection('没有更多了'),firstItem);
+							chatcontent.insertBefore(kefu.ui.chat.generateSystemMessageSection('没有更多了'),firstItem);
 						}
 
 						
@@ -751,7 +765,7 @@ var kefu = {
 		/* 发送文本格式消息  text:要发送的文本消息。 返回json对象的message */
 		sendTextMessage:function(text){
 			var data = {
-		    	token:kefu.getToken(),
+		    	token:kefu.token.get(),
 		    	type:'MSG',	//消息类型
 		    	sendId:kefu.user.id,		//发送者ID
 		    	receiveId:kefu.chat.otherUser.id,	//接受者id
@@ -764,6 +778,40 @@ var kefu = {
 		    kefu.cache.add(message);   //缓存
 
 		    return message;
+		},
+		/*
+		 * 发送插件消息。只有插件消息的发送才使用这个。正常发送文字消息使用的是 sendTextMessage
+		 * @param data 插件消息的消息体对象，如 {goodsid:'123',goodsName:'西瓜', price:'12元'}
+		 * @param name 发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 'explain'
+		 */
+		sendPluginMessage:function(data, name){
+			if(name == null){
+				msg.popups('kefu.chat.sendPluginMessage(data,name) 方法中，请传入name的值。<br/>name是发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 \'explain\'');
+				return;
+			}
+			if(data != null){
+				data.extend = name;
+			}else{
+				data = {};
+			}
+			//组合后的消息体
+			var message = {
+				token:kefu.token.get(),
+				receiveId:kefu.chat.otherUser.id,
+				sendId:kefu.user.id,
+				type:'EXTEND',
+				time:new Date().getTime(),
+				extend:data
+			};
+			//更新聊天窗口
+			message.text = kefu.extend[name].format(message);
+			kefu.ui.chat.appendMessage(message);
+			
+			//socket发送消息
+			message.text = '';	//清理掉message.text 因为这个本来就是自动生成出来的不必额外占用带宽、流量
+			socket.send(message);
+
+			kefu.cache.add(message);   //缓存
 		},
 		//text文本，打字沟通交流， 点击提交按钮后发送
 		sendButtonClick:function (){
@@ -947,7 +995,7 @@ var kefu = {
 				
 				new Promise((resolve, reject) => {
 					console.log('Promise'+userid);
-					request.send(kefu.api.getChatOtherUser,{token:kefu.getToken(), id:userid}, function(data){
+					request.send(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
 						//请求完成
 						kefu.cache.getUser_linshijiluUser = data.user;
 						user = data.user;
@@ -1037,31 +1085,6 @@ var kefu = {
 				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(message.extend.url));
 				return message;
 			},
-			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
-				data.url : 图片上传到服务器后，返回的图片绝对路径url
-			 */
-			send:function(data){
-				//推送到socket
-            	var image = {
-            		extend:'image',
-            		url:data.url
-            	}
-				var message = {
-					token:kefu.getToken(),
-					receiveId:kefu.chat.otherUser.id,
-					sendId:kefu.user.id,
-					type:'EXTEND',
-					time:new Date().getTime(),
-					extend:image
-				};
-				socket.send(message);
-
-				//更新聊天窗口
-				message.text = kefu.extend.image.format(message);
-				kefu.ui.chat.appendMessage(message);
-
-				kefu.cache.add(message);   //缓存
-			},
 			onclick:function(){
 				//添加input改动监听
 				if(document.getElementById('imageInput').oninput == null){
@@ -1069,10 +1092,14 @@ var kefu = {
 					    if(typeof(e.srcElement.files[0]) != 'undefined'){
 					        var file = e.srcElement.files[0];
 					        msg.loading('上传中');
-					        request.upload(kefu.api.uploadImage, {token:kefu.getToken()}, file,function(data){
+					        request.upload(kefu.api.uploadImage, {token:kefu.token.get()}, file,function(data){
 					            msg.close();
 					            if(data.result == '1'){
-					            	kefu.extend.image.send(data);
+					            	//组合extend的消息体
+					            	var extend = {
+					            			url:data.url
+					            	};
+					            	kefu.chat.sendPluginMessage(extend, 'image');
 					            }else{
 					            	msg.failure(data.info);
 					            }
@@ -1107,35 +1134,12 @@ var kefu = {
 			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894275814" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1559" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M128 891.663059h768a128 128 0 0 0 128-128V260.336941a128 128 0 0 0-128-128H128A128 128 0 0 0 0 260.336941v503.326118a128 128 0 0 0 128 128z m83.425882-475.376941v281.178353c0 31.051294-57.705412 31.171765-57.705411 0V334.697412c0-21.202824 7.589647-31.051294 22.64847-31.834353 12.137412-0.632471 25.057882 5.692235 38.701177 24.244706l202.390588 275.365647v-272.323765c0-37.255529 55.898353-37.225412 55.898353 0v362.767059c0 18.100706-7.559529 26.383059-22.648471 27.196235-13.673412 0.722824-24.786824-6.746353-36.261647-22.64847L211.425882 416.286118z m292.352 149.62447c0-213.232941 272.022588-212.781176 272.022589 0 0 206.667294-272.022588 208.956235-272.022589 0z m52.555294 0c0 128.813176 165.586824 133.782588 165.586824 0 0-73.667765-40.749176-103.695059-83.245176-102.912-42.496 0.783059-82.341647 32.406588-82.341648 102.912z m285.093648 97.249883c15.872 0 28.822588 12.950588 28.822588 28.822588s-12.950588 28.822588-28.822588 28.822588-28.822588-12.950588-28.822589-28.822588 12.950588-28.822588 28.822589-28.822588z" fill="{color}" p-id="1560"></path></svg>',
 			js:'./extend/order/order.js',	//引入这个扩展的自定义js。引入的这个js会在加载完kefu.js后立马加载引入这里的js
 			css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
-			//初始化，kefu.js 加载完毕后会先引入指定路径的js，再执行此方法
-			init:function(){
-
-			},
 			//请求的api接口
 			requestApi:goodsUrl+'orderList.json',
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
 				message.text = kefu.extend.order.getOrderByTemplate(message.extend);
 				return message;
-			},
-			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
-				data : 这里也就是order
-			 */
-			send:function(data){
-				data.extend = 'order';
-				var message = {
-					token:kefu.getToken(),
-					receiveId:kefu.chat.otherUser.id,
-					sendId:kefu.user.id,
-					type:'EXTEND',
-					time:new Date().getTime(),
-					extend:data
-				};
-				socket.send(message);
-				kefu.cache.add(message);   //缓存
-
-				message.text = kefu.extend.order.getOrderByTemplate(data);
-				kefu.ui.chat.appendMessage(message);
 			},
 
 			/*
@@ -1180,7 +1184,7 @@ var kefu = {
 			},
 			onclick:function (){
 				msg.loading('获取中');
-				request.post(kefu.extend.order.requestApi,{token:kefu.getToken(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
+				request.post(kefu.extend.order.requestApi,{token:kefu.token.get(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
 					msg.close();
 					var html = '';
 					for (var i = 0; i < data.length; i++) {
@@ -1205,7 +1209,7 @@ var kefu = {
 				var order = kefu.extend.order.orderMap[uniqueId];
 				msg.close();
 				
-				kefu.extend.order.send(order);
+				kefu.chat.sendPluginMessage(order, 'order');
 			},
 			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
 			otherShow:function(orderid){
@@ -1231,25 +1235,6 @@ var kefu = {
 			format:function(message){
 				message.text = kefu.extend.goods.getGoodsByTemplate(message.extend);
 				return message;
-			},
-			/* 消息发送出去。聊天框中、socket中发送、本地缓存等
-				data : 这里也就是 goods 对象
-			 */
-			send:function(data){
-				data.extend = 'goods';
-				var message = {
-					token:kefu.getToken(),
-					receiveId:kefu.chat.otherUser.id,
-					sendId:kefu.user.id,
-					type:'EXTEND',
-					time:new Date().getTime(),
-					extend:data
-				};
-				socket.send(message);
-				kefu.cache.add(message);   //缓存
-
-				message.text = kefu.extend.goods.format(message).text;
-				kefu.ui.chat.appendMessage(message);
 			},
 			/*
 				商品图片 {image}
@@ -1290,7 +1275,7 @@ var kefu = {
 				}
 				msg.close();
 				
-				kefu.extend.goods.send(kefu.extend.goods.goods);
+				kefu.chat.sendPluginMessage(kefu.extend.goods.goods, 'goods');
 			},
 			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
 			otherShow:function(goodsid){
@@ -1314,7 +1299,7 @@ var socket = {
 	onopen:function(){
 		socket.send(JSON.stringify({
 	        'type': 'CONNECT' //第一次联通，登录
-	        ,'token':kefu.getToken()
+	        ,'token':kefu.token.get()
 	    })); 
 	},
 	//监听收到的消息的function
