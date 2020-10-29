@@ -259,7 +259,6 @@ var kefu = {
 	//消息提醒,有新消息的提醒声音
 	remindVoice:function(){
 		if(this.remindVoicePath == null || this.remindVoicePath.length < 1){
-			msg.popups('您设置的 kefu.remindVoicePath 音频路径错误。请重新设置，或者不要设置，使用默认提醒音频');
 			return;
 		}
 		var audio = document.createElement("audio");
@@ -1339,6 +1338,9 @@ var socket = {
 				}
 			}
 		}
+		
+		//声音提醒
+		kefu.remindVoice();
 	},
 	//连接
 	connect:function(url){
