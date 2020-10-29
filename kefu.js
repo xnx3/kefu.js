@@ -224,7 +224,7 @@ var kefu = {
 	currentPage:'',	//当前所在哪个页面， 有 list 、 chat
 	mode:'mobile',	//pc、mobile  两种模式。 pc模式是左侧是list、右侧是chat，  mobile是一栏要么是list要么是chat。  默认是mobile模式
 	extendIconColor:'#808080',	//插件图标的颜色，在chat底部显示的插件图标。 16进制颜色编码
-	remindVoicePath:'./media/voice.mp3',	//声音提醒的声音路径，可传入如  https://xxxxxx.com/a.mp3
+	remindVoicePath:'https://res.weiunity.com/kefu/media/voice.mp3',	//声音提醒的声音路径，可传入如  https://xxxxxx.com/a.mp3
 	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
 	init:function(){
 		var head0 = document.getElementsByTagName('head')[0];
@@ -255,16 +255,81 @@ var kefu = {
 				}catch(e){ console.log(e); }
 			}
 		}
+		
+	},
+	//声音提醒的初始化，一打开页面，就从远程加载提示音下来
+	remindVoiceInit:{
+		audioSource:null,	//播放的音频源文件
+		audioBuffer:null,
+		audioContext : new (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext),
+		//加载远程的mp3文件下载下来
+		load:function(){
+			var xhr = new XMLHttpRequest(); //通过XHR下载音频文件
+	        xhr.open('GET', kefu.remindVoicePath, true);
+	        xhr.responseType = 'arraybuffer';
+	        xhr.onload = function (e) { //下载完成
+	        	kefu.remindVoiceInit.audioContext.decodeAudioData(this.response, function (buffer) { //解码成功时的回调函数
+	        		kefu.remindVoiceInit.audioBuffer = buffer;
+	        		kefu.remindVoiceInit.play();
+	        	}, function (e) { //解码出错时的回调函数
+	        		console.log('Error decoding file', e);
+	        	});
+	        };
+	        xhr.send();
+		},
+		play:function(){
+			if(kefu.remindVoicePath == null || kefu.remindVoicePath.length < 1){
+				//不使用
+				return;
+			}
+			if(kefu.remindVoiceInit.audioBuffer == null){
+				//网络加载音频文件
+				kefu.remindVoiceInit.load();
+				return;
+			}
+			kefu.remindVoiceInit.audioSource = kefu.remindVoiceInit.audioContext.createBufferSource();
+			kefu.remindVoiceInit.audioSource.buffer = kefu.remindVoiceInit.audioBuffer;
+			//kefu.remindVoiceInit.audioSource.loop = true; //循环播放
+			kefu.remindVoiceInit.audioSource.connect(kefu.remindVoiceInit.audioContext.destination);
+			kefu.remindVoiceInit.audioSource.start(0); //立即播放
+		}
 	},
 	//消息提醒,有新消息的提醒声音
-	remindVoice:function(){
-		if(this.remindVoicePath == null || this.remindVoicePath.length < 1){
+	remind:function(title,text){
+		if(document.location.protocol != 'https:'){
+			console.log('当前使用的不是https请求！只有https请求才可以有浏览器消息通知。这里只是声音通知');
+			try{
+				kefu.remindVoiceInit.play();
+			}catch(e){
+				console.log(e);
+			}
 			return;
 		}
-		var audio = document.createElement("audio");
-		//https://www.huiyi8.com/sc/83766.html QQ叮咚
-		audio.src = this.remindVoicePath;
-		audio.play();
+//		try{
+//			var audio = document.createElement("audio");
+//			//https://www.huiyi8.com/sc/83766.html QQ叮咚
+//			audio.src = 'https://www.huiyi8.com/sc/83766.html';
+//			audio.play();
+//		}catch(e){
+//			//chrome新版本浏览器禁止自动播放
+//			console.log(e.name);
+//			console.log(e); 
+//		}
+		
+		if (window.Notification != null){
+			//支持通知
+			
+			if(Notification.permission === 'granted'){
+				var notification = new Notification(title, {
+					body: text
+					//icon: 'https://res.weiunity.com/kefu/images/head.png'
+				});
+			}else {
+				//未授权，弹出授权提示
+				Notification.requestPermission();
+			};
+		}
+		
 	},
 	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
 	storage:{
@@ -1339,8 +1404,8 @@ var socket = {
 			}
 		}
 		
-		//声音提醒
-		kefu.remindVoice();
+		//通知提醒
+		kefu.remind('您有新消息',message.text);
 	},
 	//连接
 	connect:function(url){
