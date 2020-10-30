@@ -12,17 +12,17 @@
 </head>
 <body>
 <script type="text/javascript">
-var host = 'kefu.wfyuntu.com';
-var socketUrl = 'ws://kefu.wfyuntu.com:8081/';
+var host = 'https://kefu.wfyuntu.com';
+var socketUrl = 'wss://kefu.wfyuntu.com/websocket';
 //var host = 'localhost:8080';
 //var socketUrl = 'ws://localhost:8081/';
 
 //kefu.js 接口设置
 //kefu.api.getMyUser = 'http://'+host+'/user/init.json';
-kefu.api.getMyUser = 'http://'+host+'/inset/chat/login.json';
-kefu.api.getChatOtherUser = 'http://'+host+'/user/getUserById.json';
-kefu.api.chatLog = 'http://'+host+'/chatLog.json';
-kefu.api.uploadImage = 'http://'+host+'/uploadImage.json';
+kefu.api.getMyUser = host+'/inset/chat/login.json';
+kefu.api.getChatOtherUser = host+'/user/getUserById.json';
+kefu.api.chatLog = host+'/chatLog.json';
+kefu.api.uploadImage = host+'/uploadImage.json';
 kefu.extend.order.requestApi = 'http://cust.wfyuntu.com/plugin/kefu/getOrderList.json';
 
 

@@ -254,82 +254,86 @@ var kefu = {
 					kefu.extend[key].init();
 				}catch(e){ console.log(e); }
 			}
+		
 		}
 		
+		//下载音频文件
+		kefu.notification.audio.load();
 	},
-	//声音提醒的初始化，一打开页面，就从远程加载提示音下来
-	remindVoiceInit:{
-		audioSource:null,	//播放的音频源文件
-		audioBuffer:null,
-		audioContext : new (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext),
-		//加载远程的mp3文件下载下来
-		load:function(){
-			var xhr = new XMLHttpRequest(); //通过XHR下载音频文件
-	        xhr.open('GET', kefu.remindVoicePath, true);
-	        xhr.responseType = 'arraybuffer';
-	        xhr.onload = function (e) { //下载完成
-	        	kefu.remindVoiceInit.audioContext.decodeAudioData(this.response, function (buffer) { //解码成功时的回调函数
-	        		kefu.remindVoiceInit.audioBuffer = buffer;
-	        		kefu.remindVoiceInit.play();
-	        	}, function (e) { //解码出错时的回调函数
-	        		console.log('Error decoding file', e);
-	        	});
-	        };
-	        xhr.send();
-		},
-		play:function(){
-			if(kefu.remindVoicePath == null || kefu.remindVoicePath.length < 1){
+	//新消息通知、提醒
+	notification:{
+		use:true,	//是否使用通知，默认为true，使用。如果不使用，那么就是false，false不再播放声音通知、桌面通知
+		audioPath:'https://res.weiunity.com/kefu/media/voice.mp3',	//播放的音频文件路径，格式如： https://res.weiunity.com/kefu/media/voice.mp3 。不设置默认便是  https://res.weiunity.com/kefu/media/voice.mp3
+		//播放提醒，执行提醒
+		execute:function(title,text){
+			if(!kefu.notification.use){
 				//不使用
 				return;
 			}
-			if(kefu.remindVoiceInit.audioBuffer == null){
-				//网络加载音频文件
-				kefu.remindVoiceInit.load();
-				return;
-			}
-			kefu.remindVoiceInit.audioSource = kefu.remindVoiceInit.audioContext.createBufferSource();
-			kefu.remindVoiceInit.audioSource.buffer = kefu.remindVoiceInit.audioBuffer;
-			//kefu.remindVoiceInit.audioSource.loop = true; //循环播放
-			kefu.remindVoiceInit.audioSource.connect(kefu.remindVoiceInit.audioContext.destination);
-			kefu.remindVoiceInit.audioSource.start(0); //立即播放
-		}
-	},
-	//消息提醒,有新消息的提醒声音
-	remind:function(title,text){
-		if(document.location.protocol != 'https:'){
-			console.log('当前使用的不是https请求！只有https请求才可以有浏览器消息通知。这里只是声音通知');
+			
+			//播放声音
 			try{
-				kefu.remindVoiceInit.play();
+				kefu.notification.audio.play();
 			}catch(e){
 				console.log(e);
 			}
-			return;
-		}
-//		try{
-//			var audio = document.createElement("audio");
-//			//https://www.huiyi8.com/sc/83766.html QQ叮咚
-//			audio.src = 'https://www.huiyi8.com/sc/83766.html';
-//			audio.play();
-//		}catch(e){
-//			//chrome新版本浏览器禁止自动播放
-//			console.log(e.name);
-//			console.log(e); 
-//		}
-		
-		if (window.Notification != null){
-			//支持通知
 			
-			if(Notification.permission === 'granted'){
-				var notification = new Notification(title, {
-					body: text
-					//icon: 'https://res.weiunity.com/kefu/images/head.png'
-				});
-			}else {
-				//未授权，弹出授权提示
-				Notification.requestPermission();
-			};
+			if(document.location.protocol != 'https:'){
+				console.log('当前使用的不是https请求！只有https请求才可以有浏览器消息通知。这里只是声音通知');
+				return;
+			}
+			
+			//是https，那么支持Notification通知，使用通知提醒
+			if (window.Notification != null){
+				//支持通知
+				
+				if(Notification.permission === 'granted'){
+					var notification = new Notification(title, {
+						body: text,
+						silent: false	//不播放声音。播放声音交给 kefu.notification.audio.play
+						//sound:kefu.notification.audioPath
+						//icon: 'https://res.weiunity.com/kefu/images/head.png'
+					});
+				}else {
+					//未授权，弹出授权提示
+					Notification.requestPermission();
+				};
+			}
+		},
+		audio:{
+			audioBuffer:null,	//声音文件的音频流，通过url加载远程的音频流
+			audioContext : new (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext),
+			//初始化预加载，将加载远程的mp3文件下载下来。这项应该在socket建立完链接之后在进行下载，不然会提前占用网速，导致socket建立连接过慢
+			load:function(){
+				if(kefu.notification.audioPath == null || kefu.notification.audioPath.length < 1){
+					console.log('已将 kefu.notification.audioPath 设为空，将不再出现声音提醒');
+					return;
+				}
+				var xhr = new XMLHttpRequest(); //通过XHR下载音频文件
+		        xhr.open('GET', kefu.notification.audioPath, true);
+		        xhr.responseType = 'arraybuffer';
+		        xhr.onload = function (e) { //下载完成
+		        	kefu.notification.audio.audioContext.decodeAudioData(this.response, function (buffer) { //解码成功时的回调函数
+		        		kefu.notification.audio.audioBuffer = buffer;
+		        	}, function (e) { //解码出错时的回调函数
+		        		console.log('kefu.notification.load() Error decoding file', e);
+		        	});
+		        };
+		        xhr.send();
+			},
+			//进行播放声音
+			play:function(){
+				if(kefu.notification.audio.audioBuffer == null){
+					//网络加载音频文件。就不判断是否正在加载中了，多加载几次也无所谓了
+					kefu.notification.audio.load();
+					return; 
+				}
+				var audioSource = kefu.notification.audio.audioContext.createBufferSource();
+				audioSource.buffer = kefu.notification.audio.audioBuffer;
+				audioSource.connect(kefu.notification.audio.audioContext.destination);
+				audioSource.start(0); //立即播放
+			}
 		}
-		
 	},
 	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
 	storage:{
@@ -496,7 +500,7 @@ var kefu = {
 					<!-- 新消息：消息内容消息内容 -->
 				</div>
 				
-			    <section id="chatcontent" onclick="kefu.chat.ui.textInputClick();">
+			    <section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
 			    </section>
 			    
 			    <footer id="chat_footer">
@@ -504,8 +508,8 @@ var kefu = {
 			            <div id="textInput">
 			            	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
 			                <!-- 键盘输入 -->
-			                <!-- <input type="text" id="text111" onclick="kefu.chat.ui.textInputClick();"> -->
-			                <div id="text" contenteditable="true" onclick="kefu.chat.ui.textInputClick();"></div>
+			                <!-- <input type="text" id="text111" onclick="kefu.ui.chat.textInputClick();"> -->
+			                <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
 			                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 			            </div>
 			            <div id="inputExtend">
@@ -529,7 +533,7 @@ var kefu = {
 			    }
 			    if(message.type == 'SYSTEM'){
 			        //系统类型消息
-			        kefu.chat.ui.showSystemMessage(kefu.filterXSS(message['text']));
+			        kefu.ui.chat.appendSystemMessage(kefu.filterXSS(message['text']));
 			    }else{
 			        //其他类型，那么出现对话框的
 			        var section = kefu.ui.chat.generateMessageSection(message);
@@ -567,6 +571,23 @@ var kefu = {
 			scrollToBottom:function(){
 				//console.log('height:'+document.getElementById('chatcontent').scrollHeight);
 				document.getElementById('chatcontent').scrollTo(0,document.getElementById('chatcontent').scrollHeight);
+			},
+			//在当前chat一对一聊天界面的消息最末尾追加显示一条系统消息, text:要显示的消息内容
+			appendSystemMessage:function(text){
+				chatcontent = document.getElementById('chatcontent');
+				chatcontent.innerHTML =  chatcontent.innerHTML + 
+					'<section class="chat bot systemChat"><div class="text systemText">'+text+'</div></section>';
+				window.scrollTo(0,chatcontent.scrollHeight);
+			},
+			//文字输入框被点击，隐藏扩展功能区域
+			textInputClick:function (){
+				//隐藏扩展功能输入区域
+				document.getElementById('inputExtend').style.display = '';
+				document.getElementById('inputExtendShowArea').style.display = 'none';
+				if(kefu.chat.shuruType != 'jianpan'){
+					kefu.chat.shuruTypeChange();
+				}
+				
 			},
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
@@ -728,6 +749,7 @@ var kefu = {
 		/**
 		 * 获取当前聊天窗口中，跟我聊天的对方的user信息
 		 * @param userid 当前谁在跟谁聊天，对方的userid
+		 * @param func 获取到对方的用户信息后，要执行的方法
 		 */
 		getOtherUser:function(userid, func){
 			if(kefu.api.getChatOtherUser == null || kefu.api.getChatOtherUser.length < 1){
@@ -765,7 +787,7 @@ var kefu = {
 		loadHistoryList(){
 			if(!kefu.chat.currentLoadHistoryList){
 				kefu.chat.currentLoadHistoryList = true;	//标记正在请求历史记录中
-				if(kefu.cache.getUserMessageList(kefu.chat.otherUser.id).length < kefu.cache.ereryUserNumber){
+				if(kefu.cache.getUserMessageList(kefu.chat.otherUser.id).length < kefu.cache.everyUserNumber){
 					//如果跟对方聊天的记录，本地缓存的几率条数小于本地缓存最大条数，那么就是刚开始聊天，都还没超过缓存最大数，那么也就没必要在从服务器拉更多聊天记录了
 					console.log('聊天记录不足，没必要再拉更多');
 					return;
@@ -845,7 +867,7 @@ var kefu = {
 		},
 		/*
 		 * 发送插件消息。只有插件消息的发送才使用这个。正常发送文字消息使用的是 sendTextMessage
-		 * @param data 插件消息的消息体对象，如 {goodsid:'123',goodsName:'西瓜', price:'12元'}
+		 * @param data 要发送的插件消息的消息体对象，如 {goodsid:'123',goodsName:'西瓜', price:'12元'} ，但是为json对象的格式
 		 * @param name 发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 'explain'
 		 */
 		sendPluginMessage:function(data, name){
@@ -894,7 +916,7 @@ var kefu = {
 		    document.getElementById('text').innerHTML = '';
 
 		    //隐藏表情等符号输入区域
-		    kefu.chat.ui.textInputClick();
+		    kefu.ui.chat.textInputClick();
 		},
 		//输入类型改变，切换，比如有更多切换到键盘输入
 		shuruTypeChange:function(){
@@ -933,30 +955,11 @@ var kefu = {
 				document.getElementById('inputExtend').innerHTML = '';	//缩小时不显示
 				
 			}
-		},
-		ui:{
-			//在当前ui界面显示一条系统消息, messageText:要显示的消息内容
-			showSystemMessage:function(messageText){
-				chatcontent = document.getElementById('chatcontent');
-				chatcontent.innerHTML =  chatcontent.innerHTML + 
-					'<section class="chat bot systemChat"><div class="text systemText">'+messageText+'</div></section>';
-				window.scrollTo(0,chatcontent.scrollHeight);
-			},
-			//文字输入框被点击，隐藏扩展功能区域
-			textInputClick:function (){
-				//隐藏扩展功能输入区域
-				document.getElementById('inputExtend').style.display = '';
-				document.getElementById('inputExtendShowArea').style.display = 'none';
-				if(kefu.chat.shuruType != 'jianpan'){
-					kefu.chat.shuruTypeChange();
-				}
-				
-			}
 		}
 
 	},
 	cache:{
-		ereryUserNumber:20,	//每个用户缓存20条最后的聊天记录
+		everyUserNumber:20,	//每个用户缓存20条最后的聊天记录
 		/* 根据userid，获取跟这个用户的本地缓存的20条最近聊天记录 */
 		getUserMessageList:function(userid){
 			var chatListStr = kefu.storage.get('userid:'+userid);
@@ -993,7 +996,7 @@ var kefu = {
 				}
 				var chatUser = JSON.parse(chatUserStr);
 				chatUser.push(message);
-				if(chatUser.length > this.ereryUserNumber) {
+				if(chatUser.length > this.everyUserNumber) {
 					//console.log('移除：'+chatUser[0]);
 					chatUser.splice(0, 1);	//移除最后一个
 				}
@@ -1405,7 +1408,7 @@ var socket = {
 		}
 		
 		//通知提醒
-		kefu.remind('您有新消息',message.text);
+		kefu.notification.execute('您有新消息',message.text);
 	},
 	//连接
 	connect:function(url){
