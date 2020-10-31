@@ -105,7 +105,7 @@ header .title{
     position: fixed;
     margin-top: 2.7rem;
     z-index: 999999;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     padding-left: 1rem;
     padding-top: 0.3rem;
     padding-bottom: 0.3rem;
@@ -117,6 +117,21 @@ header .title{
     box-sizing: border-box;
     display:none;
 }
+#newMessageRemind #newMessageRemindText{
+	display: inline;
+    float: left;
+    width: 85%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+#newMessageRemind #newMessageRemindClose{
+	float: right;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+
 #chatcontent{
     background-color: #EFF0F1;
     font-size: 0.8rem;
