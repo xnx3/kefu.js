@@ -233,10 +233,10 @@ var page = getUrlParams('page');
 if(typeof(page) == 'string' && page == 'chat'){
     //出现聊天页
     var userid = getUrlParams('userid');
-    kefu.ui.chat.render(userid);
+    kefu.ui.chat.entry(userid);
 }else{
     //出现列表页
-    kefu.ui.list.render();
+    kefu.ui.list.entry();
 }
 
 </script>

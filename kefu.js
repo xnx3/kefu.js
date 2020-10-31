@@ -1095,7 +1095,7 @@ var kefu = {
 			var user;
 			var cache_key = 'user_id_'+userid;
 			var userStr = kefu.storage.get(cache_key);
-			if(userStr == null){
+			if(userStr == null || userStr.length < 1){
 				//从网络获取
 				request.send(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
 					//请求完成
@@ -1429,10 +1429,8 @@ var socket = {
 			}
 		}else{
 			//mobile模式，也就是要么在list页面，要么在chat页面
-			
 			if(kefu.currentPage == 'list'){
 				//当前在list列表页
-				
 				kefu.cache.getUser(message.sendId, function(user){
 					kefu.ui.list.render();	//重新渲染页面
 				});
