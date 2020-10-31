@@ -141,7 +141,11 @@ kefu.extend.goods.initChat = function(){
 		    request.post('http://test.wfyuntu.com/plugin/kefu/getGoods.json',{token:kefu.token.get(), goodsid:kefu.extend.goods.goodsid}, function(data){
 		        msg.close();
 		        kefu.extend.goods.goods = data.data;
-		        msg.popups(kefu.extend.goods.getGoodsByTemplate(kefu.extend.goods.goods));
+		        msg.popups({
+		        	text:kefu.extend.goods.getGoodsByTemplate(kefu.extend.goods.goods),
+		        	background:'#e04b90',
+		        	opacity:100
+		        });
 		    });
 		    kefu.extend.goods.goods_show = true;
 		    console.log('显示了goods');
@@ -172,7 +176,9 @@ kefu.extend.order.onclick=function (){
 		msg.popups({
 			text:html,
 			top:'1rem',
-			height:'30rem'
+			height:'30rem',
+        	background:'#e04b90',
+        	opacity:100
 		});
 		
 	});
@@ -189,6 +195,13 @@ kefu.extend.aisongda = {
 		
 		//新消息提醒
 		document.getElementById('newMessageRemind').style.marginTop='0rem';
+		
+		//插件按钮图标颜色
+		kefu.extendIconColor = '#eca0c3';
+		//输入按钮颜色
+		kefu.ui.color.shuruTypeColor = '#e04b90';
+		//消息发送按钮颜色
+		document.getElementById('sendButton').style.backgroundColor=kefu.ui.color.shuruTypeColor;
 	}
 }
 /******* 爱送达定制结束 ********/
