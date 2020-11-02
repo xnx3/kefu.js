@@ -93,15 +93,15 @@ header .title{
 
 
 /* 在线聊天沟通，chat.html */
-.chat_header{
+#mobile .chat_header{
 	position: fixed;
 }
-.chat_header .title #onlineState{
+#mobile .chat_header .title #onlineState{
     font-size: 0.6rem;
     margin-left: 0.3rem;
 }
 /* 新消息提醒 */
-#newMessageRemind{
+#mobile #newMessageRemind{
     position: fixed;
     margin-top: 2.7rem;
     z-index: 999999;
@@ -117,7 +117,7 @@ header .title{
     box-sizing: border-box;
     display:none;
 }
-#newMessageRemind #newMessageRemindText{
+#mobile #newMessageRemind #newMessageRemindText{
 	display: inline;
     float: left;
     width: 85%;
@@ -125,12 +125,11 @@ header .title{
     text-overflow: ellipsis;
     overflow: hidden;
 }
-#newMessageRemind #newMessageRemindClose{
+#mobile #newMessageRemind #newMessageRemindClose{
 	float: right;
     padding-left: 1rem;
     padding-right: 1rem;
 }
-
 
 #chatcontent{
     background-color: #EFF0F1;
@@ -225,9 +224,8 @@ header .title{
     cursor: pointer;
 }
 
-
 /* 底部输入 */
-#chat_footer {
+#mobile #chat_footer {
     height: auto;
 	background: var(--background-color);
     bottom: 0px;
@@ -236,6 +234,7 @@ header .title{
     width: 100%;
     box-shadow: 1px 1px 4px #BBBBBB;
 }
+
 /* 输入方式 */
 #chat_footer #shuruType{
 	background-image: url(./images/chat_jianpan.png。。。。。。);
@@ -245,9 +244,11 @@ header .title{
     margin-left: 0.3rem;
 }
 /* 扩展输入项，小图标 */
-#chat_footer #input_area #inputExtend .extendSmallIcon{
+#mobile #chat_footer #input_area #inputExtend .extendSmallIcon{
 	padding-left:1.5rem;
 	padding-top: 0.4rem;
+	/* 默认不显示 */
+	display:none;
 }
 #chat_footer #input_area #inputExtend .extendSmallIcon .smallIcon{
 	padding-left:0.8rem;
@@ -313,7 +314,7 @@ header .title{
     padding-right: 0.7rem;
     box-sizing: border-box;
     margin-left: 0.3rem;
-    border-radius: 1em;
+    border-radius: 1rem;
     outline: 0;
     overflow-x: hidden;
 	overflow-y: auto;
@@ -355,3 +356,49 @@ header .title{
     font-size: 1.3rem; 
 }
 
+/* PC端模式下的chat */
+
+/* 新消息提醒的，隐藏 */
+#pc #newMessageRemind{
+	display:none;
+	width:1px;
+	height:0px;
+}
+#pc #shuruType{
+	display: none;
+}
+#pc #chatcontent{
+	position: inherit;
+    height: 30rem;
+    padding-bottom: 2rem;
+}
+
+#pc #chat_footer #input_area #inputExtend .item .iconName{
+	display:none;
+}
+
+#pc #chat_footer #input_area #inputExtend{
+	display: flex;
+	padding-left: 0rem;
+}
+#pc #chat_footer #input_area #inputExtend .item{
+	width: 2.8rem;
+}
+#pc #chat_footer #input_area #inputExtend .item .iconButton>svg{
+	width:1.4rem
+}
+#pc #chat_footer #input_area #text{
+	border-radius: 0.2rem;
+}
+#pc #chat_footer #input_area #inputExtend .extendSmallIcon{
+    height: 1.4rem;
+    padding-top: 0.2rem;
+}
+#pc #inputExtend span{
+	line-height:1rem;
+}
+/*底部按钮*/
+#pc #chat_footer #input_area .send{
+	border-radius: 0.2rem;
+	margin:0px;
+}

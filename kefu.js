@@ -502,36 +502,38 @@ var kefu = {
 		chat:{
 			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
 			html:`
-				<header class="chat_header" id="head">
-			        <div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
-			        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
-			    </header>
-				<div id="newMessageRemind">
-					<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
-					<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
+				<div id="mobile">
+					<header class="chat_header" id="head">
+				        <div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
+				        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
+				    </header>
+					<div id="newMessageRemind">
+						<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
+						<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
+					</div>
+					
+				    <section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
+				    </section>
+				    
+				    <footer id="chat_footer">
+				        <div id="input_area">
+				            <div id="textInput">
+				            	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
+				                <!-- 键盘输入 -->
+				                <!-- <input type="text" id="text111" onclick="kefu.ui.chat.textInputClick();"> -->
+				                <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
+				                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
+				            </div>
+				            <div id="inputExtend">
+				                <!-- 其他，如图片、商品、订单 -->
+	
+				            </div>    
+				            <div id="inputExtendShowArea">
+				                <!-- inputExtend的显示区域，如表情的显示 -->
+				            </div>
+				        </div>
+				    </footer>
 				</div>
-				
-			    <section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
-			    </section>
-			    
-			    <footer id="chat_footer">
-			        <div id="input_area">
-			            <div id="textInput">
-			            	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
-			                <!-- 键盘输入 -->
-			                <!-- <input type="text" id="text111" onclick="kefu.ui.chat.textInputClick();"> -->
-			                <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
-			                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
-			            </div>
-			            <div id="inputExtend">
-			                <!-- 其他，如图片、商品、订单 -->
-
-			            </div>    
-			            <div id="inputExtendShowArea">
-			                <!-- inputExtend的显示区域，如表情的显示 -->
-			            </div>
-			        </div>
-			    </footer>
 			`,
 			//发送一条消息，在双方聊天的消息末尾追加消息
 			appendMessage: function(message){
@@ -588,7 +590,7 @@ var kefu = {
 				chatcontent = document.getElementById('chatcontent');
 				chatcontent.innerHTML =  chatcontent.innerHTML + 
 					'<section class="chat bot systemChat"><div class="text systemText">'+text+'</div></section>';
-				window.scrollTo(0,chatcontent.scrollHeight);
+				kefu.ui.chat.scrollToBottom();
 			},
 			//新消息提醒，当我跟A用户一对一聊天时，恰好B用户给我发送消息了，这时要在当前的chat一对一聊天页面中，显示B用户给我发送消息的提示，提醒用户B用户也给我发消息了。
 			//message:接收到的消息对象，json对象。这里message.text已经是可以显示给用户的消息内容，已经处理好了，直接调用显示即可。
@@ -983,9 +985,7 @@ var kefu = {
 						inputExtendHtml = inputExtendHtml + '<span class="smallIcon" onclick="kefu.extend[\''+key+'\'].onclick();">'+ (kefu.extend[key].icon.replace(/{color}/g, kefu.extendIconColor)) + '</span>';
 				    }
 				}
-				//document.getElementById('inputExtend').innerHTML = '<div class="extendSmallIcon">'+inputExtendHtml+'</div>';
-				document.getElementById('inputExtend').innerHTML = '';	//缩小时不显示
-				
+				document.getElementById('inputExtend').innerHTML = '<div class="extendSmallIcon">'+inputExtendHtml+'</div>';
 			}
 		}
 
@@ -1245,7 +1245,6 @@ var kefu = {
 		order:{
 			name:'订单',
 			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894275814" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1559" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M128 891.663059h768a128 128 0 0 0 128-128V260.336941a128 128 0 0 0-128-128H128A128 128 0 0 0 0 260.336941v503.326118a128 128 0 0 0 128 128z m83.425882-475.376941v281.178353c0 31.051294-57.705412 31.171765-57.705411 0V334.697412c0-21.202824 7.589647-31.051294 22.64847-31.834353 12.137412-0.632471 25.057882 5.692235 38.701177 24.244706l202.390588 275.365647v-272.323765c0-37.255529 55.898353-37.225412 55.898353 0v362.767059c0 18.100706-7.559529 26.383059-22.648471 27.196235-13.673412 0.722824-24.786824-6.746353-36.261647-22.64847L211.425882 416.286118z m292.352 149.62447c0-213.232941 272.022588-212.781176 272.022589 0 0 206.667294-272.022588 208.956235-272.022589 0z m52.555294 0c0 128.813176 165.586824 133.782588 165.586824 0 0-73.667765-40.749176-103.695059-83.245176-102.912-42.496 0.783059-82.341647 32.406588-82.341648 102.912z m285.093648 97.249883c15.872 0 28.822588 12.950588 28.822588 28.822588s-12.950588 28.822588-28.822588 28.822588-28.822588-12.950588-28.822589-28.822588 12.950588-28.822588 28.822589-28.822588z" fill="{color}" p-id="1560"></path></svg>',
-			js:'./extend/order/order.js',	//引入这个扩展的自定义js。引入的这个js会在加载完kefu.js后立马加载引入这里的js
 			css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
 			//请求的api接口
 			requestApi:goodsUrl+'orderList.json',
