@@ -255,6 +255,7 @@ header .title{
 }
 #chat_footer #input_area #inputExtend .smallIcon > svg{
 	height: 1.5rem;
+	cursor: pointer;
 }
 
 
@@ -357,6 +358,25 @@ header .title{
 }
 
 /* PC端模式下的chat */
+#chat #pc:after {
+	/* content: "";
+  background: url(https://img.pic88.com/preview/2020/08/05/15966407841403643.jpg?imageMogr2/crop/!640x-0-20|watermark/3/image/aHR0cHM6Ly9qcy5waWM4OC5jb20vd3d3L2NvbW1vbi9pbWcvcGljODgtd2F0ZXIucG5n/gravity/Center/dissolve/100/dx/0/dy/10/image/aHR0cHM6Ly9qcy5waWM4OC5jb20vd3d3L2NvbW1vbi9pbWcvd2gyMzBiZy5wbmc=/dx/0/dy/25/text/SUTvvJoxMjAyMDA4MDUyMDMyMDYxNTkwMzA=/fill/I0ZGRkZGRg==/fontsize/320/dx/30/dy/30);
+  opacity: 0.1;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: -1;  */
+}
+
+/* 右上角的关闭按钮 */
+header #windowControl div svg{
+	width: 1rem;
+}
+header #windowControl>div{
+	cursor: pointer;
+}
 
 /* 新消息提醒的，隐藏 */
 #pc #newMessageRemind{
@@ -371,6 +391,14 @@ header .title{
 	position: inherit;
     height: 30rem;
     padding-bottom: 2rem;
+    background-color: white;
+}
+
+
+#pc #chat_footer{
+	border-color: #e6e6e6;
+	border-top-style: solid;
+	border-top-width: 1px;
 }
 
 #pc #chat_footer #input_area #inputExtend .item .iconName{
@@ -378,8 +406,8 @@ header .title{
 }
 
 #pc #chat_footer #input_area #inputExtend{
-	display: flex;
-	padding-left: 0rem;
+    display: flex;
+    padding-left: 0rem;
 }
 #pc #chat_footer #input_area #inputExtend .item{
 	width: 2.8rem;
@@ -389,6 +417,7 @@ header .title{
 }
 #pc #chat_footer #input_area #text{
 	border-radius: 0.2rem;
+	border: 0px;
 }
 #pc #chat_footer #input_area #inputExtend .extendSmallIcon{
     height: 1.4rem;
@@ -401,4 +430,5 @@ header .title{
 #pc #chat_footer #input_area .send{
 	border-radius: 0.2rem;
 	margin:0px;
+	cursor: pointer;
 }
