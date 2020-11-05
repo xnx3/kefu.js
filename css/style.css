@@ -7,7 +7,7 @@
     --background-color:white;
 }
 html , body{
-	margin: 0px;
+	margin: 0rem;
     background-color: #EFF0F1;
 }
 /* 去掉点击外围的大黄色框框 */
@@ -33,17 +33,25 @@ header{
 header .back{
     background-image: url(../images/back.png);
     background-repeat: no-repeat;
-    background-size: 12px 22px;
-    width: 20px;
+    background-size: 0.75rem 1.375rem;
+    width: 1.25rem;
     float: left;
-    margin-top: 10px;
-    margin-left: 13px;
-    height: 27px;
+    margin-top: 0.61rem;
+    margin-left: 0.81rem;
+    height: 1.69rem;
 }
 header .title{
-	margin-right:20px;
+	margin-right:1.25rem;
+	height: 2.7rem;
+    line-height: 2.7rem;
+    padding: 0px;
 }
-
+header .title nickname,header .title #nickname{
+	color: #F5FFFD;
+}
+header .title nickname,header .title #onlineState{
+	color: #F5FFFD;
+}
 
 /*  聊天列表， list.html  */
 #chatlist .item{
@@ -58,6 +66,7 @@ header .title{
     padding-bottom: 0.3rem;
     box-sizing: border-box;
     cursor: pointer;
+    color:#393D49;
 }
 #chatlist .item .head{
     float:left;
@@ -91,6 +100,13 @@ header .title{
     text-overflow:ellipsis; 
 }
 
+/* 没有聊天记录 */
+#chatlist .not_hostory_list{
+	height: 3rem;
+    line-height: 3rem;
+    text-align: center;
+    color: gray;
+}
 
 
 /* 在线聊天沟通，chat.html */
@@ -149,17 +165,17 @@ header .title{
 }
 
 .chat{
-	padding-left: 15px;
-    padding-top: 20px;
+	padding-left: 0.94rem;
+    padding-top: 1.25rem;
     overflow: auto;
 }
 .chat .head{
 	background-repeat: no-repeat;
-    background-size: 40px 40px;
-    width: 40px;
-    margin-top: 9px;
-    height: 40px;
-    border-radius: 40px;
+    background-size: 2.5rem 2.5rem;
+    width: 2.5rem;
+    margin-top: 0.56rem;
+    height: 2.5rem;
+    border-radius: 2.5rem;
 }
 .chat .text{
     background-color: #FEFFFF;
@@ -167,15 +183,15 @@ header .title{
     max-width: 100%;
     margin-left: 3.4rem;;
     border-radius: 0.3rem;
-    padding: 9px;
+    padding: 0.56rem;
     margin-top: 0.6rem;
     margin-right: 4.2rem;;
+    text-align: left;
 }
 
 /* 沟通的对方，聊天左侧一方 */
 .otherUser .head{
 	float: left;
-	/* margin-left: 13px; */
 	background-image: url(chatbot_head.png);
 }
 .otherUser .sanjiao{
@@ -192,7 +208,7 @@ header .title{
 /* 自己，聊天右侧的一方 */
 .user .head{
 	float: right;
-	margin-right: 13px;
+	margin-right: 0.81rem;
 	background-image: url(../images/head.png);
 }
 .user .text{
@@ -205,7 +221,7 @@ header .title{
 .user .sanjiao{
 	float: right;
 	margin-right: 0.3rem;
-    margin-top: 1.1rem;
+    margin-top: 1.05rem;
 	width:0;
     height:0;
     border-width: 0.7rem 0 0.7rem 0.7rem;
@@ -224,12 +240,12 @@ header .title{
 }
 .chat .systemText{
     display: inline-block;
-    line-height: 30px;
-    padding: 0 15px;
-    border-radius: 3px;
+    line-height: 1.875rem;
+    padding: 0 0.94rem;
+    border-radius: 0.2rem;
     background-color: #ddd;
     color: #fff;
-    font-size: 14px;
+    font-size: 0.88rem;
     cursor: pointer;
 }
 
@@ -237,11 +253,11 @@ header .title{
 #mobile #chat_footer {
     height: auto;
 	background: var(--background-color);
-    bottom: 0px;
+    bottom: 0rem;
     position: fixed;
     overflow: hidden;
     width: 100%;
-    box-shadow: 1px 1px 4px #BBBBBB;
+    box-shadow: 1px 1px 0.25rem #BBBBBB;
 }
 
 /* 输入方式 */
@@ -290,8 +306,8 @@ header .title{
 #chat_footer #icon{
 	background-image: url(../images/chat_yuyin.png);
 	background-repeat: no-repeat;
-    background-size: 30px 30px;
-	width: 55px;
+    background-size: 1.875rem 1.875rem;
+	width: 3.44rem;
     height: 100%;
     background-position: center;
     float: left;
@@ -306,9 +322,9 @@ header .title{
 	border: 1px solid #C6C7C8;
 	background-color: #FEFFFF;
 	width: 100%;
-    height: 33px;
-    border-radius: 2px;
-    font-size: 16px;
+    height: 2.06rem;
+    border-radius: 0.1rem;
+    font-size: 1rem;
 }
 #chat_footer #input_area #textInput{
 	display: flex;
@@ -342,7 +358,7 @@ header .title{
     font-size: 0.9rem;
     text-align: center;
     color: white;
-    border: 0px;
+    border: 0rem;
     margin-left: 0.4rem;
     margin-right: 0.4rem;
 }
@@ -360,12 +376,15 @@ header .title{
 /* inputExtend 输入扩展之表情 */
 #inputExtendShowArea #inputExtend_Face{
     padding:0.6rem;
+	text-align: left;
 }
 #inputExtendShowArea #inputExtend_Face span{
     padding:0.5rem;
     font-size: 1.3rem; 
     cursor:pointer;
 }
+
+/* PC 端模式下的list */
 
 /* PC端模式下的chat */
 #pc{
@@ -384,8 +403,9 @@ header .title{
 #pc #head{
 	height: 5rem;
     text-align: left; 
-    display: inline-flex; 
+    display: flex; 
     background-color: transparent;
+    overflow: hidden;
 }
 #pc #head #back{
 	display:none;
@@ -395,6 +415,9 @@ header .title{
 	margin-left: 1rem; 
 	display: flex; 
 	width: 100%;
+	overflow: hidden;
+	padding-top: 0rem;
+	height: 100%;
 }
 #pc #head #title #otherUserHead{
 	height: 3.7rem;
@@ -406,10 +429,12 @@ header .title{
 #pc #head #title #headNameState #nickname{
 	font-size: 1rem;     
 	height: 1rem;
+	color:#565878;
 }
 #pc #head #title #headNameState #onlineState{
 	font-size: 0.7rem;   
 	padding-top: 0.3rem;
+	color:#565878;
 }
 #pc #head #windowControl{
 	margin-right: 0.7rem;
@@ -427,7 +452,7 @@ header #windowControl>div{
 #pc #newMessageRemind{
 	display:none;
 	width:1px;
-	height:0px;
+	height:0rem;
 }
 
 /* 消息对话框的 */
@@ -479,10 +504,11 @@ header #windowControl>div{
 }
 #pc #chat_footer #input_area #text{
 	border-radius: 0.2rem;
-	border: 0px;
+	border: 0rem;
 	margin-left: 0rem;
 	width: 100%;
     height: 7rem;
+	text-align: left;
 }
 #pc #chat_footer #input_area #inputExtend .extendSmallIcon{
     height: 1.4rem;
@@ -495,11 +521,13 @@ header #windowControl>div{
 #pc #chat_footer #input_area #footerButton{
 	text-align: right;
     padding-right: 0.4rem;
-    padding-bottom: 0.4rem;
+    padding-bottom: 0.3rem;
     /* background:#ffffffdb; */
 }
 #pc #chat_footer #input_area #footerButton .send{
 	border-radius: 0.2rem;
-	margin:0px;
+	margin:0rem;
 	cursor: pointer;
+	width: 6rem;
+	word-spacing: 0.3rem;
 }

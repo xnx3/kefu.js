@@ -9,21 +9,15 @@
 <script src="./msg.js"></script>
 <script src="kefu.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen">
-<style>
-:root {
-    /* 聊天窗口中我发出去的消息的背景色 */
-    --user-chat-background-color: #daf4fd;
-}
-</style>
 </head>
 <body>
 
 
 <div id="list" style=" max-width: 40rem; width: 22rem;position: absolute; background: aliceblue;  height: 100%; overflow: scroll;"></div>
 <div style="float: left;  max-width: 400px;">
-	<div id="chat">
-    </div>
+	<div id="chat"></div>
 </div>
+<div style=" position: absolute; bottom: 0.5rem; left: 50%; margin-left: -9rem; color: gray;">当前客服坐席在线中，等待客户发起咨询</div>
 
 
 <script type="text/javascript">
@@ -41,37 +35,12 @@ kefu.api.uploadImage = host+'/uploadImage.json';
 kefu.extend.order.requestApi = 'http://cust.wfyuntu.com/plugin/kefu/getOrderList.json';
 
 
-kefu.mode='pc';
-kefu.ui.list.renderAreaId = 'list';
-kefu.ui.chat.renderAreaId = 'chat';
-
-kefu.ui.chat.html = kefu.ui.chat.pc.html;
-
-/* pc chat */
-kefu.extend.pc={
-	initChat:function(){
-		kefu.chat.shuruType = 'jianpan'
-		kefu.chat.shuruTypeChange();
-		
-		kefu.ui.chat.pc.moveInit();	//鼠标移动
-		//kefu.ui.chat.pc.sizeChange.moveInit();	//拖动大小
-		document.getElementById('close').innerHTML = kefu.ui.images.close.replace(/{color}/g,kefu.extendIconColor);
-	}
-};
-
-/*不再pc端显示订单输入*/
-kefu.extend.order.icon = null;
-kefu.extend.order.sendOrder=function(str, obj, str){};
-/* 商品相关 */
-kefu.extend.goods.sendGoods=function(str,obj){};
-
-/* 重写 图片插件的放大方法 */
-kefu.extend.image.fullScreen = function(imagesUrl){
-	window.open(imagesUrl);
-}
-kefu.notification.use = false;
 //kefu.js 初始化
-kefu.init();
+//kefu.init();
+//出现列表页
+//kefu.ui.list.entry();
+//初始化pc端客服坐席
+kefu.ui.chat.pc.init();
 //出现列表页
 kefu.ui.list.entry();
 

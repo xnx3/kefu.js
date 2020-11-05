@@ -256,7 +256,7 @@ var kefu = {
 			}
 		
 		}
-		
+		 
 		//下载音频文件
 		kefu.notification.audio.load();
 	},
@@ -373,13 +373,16 @@ var kefu = {
 	/**
 	 * 获取当前用户(我)的User信息
 	 */
-	getMyUser:function(){
+	getMyUser:function(func){
 		if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
 			msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
 			return;
 		}
 		request.post(kefu.api.getMyUser,{token:kefu.token.get()}, function(data){
 			kefu.user = data;
+			if(typeof(func) == 'function'){
+				func(data);
+			}
 		});
 	},
 	//过滤html标签，防XSS攻击
@@ -396,6 +399,17 @@ var kefu = {
 			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);" class="question">')
 			.replace(/\[\/li\]/g, '</li>')
 			.replace(/\[br\]/g, '<br>');
+	},
+	//客户端方面的，如判断是手机还是电脑
+	client:{
+		//判断当前是手机（包括平板）还是电脑访问。是手机访问，则返回true，否则返回false
+		isMobile:function(){
+			if ((navigator.userAgent.match(/(iPhone|iPod|Android|ios|iOS|iPad|Backerry|WebOS|Symbian|Windows Phone|Phone)/i))) {
+		        return true;
+		    }else{
+		        return false;
+		    }
+		}
 	},
 	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
 	getReceiveMessageText:function(message){
@@ -461,7 +475,9 @@ var kefu = {
 			render:function(){
 				if(kefu.ui.list.renderAreaId.length > 0){
 					//有设置渲染区域，那么渲染到设置的id上
-					document.getElementById(kefu.ui.list.renderAreaId).innerHTML = kefu.ui.list.html;
+					if(document.getElementById(kefu.ui.list.renderAreaId) != null){
+						document.getElementById(kefu.ui.list.renderAreaId).innerHTML = kefu.ui.list.html;
+					}
 				}else{
 					document.body.innerHTML = kefu.ui.list.html;
 				}
@@ -476,6 +492,10 @@ var kefu = {
 			    var html = '';
 			    for (var i = 0; i < chatListLength; i++) {
 			        html = kefu.ui.list.getListItemByTemplate(chatList[i]) + html;
+			    }
+			    if(html == ''){
+			    	//还没有聊天记录
+			    	html = '<div class="not_hostory_list">当前还没有沟通记录</div>';
 			    }
 			    document.getElementById('chatlist').innerHTML = html;
 
@@ -623,7 +643,9 @@ var kefu = {
 			render:function(otherUserId){
 				if(kefu.ui.list.renderAreaId.length > 0){
 					//有设置渲染区域，那么渲染到设置的id上
-					document.getElementById(kefu.ui.chat.renderAreaId).innerHTML = kefu.ui.chat.html;
+					if(document.getElementById(kefu.ui.chat.renderAreaId) != null){
+						document.getElementById(kefu.ui.chat.renderAreaId).innerHTML = kefu.ui.chat.html;
+					}
 				}else{
 					//赋予chat聊天窗html的大框信息显示
 					document.body.innerHTML = kefu.ui.chat.html;
@@ -812,8 +834,8 @@ var kefu = {
 						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
 						        </div>
 						        <div id="footerButton">
-						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关闭</button>
-						        	<input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
+						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
+						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 						        </div>
 						    </div>
 						</footer>
@@ -824,6 +846,44 @@ var kefu = {
 					document.getElementById('pc').parentNode.removeChild(document.getElementById('pc'));
 					kefu.ui.list.entry();
 				},
+				//初始化pc端客服坐席
+				init:function(){
+					kefu.mode='pc';
+					kefu.ui.list.renderAreaId = 'list';
+					kefu.ui.chat.renderAreaId = 'chat';
+					kefu.ui.chat.html = kefu.ui.chat.pc.html;
+					
+					/* pc chat */
+					kefu.extend.pc={
+						initChat:function(){
+							kefu.chat.shuruType = 'jianpan'
+							kefu.chat.shuruTypeChange();
+							
+							kefu.ui.chat.pc.moveInit();	//鼠标移动
+							//kefu.ui.chat.pc.sizeChange.moveInit();	//拖动大小
+							document.getElementById('close').innerHTML = kefu.ui.images.close.replace(/{color}/g,kefu.extendIconColor);
+						}
+					};
+					
+					/*不再pc端显示订单输入*/
+					kefu.extend.order.icon = null;
+					kefu.extend.order.sendOrder=function(str, obj, str2){};
+					/* 商品相关 */
+					kefu.extend.goods.sendGoods=function(str,obj){};
+					
+					/* 重写 图片插件的放大方法 */
+					kefu.extend.image.fullScreen = function(imagesUrl){
+						window.open(imagesUrl);
+					}
+					
+					//kefu.js 初始化
+					kefu.init();
+				},
+//				//打开一个聊天窗口，比如可用于网站漂浮的在线客服，点击图标后打开chat聊天窗口
+//				chat:function(userid){
+//					//kefu.ui.chat.pc.init();
+//					kefu.ui.chat.entry('403');
+//				},
 				chatWindowDiv : null, //chat窗口的dom
 				chatHeadWindowDiv:null,	//chat窗口头部的dom，拖动头部进行拖动chat窗口
 				x : 0,
