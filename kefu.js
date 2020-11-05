@@ -44,7 +44,7 @@ function formatTime(number,format) {
 	if((number + '').length == 10){
 		number = number * 1000;
   	}
-	var date = new Date(number * 1000);
+	var date = new Date(number);
   returnArr.push(date.getFullYear());
   returnArr.push(formatNumber(date.getMonth() + 1));
   returnArr.push(formatNumber(date.getDate()));
@@ -451,7 +451,7 @@ var kefu = {
 			                    {nickname}
 			                </div>
 			                <div>
-			                    <span class="num">{num}</span>
+			                    <span class="num">{read}</span>
 			                    <div class="text">{text}</div>
 			                </div>
 			            </div>
@@ -464,13 +464,21 @@ var kefu = {
 			    </div> -->
 			`,
 			getListItemByTemplate:function(item){
+				//消息是否已读
+				var read = '';
+				console.log(item);
+				if(typeof(item['read']) != 'undefined'){
+					if(!item['read']){
+						read = '<div>&nbsp;</div>'; 
+					}
+				}
 			    return kefu.ui.list.listItemTemplate
 			            .replace(/{id}/g, item['id'])
 			            .replace(/{text}/g, item['text'])
 			            .replace(/{nickname}/g, item['nickname'])
 			            .replace(/{head}/g, item['head'])
 			            .replace(/{time}/g, formatTime(item['time'], 'M-D h:m'))
-			            .replace(/{num}/g, '<div>&nbsp;</div>');
+			            .replace(/{read}/g, read);
 			},
 			render:function(){
 				if(kefu.ui.list.renderAreaId.length > 0){
@@ -793,6 +801,31 @@ var kefu = {
 			entry:function(userid){
 				kefu.currentPage = 'chat';
 				kefu.ui.chat.render(userid);
+				//从list中标记这个用户的聊天已经全部看过了，将未读消息变为已读消息
+				var cacheList = kefu.cache.getChatList();
+				var message = null;
+				for(var i = cacheList.length; i >= 0; i--){ 
+					if(typeof(cacheList[i]) != 'undefined' && userid == cacheList[i].id){
+						console.log('--------');
+						console.log(cacheList[i]);
+						message = cacheList[i];
+					}
+				}
+				if(message != null){
+					//如果这个chat窗口在list中有缓存消息，那么将其中的read变为已读
+					if(!message.read){
+						message.read = true;
+						console.log('cache:');
+						console.log(message);
+						kefu.cache.getUser(userid, function(user) {
+							kefu.cache.pushChatList(user, message);
+							if(kefu.mode == 'pc'){
+								//如果是pc模式，那么还要刷新list
+								kefu.ui.list.render();
+							}
+						})
+					}
+				}
 			},
 			//PC端chat专用
 			pc:{
@@ -1314,7 +1347,8 @@ var kefu = {
 				text:text,		//最后一次沟通的内容
 				nickname:otherUser.nickname,	//对方的昵称
 				head:otherUser.head, 	//对方的头像
-				time:message.time 			//消息产生的时间。
+				time:message.time, 			//消息产生的时间。
+				read:message.read		//消息是否已读
 			}
 			if(newMessage.time == null){
 				newMessage.time = parseInt(new Date().getTime()/1000);
@@ -1656,15 +1690,15 @@ var socket = {
 	onmessage:function(res){ 
 		var message = JSON.parse(res.data);
 		message.text = kefu.getReceiveMessageText(message);
-		kefu.cache.add(message);   //消息缓存
+		message.read = false;	//默认消息就是未读的。false：未读，true已读
 		
 		if(kefu.mode == 'pc'){
 			//pc
 			
-			kefu.ui.list.render();	//渲染list页面
 			if(kefu.currentPage == 'chat'){
 				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
 				if(message.sendId == kefu.chat.otherUser.id){
+					message.read = true;
 					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
 				}else{
 					//不是这个人的，不再这个chat中显示消息
@@ -1675,14 +1709,12 @@ var socket = {
 			//mobile模式，也就是要么在list页面，要么在chat页面
 			if(kefu.currentPage == 'list'){
 				//当前在list列表页
-				kefu.cache.getUser(message.sendId, function(user){
-					kefu.ui.list.render();	//重新渲染页面
-				});
 				//弹出新消息提醒
 //				msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
 			}else{
 				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
 				if(message.sendId == kefu.chat.otherUser.id || message.type == 'SYSTEM'){
+					message.read = true;
 					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
 				}else{
 					//消息发送方跟当前chat聊天的用户不是同一个人，那么弹出个提醒吧
@@ -1690,6 +1722,17 @@ var socket = {
 					kefu.ui.chat.newMessageRemind(message);
 				}
 			}
+		}
+		
+		//消息缓存
+		kefu.cache.add(message);   
+		
+		//渲染list消息列表
+		if(kefu.mode == 'pc' || kefu.currentPage == 'list'){
+			//如果是pc模式，或者mobile模式的当前页面是list，那么渲染list页面
+			kefu.cache.getUser(message.sendId, function(user){
+				kefu.ui.list.render();	//渲染页面
+			});
 		}
 		
 		//通知提醒

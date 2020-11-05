@@ -83,14 +83,15 @@ header .title nickname,header .title #onlineState{
 }
 #chatlist .item .num{
     float: right;
-    display: none;
+	margin-top: 0.5rem;
+    margin-right: 0.3rem;
 }
 /* 未读消息的点 */
 #chatlist .item .num>div{
     background: #f00;
-    border-radius: 50%;
-    width: 0.5rem;
-    height: 0.5rem;
+    border-radius: 1rem;
+    width: 0.65rem;
+    height: 0.6rem;
 }
 #chatlist .item .text{
     width:10rem;
