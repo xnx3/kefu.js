@@ -1,6 +1,6 @@
 :root {
     /* 聊天窗口中我发出去的消息的背景色 */
-    --user-chat-background-color: #9CFF1C;
+    --user-chat-background-color: #daf4fd;
     /* 聊天窗口中，对方发过来的消息的背景色 */
     --otherUser-chat-background-color: #FEFFFF;
     /* 背景色-聊天列表的背景色、一对一聊天窗口底部的背景色 */
@@ -57,6 +57,7 @@ header .title{
     padding-top: 0.5rem;
     padding-bottom: 0.3rem;
     box-sizing: border-box;
+    cursor: pointer;
 }
 #chatlist .item .head{
     float:left;
@@ -196,6 +197,10 @@ header .title{
 }
 .user .text{
 	background-color: var(--user-chat-background-color);
+	text-align: right;
+    float: right;
+    margin-right: 0rem;
+	max-width: 60%;
 }
 .user .sanjiao{
 	float: right;
@@ -206,6 +211,10 @@ header .title{
     border-width: 0.7rem 0 0.7rem 0.7rem;
     border-style:solid;
     border-color:transparent transparent transparent var(--user-chat-background-color);/*透明 灰 透明 透明 */
+}
+/* 常见问题的li */
+.chat .text .question{
+	cursor: pointer;
 }
 
 
@@ -355,28 +364,64 @@ header .title{
 #inputExtendShowArea #inputExtend_Face span{
     padding:0.5rem;
     font-size: 1.3rem; 
+    cursor:pointer;
 }
 
 /* PC端模式下的chat */
-#chat #pc:after {
-	/* content: "";
-  background: url(https://img.pic88.com/preview/2020/08/05/15966407841403643.jpg?imageMogr2/crop/!640x-0-20|watermark/3/image/aHR0cHM6Ly9qcy5waWM4OC5jb20vd3d3L2NvbW1vbi9pbWcvcGljODgtd2F0ZXIucG5n/gravity/Center/dissolve/100/dx/0/dy/10/image/aHR0cHM6Ly9qcy5waWM4OC5jb20vd3d3L2NvbW1vbi9pbWcvd2gyMzBiZy5wbmc=/dx/0/dy/25/text/SUTvvJoxMjAyMDA4MDUyMDMyMDYxNTkwMzA=/fill/I0ZGRkZGRg==/fontsize/320/dx/30/dy/30);
-  opacity: 0.1;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  position: absolute;
-  z-index: -1;  */
+#pc{
+	width: 45rem;
+	border-radius: 0.2rem;
+    overflow: hidden; 
+    margin-left: 25rem; 
+    margin-top: 3rem;        
+    border-style: solid;
+    border-width: 1px;
+    border-color: #e6e6e6;
+    background:url(http://kefudev.obs.cn-north-4.myhuaweicloud.com//Users/apple/git/kefu_js/images/pc_background.png);
 }
 
+/* 头部 */
+#pc #head{
+	height: 5rem;
+    text-align: left; 
+    display: inline-flex; 
+    background-color: transparent;
+}
+#pc #head #back{
+	display:none;
+}
+#pc #head #title{
+	margin-top: 0.6rem;
+	margin-left: 1rem; 
+	display: flex; 
+	width: 100%;
+}
+#pc #head #title #otherUserHead{
+	height: 3.7rem;
+}
+#pc #head #title #headNameState{
+	padding-left: 0.8rem;  
+	color: #444444;
+}
+#pc #head #title #headNameState #nickname{
+	font-size: 1rem;     
+	height: 1rem;
+}
+#pc #head #title #headNameState #onlineState{
+	font-size: 0.7rem;   
+	padding-top: 0.3rem;
+}
+#pc #head #windowControl{
+	margin-right: 0.7rem;
+}
 /* 右上角的关闭按钮 */
-header #windowControl div svg{
+#pc #head #windowControl div svg{
 	width: 1rem;
 }
 header #windowControl>div{
 	cursor: pointer;
 }
+
 
 /* 新消息提醒的，隐藏 */
 #pc #newMessageRemind{
@@ -384,15 +429,27 @@ header #windowControl>div{
 	width:1px;
 	height:0px;
 }
-#pc #shuruType{
-	display: none;
+
+/* 消息对话框的 */
+#pc #chatcontent .user .text {
+    background-color: var(--user-chat-background-color);
+    text-align: left;
+    float: right;
+    margin-right: 0rem;
 }
+#pc #chatcontent .chat .text>img{
+	cursor: pointer;
+}
+
+
 #pc #chatcontent{
 	position: inherit;
     height: 30rem;
     padding-bottom: 2rem;
     background-color: white;
+    /* background-color: #ffffff9e; */
 }
+
 
 
 #pc #chat_footer{
@@ -400,9 +457,14 @@ header #windowControl>div{
 	border-top-style: solid;
 	border-top-width: 1px;
 }
-
+#pc #shuruType{
+	display: none;
+}
 #pc #chat_footer #input_area #inputExtend .item .iconName{
 	display:none;
+}
+#pc #chat_footer #input_area{
+	/* background: #ffffff9e; */
 }
 
 #pc #chat_footer #input_area #inputExtend{
@@ -418,6 +480,9 @@ header #windowControl>div{
 #pc #chat_footer #input_area #text{
 	border-radius: 0.2rem;
 	border: 0px;
+	margin-left: 0rem;
+	width: 100%;
+    height: 7rem;
 }
 #pc #chat_footer #input_area #inputExtend .extendSmallIcon{
     height: 1.4rem;
@@ -427,7 +492,13 @@ header #windowControl>div{
 	line-height:1rem;
 }
 /*底部按钮*/
-#pc #chat_footer #input_area .send{
+#pc #chat_footer #input_area #footerButton{
+	text-align: right;
+    padding-right: 0.4rem;
+    padding-bottom: 0.4rem;
+    /* background:#ffffffdb; */
+}
+#pc #chat_footer #input_area #footerButton .send{
 	border-radius: 0.2rem;
 	margin:0px;
 	cursor: pointer;

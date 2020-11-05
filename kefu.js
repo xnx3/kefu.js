@@ -393,7 +393,7 @@ var kefu = {
 	ubb:function(text){
 		return text.replace(/\[ul\]/g, '<ul>')
 			.replace(/\[\/ul\]/g, '</ul>')
-			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);">')
+			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);" class="question">')
 			.replace(/\[\/li\]/g, '</li>')
 			.replace(/\[br\]/g, '<br>');
 	},
@@ -774,6 +774,56 @@ var kefu = {
 			},
 			//PC端chat专用
 			pc:{
+				html : `
+					<div id="pc">    	
+						<header class="chat_header" id="head">
+							<div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
+							<div class="title" id="title">
+								<img src="https://res.weiunity.com/kefu/images/head.png" id="otherUserHead" />
+								<div id="headNameState">
+									<div id="nickname">在线咨询</div>
+									<div id="onlineState">在线</div>
+								</div>
+							</div>
+							<div id="windowControl">
+								<div id="close" onclick="kefu.ui.chat.pc.close();">&nbsp;</div>
+							</div>
+						</header>
+						<div id="newMessageRemind">
+							<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
+							<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
+						</div>
+						
+						<section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
+						</section>
+						
+						<footer id="chat_footer">
+						    <div id="input_area">
+						    	<div id="inputExtend">
+						            <!-- 其他，如图片、商品、订单 -->
+						
+						        </div>
+						        <div id="inputExtendShowArea">
+						            <!-- inputExtend的显示区域，如表情的显示 -->
+						        </div>
+						        <div id="textInput">
+						        	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
+						            <!-- 键盘输入 -->
+						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
+						        </div>
+						        <div id="footerButton">
+						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关闭</button>
+						        	<input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
+						        </div>
+						    </div>
+						</footer>
+					</div>
+					`,
+				//关闭chat窗口
+				close:function(){
+					document.getElementById('pc').parentNode.removeChild(document.getElementById('pc'));
+					kefu.ui.list.entry();
+				},
 				chatWindowDiv : null, //chat窗口的dom
 				chatHeadWindowDiv:null,	//chat窗口头部的dom，拖动头部进行拖动chat窗口
 				x : 0,
@@ -781,7 +831,81 @@ var kefu = {
 				left : 0,
 				top : 0,
 				isDown:false,
-				//鼠标点击移动的初始化
+				
+				
+				//拖动改变大小
+				sizeChange:{
+					currentX:0,
+					currentY:-1,	//上一次鼠标移动的鼠标在屏幕的y坐标
+					chatWindowHeight:0,	//上一次的chat窗口高度
+					height_chat_content_size:0,	//chat窗口高度-content聊天区域的高度等于多少
+					moveInit:function(){
+						var chatWindows = document.getElementById('pc');
+						//var chatWindowsHeight = (chatWindows.offsetHeight+chatWindows.borderTop+chatWindows.borderBottom);
+						var chatWindowsHeight = chatWindows.offsetHeight;
+						//chatWindows.style.height =  chatWindowsHeight+'px';
+			        	
+						var contentWindows = document.getElementById('chatcontent');
+						//var contentWindowsHeight = (contentWindows.offsetHeight+contentWindows.borderTop+contentWindows.borderBottom);
+						var contentWindowsHeight = contentWindows.offsetHeight;
+						//contentWindows.style.height = contentWindowsHeight+'px';
+						
+						console.log('chatWindowsHeight:'+chatWindowsHeight+", contentWindowsHeight:"+contentWindowsHeight)
+						kefu.ui.chat.pc.sizeChange.height_chat_content_size = chatWindowsHeight - contentWindowsHeight; 
+						//缩放效果
+						var father = document.body;
+						var scale = document.getElementById('footerButton');
+					    scale.onmousedown = function (e) {
+					      // 阻止冒泡,避免缩放时触发移动事件
+					      e.stopPropagation();
+					      e.preventDefault();
+					      let pos = {
+					        'w': kefu.ui.chat.pc.chatWindowDiv.offsetWidth,
+					        'h': kefu.ui.chat.pc.chatWindowDiv.offsetHeight,
+					        'x': e.clientX,
+					        'y': e.clientY
+					      };
+					      father.onmousemove = function (ev) {
+					        ev.preventDefault();
+					        // 设置图片的最小缩放为30*30
+					        let w = Math.max(300, ev.clientX - pos.x + pos.w)
+					        let h = Math.max(300, ev.clientY - pos.y + pos.h)
+					        //console.log("ev.clientY:"+ev.clientY+" , pos.y:"+pos.y+" , pos.h:"+pos.h);
+					        h = pos.h;
+					        var yuanheight =pos.h; 
+					        
+					        // 设置图片的最大宽高
+					        w = w >= father.offsetWidth - kefu.ui.chat.pc.chatWindowDiv.offsetLeft ? father.offsetWidth - kefu.ui.chat.pc.chatWindowDiv.offsetLeft : w
+					        //h = h >= father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop ? father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop : h
+					        h=father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop;
+					        //console.log("w:"+w+", h:"+h);
+					        
+					        if(kefu.ui.chat.pc.sizeChange.currentY > 0){
+					        	var height= kefu.ui.chat.pc.sizeChange.chatWindowHeight - (kefu.ui.chat.pc.sizeChange.currentY - ev.clientY) ;
+					        	console.log((kefu.ui.chat.pc.sizeChange.currentY - ev.clientY)+", height:"+height);
+					        	kefu.ui.chat.pc.chatWindowDiv.style.height = height + 'px';
+					        	kefu.ui.chat.pc.sizeChange.chatWindowHeight = height;
+					        	document.getElementById('chatcontent').style.height = (height-kefu.ui.chat.pc.sizeChange.height_chat_content_size)+'px';
+					        }else{
+					        	kefu.ui.chat.pc.sizeChange.chatWindowHeight = kefu.ui.chat.pc.chatWindowDiv.offsetHeight;
+					        }
+					        kefu.ui.chat.pc.chatWindowDiv.style.width = w + 'px';
+					        
+					        kefu.ui.chat.pc.sizeChange.currentY = ev.clientY;
+					      }
+					      father.onmouseleave = function () {
+					        father.onmousemove = null;
+					        father.onmouseup = null;
+					      }
+					      father.onmouseup = function () {
+					        father.onmousemove = null;
+					        father.onmouseup = null;
+					      }
+					    }
+					    
+					}
+				},
+				//鼠标点击移动、放大缩小的初始化
 				moveInit:function(){
 					kefu.ui.chat.pc.chatWindowDiv = document.getElementById('pc');
 					kefu.ui.chat.pc.chatHeadWindowDiv = document.getElementById('head');
@@ -799,7 +923,6 @@ var kefu = {
 					    kefu.ui.chat.pc.isDown = true;
 					    //设置样式  
 					    kefu.ui.chat.pc.chatHeadWindowDiv.style.cursor = 'move';
-					    console.log(kefu.ui.chat.pc);
 					};
 					//鼠标移动
 					window.onmousemove = function(e) {
@@ -812,7 +935,6 @@ var kefu = {
 					    //计算移动后的左偏移量和顶部的偏移量
 					    var nl = nx - (kefu.ui.chat.pc.x - kefu.ui.chat.pc.left);
 					    var nt = ny - (kefu.ui.chat.pc.y - kefu.ui.chat.pc.top);
-					    console.log('nl:'+nl+", nx:"+nx+", x:"+kefu.ui.chat.pc.x+", left:"+kefu.ui.chat.pc.left);
 					    kefu.ui.chat.pc.chatWindowDiv.style.marginLeft = nl + 'px';
 					    kefu.ui.chat.pc.chatWindowDiv.style.marginTop = nt + 'px';
 					};

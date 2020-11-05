@@ -28,6 +28,7 @@
     height: 2.4rem;
     line-height: 1.2rem;
     overflow: hidden;
+    text-align: left;
 }
 .extend_order_item .goodsInfo .goodsAttr .priceState{
 	margin-top:0.3rem;
