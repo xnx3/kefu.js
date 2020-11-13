@@ -62,8 +62,8 @@ header .title nickname,header .title #onlineState{
     border-bottom-width: 1px;
     padding-left: 1rem;
     padding-right: 1rem;
-    padding-top: 0.6rem;
-    padding-bottom: 0.6rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
     box-sizing: border-box;
     cursor: pointer;
     color:#494949;
@@ -79,14 +79,15 @@ header .title nickname,header .title #onlineState{
     margin-right: 1rem;
 }
 #chatlist .item .nickname{
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
     padding-top: 0.35rem;
 }
 #chatlist .item .time{
-    float:right;
-    font-size: 1rem;
+    float: right;
     font-weight: normal;
+    font-size: 0.8rem;
+    padding-top: 0.1rem;
 }
 #chatlist .item .num{
     float: right;

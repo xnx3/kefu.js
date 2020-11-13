@@ -5,8 +5,7 @@
 <meta http-equiv="Content-Language" content="zh-CN">
 <meta name="author" content="管雷鸣">
 <title>聊天列表</title>
-<script src="http://res.weiunity.com/msg/msg.js--"></script>
-<script src="./msg.js"></script>
+<script src="https://res.weiunity.com/msg/msg.js"></script>
 <script src="kefu.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen">
 </head>
@@ -14,16 +13,17 @@
 <script type="text/javascript">
 var host = 'http://kefu.wfyuntu.com';
 var socketUrl = 'ws://119.3.209.5:8081';
+var aisongdaHost = 'http://cust.wfyuntu.com';
 //var host = 'http://localhost:8080';
 //var socketUrl = 'ws://localhost:8081/';
 
 //kefu.js 接口设置
-//kefu.api.getMyUser = 'http://'+host+'/user/init.json';
-kefu.api.getMyUser = host+'/inset/chat/login.json';
-kefu.api.getChatOtherUser = host+'/user/getUserById.json';
+//kefu.api.getMyUser = host+'/kefu/user/init.json';
+kefu.api.getMyUser = host+'/kefu/inset/login.json';	//三方系统对接
+kefu.api.getChatOtherUser = host+'/kefu/user/getUserById.json';
 kefu.api.chatLog = host+'/chatLog.json';
 kefu.api.uploadImage = host+'/uploadImage.json';
-kefu.extend.order.requestApi = 'http://cust.wfyuntu.com/plugin/kefu/getOrderList.json';
+kefu.extend.order.requestApi = aisongdaHost+'/plugin/kefu/getOrderList.json';
 
 
 //在APP中初始化，传入如 window.webkit.messageHandlers
@@ -138,7 +138,7 @@ kefu.extend.goods.initChat = function(){
 		if(!kefu.extend.goods.goods_show){
 			//通过接口获取这个指定的商品信息，弹出显示，提醒用户是否发送这个商品
 		    msg.loading('获取中');
-		    request.post('http://test.wfyuntu.com/plugin/kefu/getGoods.json',{token:kefu.token.get(), goodsid:kefu.extend.goods.goodsid}, function(data){
+		    request.post(aisongdaHost+'/plugin/kefu/getGoods.json',{token:kefu.token.get(), goodsid:kefu.extend.goods.goodsid}, function(data){
 		        msg.close();
 		        kefu.extend.goods.goods = data.data;
 		        msg.popups({
