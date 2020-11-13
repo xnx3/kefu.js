@@ -96,9 +96,9 @@ header .title nickname,header .title #onlineState{
 /* 未读消息的点 */
 #chatlist .item .num>div{
     background: #f00;
-    border-radius: 1rem;
+    border-radius: 3rem;
     width: 0.65rem;
-    height: 0.6rem;
+    height: 0.65rem;
 }
 #chatlist .item .text{
     width:10rem;
