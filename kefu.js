@@ -379,7 +379,7 @@ var kefu = {
 			return;
 		}
 		request.post(kefu.api.getMyUser,{token:kefu.token.get()}, function(data){
-			kefu.user = data;
+			kefu.user = data.user;
 			if(typeof(func) == 'function'){
 				func(data);
 			}
