@@ -8,7 +8,7 @@
 }
 html , body{
 	margin: 0rem;
-    background-color: #EFF0F1;
+    /* background-color: #EFF0F1; */
 }
 /* 去掉点击外围的大黄色框框 */
 input,button{
@@ -48,6 +48,7 @@ header .title{
 }
 header .title nickname,header .title #nickname{
 	color: #F5FFFD;
+	font-size: 1.1rem;
 }
 header .title nickname,header .title #onlineState{
 	color: #F5FFFD;
@@ -196,6 +197,7 @@ header .title nickname,header .title #onlineState{
     margin-top: 0.6rem;
     margin-right: 4.2rem;;
     text-align: left;
+    line-height: 1.15rem;
 }
 
 /* 沟通的对方，聊天左侧一方 */
@@ -237,9 +239,16 @@ header .title nickname,header .title #onlineState{
     border-style:solid;
     border-color:transparent transparent transparent var(--user-chat-background-color);/*透明 灰 透明 透明 */
 }
+/* 常见问题的ul */
+.chat .text > ul{
+	padding-inline-start: 1.5rem;
+    margin-block-start: 0.5em;
+}
 /* 常见问题的li */
 .chat .text .question{
 	cursor: pointer;
+	list-style: disc;
+	line-height: 1.3rem;
 }
 
 
@@ -266,7 +275,7 @@ header .title nickname,header .title #onlineState{
     position: fixed;
     overflow: hidden;
     width: 100%;
-    box-shadow: 1px 1px 0.25rem #BBBBBB;
+    box-shadow: 1px 1px 0.15rem #BBBBBB;
 }
 
 /* 输入方式 */
@@ -444,6 +453,7 @@ header .title nickname,header .title #onlineState{
 	font-size: 0.7rem;   
 	padding-top: 0.3rem;
 	color:#565878;
+	text-align: left;
 }
 #pc #head #windowControl{
 	margin-right: 0.7rem;
@@ -475,16 +485,13 @@ header #windowControl>div{
 	cursor: pointer;
 }
 
-
 #pc #chatcontent{
 	position: inherit;
     height: 30rem;
-    padding-bottom: 2rem;
+    padding-bottom: 3rem;
     background-color: white;
     /* background-color: #ffffff9e; */
 }
-
-
 
 #pc #chat_footer{
 	border-color: #e6e6e6;

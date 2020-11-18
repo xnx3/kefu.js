@@ -466,7 +466,6 @@ var kefu = {
 			getListItemByTemplate:function(item){
 				//消息是否已读
 				var read = '';
-				console.log(item);
 				if(typeof(item['read']) != 'undefined'){
 					if(!item['read']){
 						read = '<div>&nbsp;</div>'; 
@@ -677,6 +676,10 @@ var kefu = {
 					document.getElementById('nickname').innerHTML = kefu.chat.otherUser.nickname;
 					//对方在线状态
 			        document.getElementById('onlineState').innerHTML = data.onlineState;
+			        if(document.getElementById('otherUserHead') != null){
+			        	//聊天窗口中对方用户的头像
+			        	document.getElementById('otherUserHead').src = data.user.head;
+			        }
 			        
 			        //将对方用户发言的头像换为接口拉取的真实头像。如果当前chat模板中显示头像的话
 			        try{
@@ -806,8 +809,6 @@ var kefu = {
 				var message = null;
 				for(var i = cacheList.length; i >= 0; i--){ 
 					if(typeof(cacheList[i]) != 'undefined' && userid == cacheList[i].id){
-						console.log('--------');
-						console.log(cacheList[i]);
 						message = cacheList[i];
 					}
 				}
@@ -815,8 +816,6 @@ var kefu = {
 					//如果这个chat窗口在list中有缓存消息，那么将其中的read变为已读
 					if(!message.read){
 						message.read = true;
-						console.log('cache:');
-						console.log(message);
 						kefu.cache.getUser(userid, function(user) {
 							kefu.cache.pushChatList(user, message);
 							if(kefu.mode == 'pc'){
@@ -1119,6 +1118,8 @@ var kefu = {
 					var firstItem = chatcontent.getElementsByTagName("section")[0];
 
 					if(data.result == '0'){
+						//如果失败了，那么就删掉绑定的滚动条监控，避免死循环一直请求
+						document.getElementById('chatcontent').onscroll = function(){}
 						//失败，弹出提示
 						msg.failure(data.info);
 					}else if(data.result == '1'){
@@ -1155,6 +1156,7 @@ var kefu = {
 		},
 		/* 发送文本格式消息  text:要发送的文本消息。 返回json对象的message */
 		sendTextMessage:function(text){
+			text = text.replace(/\n/g,'[br]');	//将用户输入的换行替换为[br]
 			var data = {
 		    	token:kefu.token.get(),
 		    	type:'MSG',	//消息类型

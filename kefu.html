@@ -11,8 +11,8 @@
 </head>
 <body>
 <script type="text/javascript">
-var host = 'http://kefu.wfyuntu.com';
-var socketUrl = 'ws://119.3.209.5:8081';
+var host = 'https://api.kefu.leimingyun.com/';
+var socketUrl = 'wss://socket.kefu.leimingyun.com/';
 var aisongdaHost = 'http://cust.wfyuntu.com';
 //var host = 'http://localhost:8080';
 //var socketUrl = 'ws://localhost:8081/';
@@ -20,9 +20,9 @@ var aisongdaHost = 'http://cust.wfyuntu.com';
 //kefu.js 接口设置
 //kefu.api.getMyUser = host+'/kefu/user/init.json';
 kefu.api.getMyUser = host+'/kefu/inset/login.json';	//三方系统对接
-kefu.api.getChatOtherUser = host+'/kefu/user/getUserById.json';
-kefu.api.chatLog = host+'/chatLog.json';
-kefu.api.uploadImage = host+'/uploadImage.json';
+kefu.api.getChatOtherUser = host+'/kefu/chat/user/getUserById.json';
+kefu.api.chatLog = host+'/kefu/chat/log/log.json';
+kefu.api.uploadImage = host+'/kefu/chat/file/uploadImage.json';
 kefu.extend.order.requestApi = aisongdaHost+'/plugin/kefu/getOrderList.json';
 
 
