@@ -866,6 +866,7 @@ var kefu = {
 						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
 						        </div>
 						        <div id="footerButton">
+						        	<div id="copyright">power by 雷鸣云客服</div>
 						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
 						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
 						        </div>
@@ -1681,12 +1682,31 @@ var kefu = {
 var socket = {
 	url:'ws://xxxxxx',	//websocket链接的url，在 socket.connect时传入赋值
 	socket:null,
+	//心跳相关
+	heartBeat:{
+		time:60, 	//心跳时间，60秒，单位是秒。每隔60秒自动发一次心跳
+		text:'{"type":"HEARTBEAT","text":"AreYouThere"}',	//心跳发起，询问服务端的心跳内容，默认是 {"type":"HEART_BEAT","text":"AreYouThere"}
+		isStart:false,	//当前自动发送心跳是否启动了， false：未启动，  true：已启动
+		startHeartBeat:function(){
+			if(socket.heartBeat.isStart == false){
+				//未启动，那么启动心跳
+		        var socketHeartBeatInterval = setInterval(function(){
+		        	socket.send(socket.heartBeat.text);
+		        }, socket.heartBeat.time*1000);
+		        socket.heartBeat.isStart = true;
+		        console.log('socket headrtBeat thread start');
+			}
+		}
+	},
 	//连接成功时触发
 	onopen:function(){
 		socket.send(JSON.stringify({
 	        'type': 'CONNECT' //第一次联通，登录
 	        ,'token':kefu.token.get()
 	    })); 
+		
+		//开启心跳
+		socket.heartBeat.startHeartBeat();
 	},
 	//监听收到的消息的function
 	onmessage:function(res){ 

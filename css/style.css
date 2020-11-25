@@ -258,13 +258,16 @@ header .title nickname,header .title #onlineState{
 }
 .chat .systemText{
     display: inline-block;
-    line-height: 1.875rem;
-    padding: 0 0.94rem;
+    line-height: 1.3rem;
     border-radius: 0.2rem;
     background-color: #ddd;
     color: #fff;
     font-size: 0.88rem;
     cursor: pointer;
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
 }
 
 /* 底部输入 */
@@ -546,4 +549,13 @@ header #windowControl>div{
 	cursor: pointer;
 	width: 6rem;
 	word-spacing: 0.3rem;
+}
+/*版权信息*/
+#pc #chat_footer #copyright{
+    display: inline;
+    color: #DDD;
+    font-size: 0.5rem;
+    width: 100rem;
+    text-align: center;
+    padding-right: 1rem;
 }
