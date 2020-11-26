@@ -370,6 +370,7 @@ header .title nickname,header .title #onlineState{
 	padding-top:0.3rem;
 	padding-bottom:0.3rem;
 	margin-bottom: 0.3rem;
+	line-height: 1.35rem;
 }
 #chat_footer #input_area .send{
     background-color: #1296db;

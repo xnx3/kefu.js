@@ -703,8 +703,6 @@ var kefu = {
 			        if(kefu.chat.chatMessageStartTime < 1){
 			            kefu.chat.chatMessageStartTime = new Date().getTime();
 			        }
-			        console.log('getOtherUser:');
-			        console.log(kefu.chat.otherUser);
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
@@ -1711,6 +1709,10 @@ var socket = {
 	//监听收到的消息的function
 	onmessage:function(res){ 
 		var message = JSON.parse(res.data);
+		if(message.type != null && message.type == 'HEARTBEAT'){
+			//心跳消息，忽略
+			return;
+		}
 		message.text = kefu.getReceiveMessageText(message);
 		message.read = false;	//默认消息就是未读的。false：未读，true已读
 		
