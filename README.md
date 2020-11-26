@@ -147,6 +147,8 @@ kefu.extend.example.onclick=function(){
 
 
 
-im.js压缩：
-https://jscompressor.com/
+kefu.js压缩：
+1. https://jscompressor.com/
+2. https://www.json.cn/json/jshx.html 底混淆高性能 + 防止格式化
 
+original/kefu.js 是原始js文件
