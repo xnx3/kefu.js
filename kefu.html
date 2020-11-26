@@ -229,7 +229,7 @@ kefu.getMyUser = function(){
 		}else{
 			kefu.user = data.user;
 			kefu.user.otherUserId = data.otherUserId;
-			socket.connect(socketUrl);	//建立 socket 通讯
+			kefu.socket.connect(socketUrl);	//建立 socket 通讯
 		}
 	});
 }

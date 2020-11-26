@@ -706,10 +706,10 @@ var kefu = {
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
-			            	if(typeof(socket.socket) != 'undefined' && socket.socket.readyState == socket.socket.OPEN){
+			            	if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
 			            		//socket也已经打开了
 			            		//拉对方的自动回复欢迎语
-			            		socket.send(JSON.stringify({
+			            		kefu.socket.send(JSON.stringify({
 				                    token: kefu.token.get()
 				                    ,receiveId: kefu.chat.otherUser.id
 				                    ,type:"AUTO_REPLY"
@@ -1166,7 +1166,7 @@ var kefu = {
 		    }
 		    var message = JSON.stringify(data);
 		    kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
-		    socket.send(message);       //socket发送
+		    kefu.socket.send(message);       //socket发送
 		    kefu.cache.add(message);   //缓存
 
 		    return message;
@@ -1201,7 +1201,7 @@ var kefu = {
 			
 			//socket发送消息
 			message.text = '';	//清理掉message.text 因为这个本来就是自动生成出来的不必额外占用带宽、流量
-			socket.send(message);
+			kefu.socket.send(message);
 
 			kefu.cache.add(message);   //缓存
 		},
@@ -1674,138 +1674,138 @@ var kefu = {
 				}
 			}
 		}
+	},
+	socket:{
+		url:'ws://xxxxxx',	//websocket链接的url，在 socket.connect时传入赋值
+		socket:null,
+		//心跳相关
+		heartBeat:{
+			time:60, 	//心跳时间，60秒，单位是秒。每隔60秒自动发一次心跳
+			text:'{"type":"HEARTBEAT","text":"AreYouThere"}',	//心跳发起，询问服务端的心跳内容，默认是 {"type":"HEART_BEAT","text":"AreYouThere"}
+			isStart:false,	//当前自动发送心跳是否启动了， false：未启动，  true：已启动
+			startHeartBeat:function(){
+				if(kefu.socket.heartBeat.isStart == false){
+					//未启动，那么启动心跳
+			        var socketHeartBeatInterval = setInterval(function(){
+			        	kefu.socket.send(socket.heartBeat.text);
+			        }, kefu.socket.heartBeat.time*1000);
+			        kefu.socket.heartBeat.isStart = true;
+			        console.log('kefu.socket headrtBeat thread start');
+				}
+			}
+		},
+		//连接成功时触发
+		onopen:function(){
+			kefu.socket.send(JSON.stringify({
+		        'type': 'CONNECT' //第一次联通，登录
+		        ,'token':kefu.token.get()
+		    })); 
+			
+			//开启心跳
+			kefu.socket.heartBeat.startHeartBeat();
+		},
+		//监听收到的消息的function
+		onmessage:function(res){ 
+			var message = JSON.parse(res.data);
+			if(message.type != null && message.type == 'HEARTBEAT'){
+				//心跳消息，忽略
+				return;
+			}
+			message.text = kefu.getReceiveMessageText(message);
+			message.read = false;	//默认消息就是未读的。false：未读，true已读
+			
+			if(kefu.mode == 'pc'){
+				//pc
+				
+				if(kefu.currentPage == 'chat'){
+					//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+					if(message.sendId == kefu.chat.otherUser.id){
+						message.read = true;
+						kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+					}else{
+						//不是这个人的，不再这个chat中显示消息
+						console.log('不是这个人的，不再这个chat中显示消息');
+					}
+				}
+			}else{
+				//mobile模式，也就是要么在list页面，要么在chat页面
+				if(kefu.currentPage == 'list'){
+					//当前在list列表页
+					//弹出新消息提醒
+//						msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
+				}else{
+					//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+					if(message.sendId == kefu.chat.otherUser.id || message.type == 'SYSTEM'){
+						message.read = true;
+						kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+					}else{
+						//消息发送方跟当前chat聊天的用户不是同一个人，那么弹出个提醒吧
+						//msg.popups('<div onclick="kefu.ui.chat.render(\''+message.sendId+'\');">有新消息</div>');
+						kefu.ui.chat.newMessageRemind(message);
+					}
+				}
+			}
+			
+			//消息缓存
+			kefu.cache.add(message);   
+			
+			//渲染list消息列表
+			if(kefu.mode == 'pc' || kefu.currentPage == 'list'){
+				//如果是pc模式，或者mobile模式的当前页面是list，那么渲染list页面
+				kefu.cache.getUser(message.sendId, function(user){
+					kefu.ui.list.render();	//渲染页面
+				});
+			}
+			
+			//通知提醒
+			kefu.notification.execute('您有新消息',message.text);
+		},
+		//连接
+		connect:function(url){
+			this.url = url;
+			this.reconnect.connect();
+			
+			//socket断线重连
+	        var socketCloseAgainConnectInterval = setInterval(function(){
+	        	if(kefu.socket.socket.readyState == kefu.socket.socket.CLOSED){
+	                console.log('socketCloseAgainConnectInterval : socket closed , again connect ...');
+	                kefu.socket.reconnect.connect();
+	            }
+	        }, 3000);
+		},
+		//重新连接，主要用于断线重连
+		reconnect:{
+			connecting:false,	//当前websocket是否是正在连接中,断线重连使用
+			//重新连接
+			connect:function(){
+				if(!this.connecting){
+					console.log('socket connect ... '+new Date().toLocaleString());
+					this.connecting = true;	//标记已经有socket正在尝试连接了
+					kefu.socket.socket = new WebSocket(kefu.socket.url);
+					kefu.socket.socket.onopen = function(){
+						kefu.socket.onopen();
+					};
+					kefu.socket.socket.onmessage = function(res){
+						//res为接受到的值，如 {"emit": "messageName", "data": {}}
+						kefu.socket.onmessage(res);
+					};
+					this.connecting = false;
+				}
+			},
+		},
+		//发送消息
+		send:function(text){
+			if(this.socket.readyState == this.socket.OPEN){
+				if(typeof(text) == 'object'){
+					text = JSON.stringify(text);
+				}
+				this.socket.send(text);
+			}else if(this.socket.readyState == this.socket.CLOSED || this.socket.readyState == this.socket.CLOSING){
+				msg.info('socket 已关闭，正在开启重连');
+				this.reconnect.connect();
+				this.send(text);	//重新发送
+			}
+		}
 	}
 }
 
-var socket = {
-	url:'ws://xxxxxx',	//websocket链接的url，在 socket.connect时传入赋值
-	socket:null,
-	//心跳相关
-	heartBeat:{
-		time:60, 	//心跳时间，60秒，单位是秒。每隔60秒自动发一次心跳
-		text:'{"type":"HEARTBEAT","text":"AreYouThere"}',	//心跳发起，询问服务端的心跳内容，默认是 {"type":"HEART_BEAT","text":"AreYouThere"}
-		isStart:false,	//当前自动发送心跳是否启动了， false：未启动，  true：已启动
-		startHeartBeat:function(){
-			if(socket.heartBeat.isStart == false){
-				//未启动，那么启动心跳
-		        var socketHeartBeatInterval = setInterval(function(){
-		        	socket.send(socket.heartBeat.text);
-		        }, socket.heartBeat.time*1000);
-		        socket.heartBeat.isStart = true;
-		        console.log('socket headrtBeat thread start');
-			}
-		}
-	},
-	//连接成功时触发
-	onopen:function(){
-		socket.send(JSON.stringify({
-	        'type': 'CONNECT' //第一次联通，登录
-	        ,'token':kefu.token.get()
-	    })); 
-		
-		//开启心跳
-		socket.heartBeat.startHeartBeat();
-	},
-	//监听收到的消息的function
-	onmessage:function(res){ 
-		var message = JSON.parse(res.data);
-		if(message.type != null && message.type == 'HEARTBEAT'){
-			//心跳消息，忽略
-			return;
-		}
-		message.text = kefu.getReceiveMessageText(message);
-		message.read = false;	//默认消息就是未读的。false：未读，true已读
-		
-		if(kefu.mode == 'pc'){
-			//pc
-			
-			if(kefu.currentPage == 'chat'){
-				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
-				if(message.sendId == kefu.chat.otherUser.id){
-					message.read = true;
-					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
-				}else{
-					//不是这个人的，不再这个chat中显示消息
-					console.log('不是这个人的，不再这个chat中显示消息');
-				}
-			}
-		}else{
-			//mobile模式，也就是要么在list页面，要么在chat页面
-			if(kefu.currentPage == 'list'){
-				//当前在list列表页
-				//弹出新消息提醒
-//				msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
-			}else{
-				//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
-				if(message.sendId == kefu.chat.otherUser.id || message.type == 'SYSTEM'){
-					message.read = true;
-					kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
-				}else{
-					//消息发送方跟当前chat聊天的用户不是同一个人，那么弹出个提醒吧
-					//msg.popups('<div onclick="kefu.ui.chat.render(\''+message.sendId+'\');">有新消息</div>');
-					kefu.ui.chat.newMessageRemind(message);
-				}
-			}
-		}
-		
-		//消息缓存
-		kefu.cache.add(message);   
-		
-		//渲染list消息列表
-		if(kefu.mode == 'pc' || kefu.currentPage == 'list'){
-			//如果是pc模式，或者mobile模式的当前页面是list，那么渲染list页面
-			kefu.cache.getUser(message.sendId, function(user){
-				kefu.ui.list.render();	//渲染页面
-			});
-		}
-		
-		//通知提醒
-		kefu.notification.execute('您有新消息',message.text);
-	},
-	//连接
-	connect:function(url){
-		this.url = url;
-		this.reconnect.connect();
-		
-		//socket断线重连
-        var socketCloseAgainConnectInterval = setInterval(function(){
-        	if(socket.socket.readyState == socket.socket.CLOSED){
-                console.log('socketCloseAgainConnectInterval : socket closed , again connect ...');
-                socket.reconnect.connect();
-            }
-        }, 3000);
-	},
-	//重新连接，主要用于断线重连
-	reconnect:{
-		connecting:false,	//当前websocket是否是正在连接中,断线重连使用
-		//重新连接
-		connect:function(){
-			if(!this.connecting){
-				console.log('socket connect ... '+new Date().toLocaleString());
-				this.connecting = true;	//标记已经有socket正在尝试连接了
-				socket.socket = new WebSocket(socket.url);
-				socket.socket.onopen = function(){
-					socket.onopen();
-				};
-				socket.socket.onmessage = function(res){
-					//res为接受到的值，如 {"emit": "messageName", "data": {}}
-					socket.onmessage(res);
-				};
-				this.connecting = false;
-			}
-		},
-	},
-	//发送消息
-	send:function(text){
-		if(this.socket.readyState == this.socket.OPEN){
-			if(typeof(text) == 'object'){
-				text = JSON.stringify(text);
-			}
-			this.socket.send(text);
-		}else if(this.socket.readyState == this.socket.CLOSED || this.socket.readyState == this.socket.CLOSING){
-			msg.info('socket 已关闭，正在开启重连');
-			this.reconnect.connect();
-			this.send(text);	//重新发送
-		}
-	}
-}
