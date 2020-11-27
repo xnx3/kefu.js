@@ -1687,7 +1687,7 @@ var kefu = {
 				if(kefu.socket.heartBeat.isStart == false){
 					//未启动，那么启动心跳
 			        var socketHeartBeatInterval = setInterval(function(){
-			        	kefu.socket.send(socket.heartBeat.text);
+			        	kefu.socket.send(kefu.socket.heartBeat.text);
 			        }, kefu.socket.heartBeat.time*1000);
 			        kefu.socket.heartBeat.isStart = true;
 			        console.log('kefu.socket headrtBeat thread start');
