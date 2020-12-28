@@ -418,7 +418,7 @@ header .title nickname,header .title #onlineState{
     border-style: solid;
     border-width: 1px;
     border-color: #e6e6e6;
-    background:url(http://kefudev.obs.cn-north-4.myhuaweicloud.com//Users/apple/git/kefu_js/images/pc_background.png);
+    background:url(../images/pc_background.jpg);
 }
 
 /* 头部 */
