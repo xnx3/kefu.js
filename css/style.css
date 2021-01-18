@@ -168,7 +168,7 @@ header .title nickname,header .title #onlineState{
     position: fixed;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 12rem;
+    padding-bottom: 9rem;
 }
 .chats:last-child{
 	margin-bottom:14rem
@@ -227,7 +227,7 @@ header .title nickname,header .title #onlineState{
 	text-align: right;
     float: right;
     margin-right: 0rem;
-	max-width: 60%;
+	max-width: 50%;
 }
 .user .sanjiao{
 	float: right;
@@ -283,7 +283,6 @@ header .title nickname,header .title #onlineState{
 
 /* 输入方式 */
 #chat_footer #shuruType{
-	background-image: url(./images/chat_jianpan.png。。。。。。);
 	width: 2.4rem;
     height: 2rem;
     background-repeat: round;
