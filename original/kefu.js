@@ -541,7 +541,7 @@ var kefu = {
 						<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
 					</div>
 					
-				    <section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
+				    <section id="chatcontent" onclick="kefu.chat.switchToJianpanShuruType();">
 				    </section>
 				    
 				    <footer id="chat_footer">
@@ -639,12 +639,13 @@ var kefu = {
 			//文字输入框被点击，隐藏扩展功能区域
 			textInputClick:function (){
 				//隐藏扩展功能输入区域
-				document.getElementById('inputExtend').style.display = '';
-				document.getElementById('inputExtendShowArea').style.display = 'none';
-				if(kefu.chat.shuruType != 'jianpan'){
-					kefu.chat.shuruTypeChange();
-				}
-				
+//				document.getElementById('inputExtend').style.display = '';
+//				document.getElementById('inputExtendShowArea').style.display = 'none';
+//				if(kefu.chat.shuruType != 'jianpan'){
+//					kefu.chat.shuruTypeChange();
+//				}
+				//切换到键盘输入方式
+				kefu.chat.switchToJianpanShuruType();
 			},
 			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
 			render:function(otherUserId){
@@ -1244,11 +1245,18 @@ var kefu = {
 				    }
 				}
 				document.getElementById('inputExtend').innerHTML = inputExtendHtml;
+				//显示扩展功能栏
+				document.getElementById('inputExtend').style.display = '';
 				
+				//显示 插件内容显示的区域，如表情插件显示出来的表情选择所在的区域
+				document.getElementById('inputExtendShowArea').style.display = '';
 			}else{
 				//当前是更多输入，切换到键盘输入方式
 				kefu.chat.shuruType = 'jianpan';
 				document.getElementById('shuruType').innerHTML = kefu.ui.images.more.replace(/{color}/g,kefu.ui.color.shuruTypeColor);;
+				
+				//清空掉插件内容显示的区域，如表情插件显示出来的表情选择所在的区域，将表情列表清空掉
+				document.getElementById('inputExtendShowArea').innerHTML = '';
 				
 				//更多简化缩小
 				var inputExtendHtml = '';
@@ -1258,6 +1266,17 @@ var kefu = {
 				    }
 				}
 				document.getElementById('inputExtend').innerHTML = '<div class="extendSmallIcon">'+inputExtendHtml+'</div>';
+			}
+		},
+		//切换到键盘输入类型
+		switchToJianpanShuruType(){
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') == null){
+				return;
+			}
+			if(kefu.chat.shuruType != 'jianpan'){
+				//如果当前不是键盘输入，那么触发执行输入类型改变
+				this.shuruTypeChange();
 			}
 		}
 
@@ -1486,6 +1505,9 @@ var kefu = {
 					            			url:data.url
 					            	};
 					            	kefu.chat.sendPluginMessage(extend, 'image');
+					            	
+					            	//切换到键盘输入方式
+					            	kefu.chat.switchToJianpanShuruType();
 					            }else{
 					            	msg.failure(data.info);
 					            }

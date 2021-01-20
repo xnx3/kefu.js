@@ -168,7 +168,7 @@ header .title nickname,header .title #onlineState{
     position: fixed;
     width: 100%;
     box-sizing: border-box;
-    padding-bottom: 9rem;
+    padding-bottom: 6.5rem;
 }
 .chats:last-child{
 	margin-bottom:14rem
