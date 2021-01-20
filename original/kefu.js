@@ -1506,11 +1506,9 @@ var kefu = {
 			fullScreen:function(imageUrl){
 				msg.popups({
 					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; " />',
-					top:'1rem',
 					width:'100%',
-					left:'0rem',
-					height:'30rem',
-					opacity:100
+					opacity:100,
+					padding:'1px'
 				});
 			}
 		},
