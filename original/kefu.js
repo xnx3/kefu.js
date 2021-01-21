@@ -636,7 +636,7 @@ var kefu = {
 					document.getElementById('newMessageRemind').style.display = 'block';
 				});
 			},
-			//文字输入框被点击，隐藏扩展功能区域
+			//文字输入框被点击，隐藏扩展功能区域,已废弃，有 kefu.chat.switchToJianpanShuruType() 代替
 			textInputClick:function (){
 				//隐藏扩展功能输入区域
 //				document.getElementById('inputExtend').style.display = '';
@@ -847,7 +847,7 @@ var kefu = {
 							<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
 						</div>
 						
-						<section id="chatcontent" onclick="kefu.ui.chat.textInputClick();">
+						<section id="chatcontent" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();">
 						</section>
 						
 						<footer id="chat_footer">
@@ -862,12 +862,12 @@ var kefu = {
 						        <div id="textInput">
 						        	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
 						            <!-- 键盘输入 -->
-						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
+						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>
 						        </div>
 						        <div id="footerButton">
-						        	<div id="copyright">power by 雷鸣云客服</div>
+						        	<div id="copyright" onclick="window.open(\"http://www.kefu.zvo.cn\");">power by 雷鸣云客服</div>
 						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
-						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
+						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">
 						        </div>
 						    </div>
 						</footer>
@@ -877,6 +877,16 @@ var kefu = {
 				close:function(){
 					document.getElementById('pc').parentNode.removeChild(document.getElementById('pc'));
 					kefu.ui.list.entry();
+				},
+				//切换到正常键盘输入方式，也就是如果之前使用了表情，出现了表情选择，执行这个后就会将表情选择关掉，还原回刚打开聊天界面时的输入方式
+				switchToJianpanShuruType:function(){
+					//先切换到键盘输入方式
+					kefu.chat.shuruType = 'more';
+					kefu.chat.switchToJianpanShuruType();
+					//在更改为插件输入方式
+					kefu.chat.shuruTypeChange();
+					//再切换一次到键盘输入方式
+					kefu.chat.switchToJianpanShuruType();
 				},
 				//初始化pc端客服坐席
 				init:function(){
@@ -1465,6 +1475,9 @@ var kefu = {
 				document.getElementById('inputExtendShowArea').style.display = '';
 
 				document.getElementById('inputExtendShowArea').innerHTML = html;
+				
+				//标记当前正在使用扩展的输入方式，而非键盘输入方式了
+				kefu.chat.shuruType = 'more';
 			},
 			/* 向输入框中插入表情 */
 			insert:function (key){
