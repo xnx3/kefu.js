@@ -865,7 +865,7 @@ var kefu = {
 						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>
 						        </div>
 						        <div id="footerButton">
-						        	<div id="copyright" onclick="window.open(\"http://www.kefu.zvo.cn\");">power by 雷鸣云客服</div>
+						        	<div id="copyright" onclick="window.open('http://www.kefu.zvo.cn');">power by 雷鸣云客服</div>
 						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
 						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">
 						        </div>
