@@ -494,6 +494,8 @@ header #windowControl>div{
     padding-bottom: 3rem;
     background-color: white;
     /* background-color: #ffffff9e; */
+    overflow-y: auto;
+	overflow-x: hidden;
 }
 
 #pc #chat_footer{
