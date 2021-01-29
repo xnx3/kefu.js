@@ -391,6 +391,31 @@ var kefu = {
 		text = text.replace(/&npsp;/ig, ''); //去掉npsp
 		return text;
 	},
+	//获取图片的url，正常使用时图片路径可能是 //cdn.xxxx.com/a.jpg ，但是在本地测试时，就会自动加上 file: 导致图片破裂了。这个方法作用就是自动补上协议，如果是本地，那就补上http协议，让图片能正常显示
+	getImageUrl:function(imgUrl){
+		if(typeof(imgUrl) == 'undefined'){
+			return '';
+		}
+		
+		if(imgUrl.indexOf('http://') == 0 || imgUrl.indexOf('https://') == 0){
+			//如果图片路径是正常带有协议的，那么直接原样返回
+			return imgUrl;
+		}
+		
+		//判断一下是否是以 // 开头的，如果不是，那么也是原样返回
+		if(imgUrl.indexOf('//') != 0){
+			return imgUrl;
+		}
+		
+		//如果是自动补齐协议，那么就要判断一下是否是本地使用了
+		if(window.location.protocol == 'file:'){
+			//本地使用，那图片默认补上 http 协议
+			return 'http:'+imgUrl;
+		}
+		
+		//其他情况，直接原样返回
+		return imgUrl;
+	},
 	//将[ul][li][br]等转化为html
 	ubb:function(text){
 		return text.replace(/\[ul\]/g, '<ul>')
@@ -475,7 +500,7 @@ var kefu = {
 			            .replace(/{id}/g, item['id'])
 			            .replace(/{text}/g, item['text'])
 			            .replace(/{nickname}/g, item['nickname'])
-			            .replace(/{head}/g, item['head'])
+			            .replace(/{head}/g, kefu.getImageUrl(item['head']))
 			            .replace(/{time}/g, formatTime(item['time'], 'M-D h:m'))
 			            .replace(/{read}/g, read);
 			},
@@ -598,7 +623,7 @@ var kefu = {
 			    }else if(message['sendId'] == kefu.chat.otherUser.id){
 			        //是自己接受的这个消息，那么显示在左侧
 			        section.className = 'chat otherUser '+message['type'];
-			        section.innerHTML = '<div class="head" style="background-image: url('+kefu.chat.otherUser.head+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			        section.innerHTML = '<div class="head" style="background-image: url('+kefu.getImageUrl(kefu.chat.otherUser.head)+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
 			    }
 			    return section;
 			},
@@ -679,14 +704,14 @@ var kefu = {
 			        document.getElementById('onlineState').innerHTML = data.onlineState;
 			        if(document.getElementById('otherUserHead') != null){
 			        	//聊天窗口中对方用户的头像
-			        	document.getElementById('otherUserHead').src = data.user.head;
+			        	document.getElementById('otherUserHead').src = kefu.getImageUrl(data.user.head);
 			        }
 			        
 			        //将对方用户发言的头像换为接口拉取的真实头像。如果当前chat模板中显示头像的话
 			        try{
 			        	var heads = document.getElementsByClassName("otherUser");
 				        for(var i = 0; i < heads.length; i++){
-				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+kefu.chat.otherUser.head+'\')';
+				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+kefu.getImageUrl(kefu.chat.otherUser.head)+'\')';
 				        }
 			        }catch(e){
 			        	console.log('当前chat聊天模板中没有显示头像吧？下面这个错误只是个提示，无需理会');
@@ -1376,7 +1401,7 @@ var kefu = {
 				id:otherUser.id,	//对方的userid
 				text:text,		//最后一次沟通的内容
 				nickname:otherUser.nickname,	//对方的昵称
-				head:otherUser.head, 	//对方的头像
+				head:kefu.getImageUrl(otherUser.head), 	//对方的头像
 				time:message.time, 			//消息产生的时间。
 				read:message.read		//消息是否已读
 			}
@@ -1500,7 +1525,7 @@ var kefu = {
 			},
 			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
 			format:function(message){
-				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(message.extend.url));
+				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(kefu.getImageUrl(message.extend.url)));
 				return message;
 			},
 			onclick:function(){
@@ -1515,7 +1540,7 @@ var kefu = {
 					            if(data.result == '1'){
 					            	//组合extend的消息体
 					            	var extend = {
-					            			url:data.url
+					            			url:kefu.getImageUrl(data.url)
 					            	};
 					            	kefu.chat.sendPluginMessage(extend, 'image');
 					            	
