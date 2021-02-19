@@ -561,4 +561,6 @@ header #windowControl>div{
     width: 100rem;
     text-align: center;
     padding-right: 1rem;
+    
+    display:none;
 }
