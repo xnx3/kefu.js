@@ -105,7 +105,7 @@ kefu.extend.example.initChat=function(){
     "type":"EXTEND",
     "time":1603952723916,
     "extend":{
-        "extend":"image",
+        "name":"image",
         "url":"https://yunkefu.obs.cn-north-4.myhuaweicloud.com/im/image/065742ddcda649059f916fd64a8d2492.png"
     }
 }
@@ -144,10 +144,8 @@ kefu.extend.example.onclick=function(){
 [/li] </li>
 ````
 
-
-
-kefu.js压缩：
+## kefu.js压缩：
 1. https://jscompressor.com/
-2. https://www.json.cn/json/jshx.html 底混淆高性能 + 防止格式化
+
 
 original/kefu.js 是原始js文件
