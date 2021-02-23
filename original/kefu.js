@@ -1213,7 +1213,7 @@ var kefu = {
 				return;
 			}
 			if(data != null){
-				data.extend = name;
+				data.name = name;
 			}else{
 				data = {};
 			}
