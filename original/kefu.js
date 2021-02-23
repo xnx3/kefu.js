@@ -432,9 +432,9 @@ var kefu = {
 	},
 	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
 	getReceiveMessageText:function(message){
-		if(message.extend != null && message.extend.extend != null){
+		if(message.extend != null && message.extend.name != null){
 			//如果是插件，那么将json变为插件显示的样式
-			message = kefu.extend[message.extend.extend].format(message);
+			message = kefu.extend[message.extend.name].format(message);
 		}
 		//将[ul][li][br]等转化为html
 		message['text'] = kefu.ubb(message['text']);
@@ -1388,7 +1388,7 @@ var kefu = {
 			//聊天内容
 			var text = message.text;
 		    if(message.type == 'EXTEND'){
-		        text = kefu.extend[message.extend.extend].name;
+		        text = kefu.extend[message.extend.name].name;
 		    }
 
 			//组合新的消息
