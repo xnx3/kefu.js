@@ -252,6 +252,13 @@ var kefu = {
 		 
 		//下载音频文件
 		kefu.notification.audio.load();
+		
+		//获取聊天对方的用户信息
+		kefu.getMyUser(function(data){
+			kefu.user = data.user;
+			kefu.user.otherUserId = data.otherUserId;
+			kefu.socket.connect(socketUrl);	//建立 socket 通讯
+		});
 	},
 	//新消息通知、提醒
 	notification:{
