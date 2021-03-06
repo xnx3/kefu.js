@@ -1,13 +1,9 @@
 
-<div style="width:100%; text-align:center; padding-left:15%">
-	<img src="https://res.weiunity.com/kefu/dev/h5Pc/kefu_pc.png" style="float:left; width:35%" />
-	<img src="https://res.weiunity.com/kefu/dev/h5Mobile/kefu_mobile.png" style="float:left;width:35%" />
-</div>
-
 # 简介
 H5做的在线客服，其实就是一个对话窗口。
 
-
+| ![输入图片说明](https://images.gitee.com/uploads/images/2021/0306/171845_27fa6313_429922.png "在这里输入图片标题")  |  ![输入图片说明](https://images.gitee.com/uploads/images/2021/0306/171852_eab00bf0_429922.png "在这里输入图片标题") | ![输入图片说明](https://images.gitee.com/uploads/images/2021/0306/172305_300ad448_429922.png "在这里输入图片标题") |
+|---|---|---|
 
 
 ## 扩展（开发插件）
