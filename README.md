@@ -1,7 +1,7 @@
 
-<div style="width:100%; text-align:center;">
-	<img src="https://res.weiunity.com/kefu/dev/h5Pc/kefu_pc.png" style="width:40%" />
-	<img src="https://res.weiunity.com/kefu/dev/h5Mobile/kefu_mobile.png" style="width:40%" />
+<div style="width:100%; text-align:center; padding-left:15%">
+	<img src="https://res.weiunity.com/kefu/dev/h5Pc/kefu_pc.png" style="float:left; width:35%" />
+	<img src="https://res.weiunity.com/kefu/dev/h5Mobile/kefu_mobile.png" style="float:left;width:35%" />
 </div>
 
 # 简介
