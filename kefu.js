@@ -1,1 +1,1864 @@
-function generateUUID(){var e=(new Date).getTime();return window.performance&&"function"==typeof window.performance.now&&(e+=performance.now()),"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".replace(/[xy]/g,function(t){var n=(e+16*Math.random())%16|0;return e=Math.floor(e/16),("x"==t?n:3&n|8).toString(16)})}function getUrlParams(e){var t=new RegExp("(^|&)"+e+"=([^&]*)(&|$)"),n=window.location.search.substr(1).match(t);return null!=n?unescape(n[2]):null}function formatNumber(e){return(e=e.toString())[1]?e:"0"+e}function formatTime(e,t){var n=["Y","M","D","h","m","s"],i=[];10==(e+"").length&&(e*=1e3);var o=new Date(e);for(var c in i.push(o.getFullYear()),i.push(formatNumber(o.getMonth()+1)),i.push(formatNumber(o.getDate())),i.push(formatNumber(o.getHours())),i.push(formatNumber(o.getMinutes())),i.push(formatNumber(o.getSeconds())),i)t=t.replace(n[c],i[c]);return t}var request={get:function(e,t,n){this.send(e,t,n,"get",!0,{"content-type":"application/x-www-form-urlencoded"},null)},post:function(e,t,n){this.send(e,t,n,"POST",!0,{"content-type":"application/x-www-form-urlencoded"},null)},send:function(e,t,n,i,o,c,a){var s="";if(null!=t)for(var u in t)s.length>0&&(s+="&"),s=s+u+"="+t[u];var r=null;try{r=new XMLHttpRequest}catch(e){r=new ActiveXObject("Microsoft.XMLHTTP")}if(r.open(i,e,o),null!=c)for(var u in c)r.setRequestHeader(u,c[u]);r.send(s),r.onreadystatechange=function(){if(4==r.readyState)if(200==r.status){var e=null;try{e=JSON.parse(r.responseText)}catch(e){console.log(e)}n(null==e?r.responseText:e)}else null!=a&&a(r)}},upload:function(e,t,n,i,o,c){var a=new FormData;if(a.append("file",n),null!=t)for(var s in t)a.append(s,t[s]);var u=null;try{u=new XMLHttpRequest}catch(e){u=new ActiveXObject("Microsoft.XMLHTTP")}if(u.open("POST",e,!0),null!=o)for(var s in o)u.setRequestHeader(s,o[s]);u.send(a),u.onreadystatechange=function(){if(4==u.readyState)if(200==u.status){var e=null;try{e=JSON.parse(u.responseText)}catch(e){console.log(e)}i(null==e?u.responseText:e)}else null!=c&&c(u)}}},kefu={api:{getMyUser:"",getChatOtherUser:"",chatLog:"",uploadImage:""},user:{},currentPage:"list",mode:"mobile",remindVoicePath:"https://res.weiunity.com/kefu/media/voice.mp3",init:function(){var e=document.getElementsByTagName("head")[0];for(var t in kefu.extend){if(null!=kefu.extend[t].js&&kefu.extend[t].js.length>0){var n=document.createElement("script");n.type="text/javascript",n.src=kefu.extend[t].js,e.appendChild(n)}if(null!=kefu.extend[t].css&&kefu.extend[t].css.length>0){var i=document.createElement("link");i.type="text/css",i.rel="stylesheet",i.href=kefu.extend[t].css,e.appendChild(i)}if(null!=kefu.extend[t].init)try{kefu.extend[t].init()}catch(e){console.log(e)}}kefu.notification.audio.load()},notification:{use:!0,audioPath:"https://res.weiunity.com/kefu/media/voice.mp3",execute:function(e,t){if(kefu.notification.use){try{kefu.notification.audio.play()}catch(e){console.log(e)}if("https:"==document.location.protocol){if(null!=window.Notification)if("granted"===Notification.permission)new Notification(e,{body:t,silent:!1});else Notification.requestPermission()}else console.log("当前使用的不是https请求！只有https请求才可以有浏览器消息通知。这里只是声音通知")}},audio:{audioBuffer:null,audioContext:new(window.AudioContext||window.webkitAudioContext||window.mozAudioContext||window.msAudioContext),load:function(){if(null==kefu.notification.audioPath||kefu.notification.audioPath.length<1)console.log("已将 kefu.notification.audioPath 设为空，将不再出现声音提醒");else{var e=new XMLHttpRequest;e.open("GET",kefu.notification.audioPath,!0),e.responseType="arraybuffer",e.onload=function(e){kefu.notification.audio.audioContext.decodeAudioData(this.response,function(e){kefu.notification.audio.audioBuffer=e},function(e){console.log("kefu.notification.load() Error decoding file",e)})},e.send()}},play:function(){if(null!=kefu.notification.audio.audioBuffer){var e=kefu.notification.audio.audioContext.createBufferSource();e.buffer=kefu.notification.audio.audioBuffer,e.connect(kefu.notification.audio.audioContext.destination),e.start(0)}else kefu.notification.audio.load()}}},storage:{get:function(e){return localStorage.getItem(e)},set:function(e,t){localStorage.setItem(e,t)}},token:{token:null,get:function(){return null==this.token&&(this.token=kefu.storage.get("token")),(null==this.token||this.token.length<5)&&(this.token="youke_"+generateUUID()),this.set(this.token),this.token},set:function(e){this.token=e,kefu.storage.set("token",this.token)}},getMyUser:function(e){null==kefu.api.getMyUser||kefu.api.getMyUser.length<1?msg.popups("请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息"):request.post(kefu.api.getMyUser,{token:kefu.token.get()},function(t){kefu.user=t.user,"function"==typeof e&&e(t)})},filterXSS:function(e){return e=(e=(e=e.replace(/<\/?[^>]*>/g,"")).replace(/[|]*\n/,"")).replace(/&npsp;/gi,"")},getImageUrl:function(e){return void 0===e?"":0==e.indexOf("http://")||0==e.indexOf("https://")?e:0!=e.indexOf("//")?e:"file:"==window.location.protocol?"http:"+e:e},ubb:function(e){return e.replace(/\[ul\]/g,"<ul>").replace(/\[\/ul\]/g,"</ul>").replace(/\[li\]/g,'<li onclick="kefu.chat.question(this);" class="question">').replace(/\[\/li\]/g,"</li>").replace(/\[br\]/g,"<br>")},client:{isMobile:function(){return!!navigator.userAgent.match(/(iPhone|iPod|Android|ios|iOS|iPad|Backerry|WebOS|Symbian|Windows Phone|Phone)/i)}},getReceiveMessageText:function(e){return null!=e.extend&&null!=e.extend.extend&&(e=kefu.extend[e.extend.extend].format(e)),e.text=kefu.ubb(e.text),e.text},ui:{color:{shuruTypeColor:"#1296db",extendIconColor:"#808080"},images:{more:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880506122" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7418" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512.512 112.384c-219.6992 0-398.4896 178.7392-398.4896 398.4896 0 219.6992 178.7392 398.4896 398.4896 398.4896 219.6992 0 398.4896-178.7392 398.4896-398.4896s-178.7392-398.4896-398.4896-398.4896z m167.8848 424.0384H538.112v142.2848c0 14.1312-11.4688 25.6-25.6 25.6s-25.6-11.4688-25.6-25.6v-142.2848H344.6784c-14.1312 0-25.6-11.4688-25.6-25.6s11.4688-25.6 25.6-25.6H486.912V342.9888c0-14.1312 11.4688-25.6 25.6-25.6s25.6 11.4688 25.6 25.6v142.2848h142.2848c14.1312 0 25.6 11.4688 25.6 25.6s-11.4688 25.5488-25.6 25.5488z" fill="{color}" p-id="7419"></path></svg>',jianpan:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880701592" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10768" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M513.788813 938.289925c-113.566274 0-220.223734-44.167967-300.444149-124.388381-80.220415-80.220415-124.388382-186.877876-124.388382-300.44415s44.167967-220.227983 124.388382-300.448398c165.543834-165.548083 435.348714-165.548083 600.892548 0 165.548083 165.548083 165.548083 435.348714 0 600.892548-80.220415 80.220415-186.877876 124.388382-300.44415 124.388381z m0-785.973112c-92.538158 0-185.072066 35.453344-255.379651 105.756681-68.2001 68.204349-105.75668 158.63927-105.756681 255.3839s37.556581 187.175303 105.756681 255.379652c68.204349 68.2001 158.936697 106.054108 255.379651 105.75668 96.74888 0 187.179552-37.556581 255.379652-105.75668 140.912598-140.912598 140.912598-369.850954 0-510.759303-70.303336-70.307585-162.841494-105.75668-255.379652-105.756681z" p-id="10769" fill="{color}"></path><path d="M318.672199 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545229 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.73859c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM318.672199 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332H318.672199c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM458.887967 660.378025h106.224066c17.420747 0 31.86722 14.446473 31.86722 31.86722s-14.446473 31.86722-31.86722 31.86722h-106.224066c-17.420747 0-31.86722-14.446473-31.86722-31.86722s14.446473-31.86722 31.86722-31.86722z" p-id="10770" fill="{color}"></path></svg>',close:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1604403666528" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1160" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M583.168 523.776L958.464 148.48c18.944-18.944 18.944-50.176 0-69.12l-2.048-2.048c-18.944-18.944-50.176-18.944-69.12 0L512 453.12 136.704 77.312c-18.944-18.944-50.176-18.944-69.12 0l-2.048 2.048c-19.456 18.944-19.456 50.176 0 69.12l375.296 375.296L65.536 899.072c-18.944 18.944-18.944 50.176 0 69.12l2.048 2.048c18.944 18.944 50.176 18.944 69.12 0L512 594.944 887.296 970.24c18.944 18.944 50.176 18.944 69.12 0l2.048-2.048c18.944-18.944 18.944-50.176 0-69.12L583.168 523.776z" p-id="1161" fill="{color}"></path></svg>'},list:{renderAreaId:"",listItemTemplate:"",html:'\n\t\t\t\t<section id="chatlist">\n\n\t\t\t        <section class="item" onclick="kefu.ui.chat.entry(\'{id}\');">\n\t\t\t            <div class="head" style="background-image: url({head});"></div>\n\t\t\t            <div>\n\t\t\t                <div class="nickname">\n\t\t\t                    <span class="time">{time}</span>\n\t\t\t                    {nickname}\n\t\t\t                </div>\n\t\t\t                <div>\n\t\t\t                    <span class="num">{read}</span>\n\t\t\t                    <div class="text">{text}</div>\n\t\t\t                </div>\n\t\t\t            </div>\n\t\t\t        </section>\n\n\t\t\t    </section>\n\n\t\t\t    \x3c!-- <div style="position: absolute;bottom: 1rem;">\n\t\t\t        <a href="javascript:kefu.ui.chat.render(\'243\');" >测试聊天</a>\n\t\t\t    </div> --\x3e\n\t\t\t',getListItemByTemplate:function(e){var t="";return void 0!==e.read&&(e.read||(t="<div>&nbsp;</div>")),kefu.ui.list.listItemTemplate.replace(/{id}/g,e.id).replace(/{text}/g,e.text).replace(/{nickname}/g,e.nickname).replace(/{head}/g,kefu.getImageUrl(e.head)).replace(/{time}/g,formatTime(e.time,"M-D h:m")).replace(/{read}/g,t)},render:function(){kefu.ui.list.renderAreaId.length>0?null!=document.getElementById(kefu.ui.list.renderAreaId)&&(document.getElementById(kefu.ui.list.renderAreaId).innerHTML=kefu.ui.list.html):document.body.innerHTML=kefu.ui.list.html,kefu.ui.list.listItemTemplate.length<1&&(kefu.ui.list.listItemTemplate=document.getElementById("chatlist").innerHTML);for(var e=kefu.cache.getChatList(),t=e.length,n="",i=0;i<t;i++)n=kefu.ui.list.getListItemByTemplate(e[i])+n;""==n&&(n='<div class="not_hostory_list">当前还没有沟通记录</div>'),document.getElementById("chatlist").innerHTML=n},entry:function(){kefu.currentPage="list",kefu.ui.list.render()}},chat:{renderAreaId:"",html:'\n\t\t\t\t<div id="mobile">\n\t\t\t\t\t<header class="chat_header" id="head">\n\t\t\t\t        <div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>\n\t\t\t\t        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>\n\t\t\t\t    </header>\n\t\t\t\t\t<div id="newMessageRemind">\n\t\t\t\t\t\t<div id="newMessageRemindText">\x3c!-- 新消息：消息内容消息内容 --\x3e</div>\n\t\t\t\t\t\t<div id="newMessageRemindClose" onclick="document.getElementById(\'newMessageRemind\').style.display=\'none\';">X</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t    <section id="chatcontent" onclick="kefu.chat.switchToJianpanShuruType();">\n\t\t\t\t    </section>\n\t\t\t\t    \n\t\t\t\t    <footer id="chat_footer">\n\t\t\t\t        <div id="input_area">\n\t\t\t\t            <div id="textInput">\n\t\t\t\t            \t<div id="shuruType" onclick="kefu.chat.shuruTypeChange();">\x3c!--输入方式--\x3e</div>\n\t\t\t\t                \x3c!-- 键盘输入 --\x3e\n\t\t\t\t                \x3c!-- <input type="text" id="text111" onclick="kefu.ui.chat.textInputClick();"> --\x3e\n\t\t\t\t                <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>\n\t\t\t\t                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">\n\t\t\t\t            </div>\n\t\t\t\t            <div id="inputExtend">\n\t\t\t\t                \x3c!-- 其他，如图片、商品、订单 --\x3e\n\t\n\t\t\t\t            </div>    \n\t\t\t\t            <div id="inputExtendShowArea">\n\t\t\t\t                \x3c!-- inputExtend的显示区域，如表情的显示 --\x3e\n\t\t\t\t            </div>\n\t\t\t\t        </div>\n\t\t\t\t    </footer>\n\t\t\t\t</div>\n\t\t\t',appendMessage:function(e){if("string"==typeof e&&(e=JSON.parse(e)),null!=e)if("SYSTEM"==e.type)kefu.ui.chat.appendSystemMessage(kefu.filterXSS(e.text));else{var t=kefu.ui.chat.generateMessageSection(e);document.getElementById("chatcontent").appendChild(t),kefu.ui.chat.scrollToBottom()}},generateMessageSection:function(e){e.text=kefu.getReceiveMessageText(e);var t=document.createElement("section");return e.receiveId==kefu.chat.otherUser.id?(t.className="chat user "+e.type,t.innerHTML='<div class="head"></div><div class="sanjiao"></div><div class="text">'+e.text+"</div>"):e.sendId==kefu.chat.otherUser.id&&(t.className="chat otherUser "+e.type,t.innerHTML='<div class="head" style="background-image: url('+kefu.getImageUrl(kefu.chat.otherUser.head)+');"></div><div class="sanjiao"></div><div class="text">'+e.text+"</div>"),t},generateSystemMessageSection:function(e){var t=document.createElement("section");return t.className="chat bot systemChat",t.innerHTML='<div class="text systemText">'+e+"</div>",t},scrollToBottom:function(){document.getElementById("chatcontent").scrollTo(0,document.getElementById("chatcontent").scrollHeight)},appendSystemMessage:function(e){chatcontent=document.getElementById("chatcontent"),chatcontent.innerHTML=chatcontent.innerHTML+'<section class="chat bot systemChat"><div class="text systemText">'+e+"</div></section>",kefu.ui.chat.scrollToBottom()},newMessageRemind:function(e){kefu.cache.getUser(e.sendId,function(t){var n=document.getElementById("newMessageRemindText");n.innerHTML=t.nickname+" : "+e.text,console.log(n),n.onclick=function(){kefu.ui.chat.render(e.sendId)},document.getElementById("newMessageRemind").style.display="block"})},textInputClick:function(){kefu.chat.switchToJianpanShuruType()},render:function(e){kefu.ui.list.renderAreaId.length>0?null!=document.getElementById(kefu.ui.chat.renderAreaId)&&(document.getElementById(kefu.ui.chat.renderAreaId).innerHTML=kefu.ui.chat.html):document.body.innerHTML=kefu.ui.chat.html,kefu.chat.otherUser={id:e,nickname:"加载中..",head:"./images/head.png"};for(var t=kefu.cache.getUserMessageList(kefu.chat.otherUser.id),n=0;n<t.length;n++){var i=t[n];kefu.ui.chat.appendMessage(i)}for(var o in kefu.chat.getOtherUser(e,function(e){document.getElementById("nickname").innerHTML=kefu.chat.otherUser.nickname,document.getElementById("onlineState").innerHTML=e.onlineState,null!=document.getElementById("otherUserHead")&&(document.getElementById("otherUserHead").src=kefu.getImageUrl(e.user.head));try{for(var n=document.getElementsByClassName("otherUser"),i=0;i<n.length;i++)n[i].getElementsByClassName("head")[0].style.backgroundImage="url('"+kefu.getImageUrl(kefu.chat.otherUser.head)+"')"}catch(e){console.log("当前chat聊天模板中没有显示头像吧？下面这个错误只是个提示，无需理会"),console.log(e)}if(t.length>0){var o=t[0];null!=o.time&&(kefu.chat.chatMessageStartTime=o.time)}kefu.chat.chatMessageStartTime<1&&(kefu.chat.chatMessageStartTime=(new Date).getTime());var c=setInterval(function(){void 0!==kefu.chat.otherUser.id&&null!=kefu.user&&void 0!==kefu.user.id&&void 0!==kefu.socket.socket&&kefu.socket.socket.readyState==kefu.socket.socket.OPEN&&(kefu.socket.send(JSON.stringify({token:kefu.token.get(),receiveId:kefu.chat.otherUser.id,type:"AUTO_REPLY"})),clearInterval(c),console.log("autoReplyInterval stop"))},200);kefu.chat.init(),document.getElementById("chatcontent").onscroll=function(){document.getElementById("chatcontent").scrollTop<900&&kefu.chat.loadHistoryList()}}),kefu.extend)if(null!=kefu.extend[o].initChat)try{kefu.extend[o].initChat()}catch(e){console.log(e)}},entry:function(e){kefu.currentPage="chat",kefu.ui.chat.render(e);for(var t=kefu.cache.getChatList(),n=null,i=t.length;i>=0;i--)void 0!==t[i]&&e==t[i].id&&(n=t[i]);null!=n&&(n.read||(n.read=!0,kefu.cache.getUser(e,function(e){kefu.cache.pushChatList(e,n),"pc"==kefu.mode&&kefu.ui.list.render()})))},pc:{html:'\n\t\t\t\t\t<div id="pc">    \t\n\t\t\t\t\t\t<header class="chat_header" id="head">\n\t\t\t\t\t\t\t<div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>\n\t\t\t\t\t\t\t<div class="title" id="title">\n\t\t\t\t\t\t\t\t<img src="https://res.weiunity.com/kefu/images/head.png" id="otherUserHead" />\n\t\t\t\t\t\t\t\t<div id="headNameState">\n\t\t\t\t\t\t\t\t\t<div id="nickname">在线咨询</div>\n\t\t\t\t\t\t\t\t\t<div id="onlineState">在线</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div id="windowControl">\n\t\t\t\t\t\t\t\t<div id="close" onclick="kefu.ui.chat.pc.close();">&nbsp;</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</header>\n\t\t\t\t\t\t<div id="newMessageRemind">\n\t\t\t\t\t\t\t<div id="newMessageRemindText">\x3c!-- 新消息：消息内容消息内容 --\x3e</div>\n\t\t\t\t\t\t\t<div id="newMessageRemindClose" onclick="document.getElementById(\'newMessageRemind\').style.display=\'none\';">X</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<section id="chatcontent" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();">\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<footer id="chat_footer">\n\t\t\t\t\t\t    <div id="input_area">\n\t\t\t\t\t\t    \t<div id="inputExtend">\n\t\t\t\t\t\t            \x3c!-- 其他，如图片、商品、订单 --\x3e\n\t\t\t\t\t\t\n\t\t\t\t\t\t        </div>\n\t\t\t\t\t\t        <div id="inputExtendShowArea">\n\t\t\t\t\t\t            \x3c!-- inputExtend的显示区域，如表情的显示 --\x3e\n\t\t\t\t\t\t        </div>\n\t\t\t\t\t\t        <div id="textInput">\n\t\t\t\t\t\t        \t<div id="shuruType" onclick="kefu.chat.shuruTypeChange();">\x3c!--输入方式--\x3e</div>\n\t\t\t\t\t\t            \x3c!-- 键盘输入 --\x3e\n\t\t\t\t\t\t            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>\n\t\t\t\t\t\t        </div>\n\t\t\t\t\t\t        <div id="footerButton">\n\t\t\t\t\t\t        \t<div id="copyright" onclick="window.open(\'http://www.kefu.zvo.cn\');">power by 雷鸣云客服</div>\n\t\t\t\t\t\t        \t<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>\n\t\t\t\t\t\t        \t<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">\n\t\t\t\t\t\t        </div>\n\t\t\t\t\t\t    </div>\n\t\t\t\t\t\t</footer>\n\t\t\t\t\t</div>\n\t\t\t\t\t',close:function(){document.getElementById("pc").parentNode.removeChild(document.getElementById("pc")),kefu.ui.list.entry()},switchToJianpanShuruType:function(){kefu.chat.shuruType="more",kefu.chat.switchToJianpanShuruType(),kefu.chat.shuruTypeChange(),kefu.chat.switchToJianpanShuruType()},init:function(){kefu.mode="pc",kefu.ui.list.renderAreaId="list",kefu.ui.chat.renderAreaId="chat",kefu.ui.chat.html=kefu.ui.chat.pc.html,kefu.extend.pc={initChat:function(){kefu.chat.shuruType="jianpan",kefu.chat.shuruTypeChange(),kefu.ui.chat.pc.moveInit(),document.getElementById("close").innerHTML=kefu.ui.images.close.replace(/{color}/g,kefu.ui.color.extendIconColor)}},kefu.extend.order.icon=null,kefu.extend.order.sendOrder=function(e,t,n){},kefu.extend.goods.sendGoods=function(e,t){},kefu.extend.image.fullScreen=function(e){window.open(e)},kefu.init()},chatWindowDiv:null,chatHeadWindowDiv:null,x:0,y:0,left:0,top:0,isDown:!1,sizeChange:{currentX:0,currentY:-1,chatWindowHeight:0,height_chat_content_size:0,moveInit:function(){var e=document.getElementById("pc").offsetHeight,t=document.getElementById("chatcontent").offsetHeight;console.log("chatWindowsHeight:"+e+", contentWindowsHeight:"+t),kefu.ui.chat.pc.sizeChange.height_chat_content_size=e-t;var n=document.body;document.getElementById("footerButton").onmousedown=function(e){e.stopPropagation(),e.preventDefault();let t={w:kefu.ui.chat.pc.chatWindowDiv.offsetWidth,h:kefu.ui.chat.pc.chatWindowDiv.offsetHeight,x:e.clientX,y:e.clientY};n.onmousemove=function(e){e.preventDefault();let i=Math.max(300,e.clientX-t.x+t.w),o=Math.max(300,e.clientY-t.y+t.h);o=t.h;if(i=i>=n.offsetWidth-kefu.ui.chat.pc.chatWindowDiv.offsetLeft?n.offsetWidth-kefu.ui.chat.pc.chatWindowDiv.offsetLeft:i,o=n.offsetHeight-kefu.ui.chat.pc.chatWindowDiv.offsetTop,kefu.ui.chat.pc.sizeChange.currentY>0){var c=kefu.ui.chat.pc.sizeChange.chatWindowHeight-(kefu.ui.chat.pc.sizeChange.currentY-e.clientY);console.log(kefu.ui.chat.pc.sizeChange.currentY-e.clientY+", height:"+c),kefu.ui.chat.pc.chatWindowDiv.style.height=c+"px",kefu.ui.chat.pc.sizeChange.chatWindowHeight=c,document.getElementById("chatcontent").style.height=c-kefu.ui.chat.pc.sizeChange.height_chat_content_size+"px"}else kefu.ui.chat.pc.sizeChange.chatWindowHeight=kefu.ui.chat.pc.chatWindowDiv.offsetHeight;kefu.ui.chat.pc.chatWindowDiv.style.width=i+"px",kefu.ui.chat.pc.sizeChange.currentY=e.clientY},n.onmouseleave=function(){n.onmousemove=null,n.onmouseup=null},n.onmouseup=function(){n.onmousemove=null,n.onmouseup=null}}}},moveInit:function(){kefu.ui.chat.pc.chatWindowDiv=document.getElementById("pc"),kefu.ui.chat.pc.chatHeadWindowDiv=document.getElementById("head"),kefu.ui.chat.pc.chatHeadWindowDiv.onmousedown=function(e){kefu.ui.chat.pc.x=e.clientX,kefu.ui.chat.pc.y=e.clientY,kefu.ui.chat.pc.left=kefu.ui.chat.pc.chatHeadWindowDiv.offsetLeft,kefu.ui.chat.pc.top=kefu.ui.chat.pc.chatHeadWindowDiv.offsetTop,kefu.ui.chat.pc.isDown=!0,kefu.ui.chat.pc.chatHeadWindowDiv.style.cursor="move"},window.onmousemove=function(e){if(0!=kefu.ui.chat.pc.isDown){var t=e.clientX,n=e.clientY,i=t-(kefu.ui.chat.pc.x-kefu.ui.chat.pc.left),o=n-(kefu.ui.chat.pc.y-kefu.ui.chat.pc.top);kefu.ui.chat.pc.chatWindowDiv.style.marginLeft=i+"px",kefu.ui.chat.pc.chatWindowDiv.style.marginTop=o+"px"}},kefu.ui.chat.pc.chatHeadWindowDiv.onmouseup=function(){kefu.ui.chat.pc.isDown=!1,kefu.ui.chat.pc.chatHeadWindowDiv.style.cursor="default"}}}}},chat:{otherUser:{},chatMessageStartTime:0,shuruType:"jianpan",getOtherUser:function(e,t){null==kefu.api.getChatOtherUser||kefu.api.getChatOtherUser.length<1?msg.popups("请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息"):request.post(kefu.api.getChatOtherUser,{token:kefu.token.get(),id:e},function(e){kefu.chat.otherUser=e.user,void 0!==t&&t(e)})},init:function(){kefu.chat.currentLoadHistoryList=!1,null!=document.getElementById("shuruType")&&(kefu.chat.shuruType="more",kefu.chat.shuruTypeChange())},currentLoadHistoryList:!1,loadHistoryList(){if(!kefu.chat.currentLoadHistoryList){if(kefu.chat.currentLoadHistoryList=!0,kefu.cache.getUserMessageList(kefu.chat.otherUser.id).length<kefu.cache.everyUserNumber)return void console.log("聊天记录不足，没必要再拉更多");var e=document.getElementById("chatcontent"),t=e.getElementsByTagName("section")[0],n=document.createElement("section");n.className="chat bot systemChat",n.id="historyListLoading",n.innerHTML='<div class="text systemText">历史聊天加载中...</div>',e.insertBefore(n,t),request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id,time:kefu.chat.chatMessageStartTime,type:"before"},function(e){kefu.chat.currentLoadHistoryList=!1;var t=document.getElementById("chatcontent");t.removeChild(document.getElementById("historyListLoading"));var n=t.getElementsByTagName("section")[0];if("0"==e.result)document.getElementById("chatcontent").onscroll=function(){},msg.failure(e.info);else if("1"==e.result)if(e.number>0){for(var i=e.list.length-1;i>=0;i--){var o=e.list[i],c=kefu.ui.chat.generateMessageSection(o);t.insertBefore(c,n)}kefu.chat.chatMessageStartTime=e.startTime}else kefu.chat.currentLoadHistoryList=!0,t.insertBefore(kefu.ui.chat.generateSystemMessageSection("没有更多了"),n)})}},question:function(e){var t=e.innerHTML;kefu.chat.sendTextMessage(t)},sendTextMessage:function(e){e=e.replace(/\n/g,"[br]");var t={token:kefu.token.get(),type:"MSG",sendId:kefu.user.id,receiveId:kefu.chat.otherUser.id,text:e,time:(new Date).getTime()},n=JSON.stringify(t);return kefu.ui.chat.appendMessage(n),kefu.socket.send(n),kefu.cache.add(n),n},sendPluginMessage:function(e,t){if(null!=t){null!=e?e.name=t:e={};var n={token:kefu.token.get(),receiveId:kefu.chat.otherUser.id,sendId:kefu.user.id,type:"EXTEND",time:(new Date).getTime(),extend:e};n.text=kefu.extend[t].format(n),kefu.ui.chat.appendMessage(n),n.text="",kefu.socket.send(n),kefu.cache.add(n)}else msg.popups("kefu.chat.sendPluginMessage(data,name) 方法中，请传入name的值。<br/>name是发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 'explain'")},sendButtonClick:function(){0!=document.getElementById("text").innerHTML.length?(msg.loading("发送中"),kefu.chat.sendTextMessage(document.getElementById("text").innerHTML),msg.close(),document.getElementById("text").innerHTML="",kefu.ui.chat.textInputClick()):msg.info("尚未输入")},shuruTypeChange:function(){if(null!=document.getElementById("shuruType"))if("jianpan"==kefu.chat.shuruType){kefu.chat.shuruType="more",document.getElementById("shuruType").innerHTML=kefu.ui.images.jianpan.replace(/{color}/g,kefu.ui.color.shuruTypeColor);var e="";for(var t in kefu.extend)null!=kefu.extend[t].icon&&kefu.extend[t].icon.length>0&&(e=e+'<div class="item" onclick="kefu.extend[\''+t+'\'].onclick();"><div class="iconButton">'+kefu.extend[t].icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div class="iconName">'+kefu.extend[t].name+"</div></div>");document.getElementById("inputExtend").innerHTML=e,document.getElementById("inputExtend").style.display="",document.getElementById("inputExtendShowArea").style.display=""}else{kefu.chat.shuruType="jianpan",document.getElementById("shuruType").innerHTML=kefu.ui.images.more.replace(/{color}/g,kefu.ui.color.shuruTypeColor),document.getElementById("inputExtendShowArea").innerHTML="";e="";for(var t in kefu.extend)null!=kefu.extend[t].icon&&kefu.extend[t].icon.length>0&&(e=e+'<span class="smallIcon" onclick="kefu.extend[\''+t+"'].onclick();\">"+kefu.extend[t].icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+"</span>");document.getElementById("inputExtend").innerHTML='<div class="extendSmallIcon">'+e+"</div>"}},switchToJianpanShuruType(){null!=document.getElementById("shuruType")&&"jianpan"!=kefu.chat.shuruType&&this.shuruTypeChange()}},cache:{everyUserNumber:20,getUserMessageList:function(e){var t=kefu.storage.get("userid:"+e);return(null==t||t.length<1)&&(t="[]"),JSON.parse(t)},add:function(e){if("string"==typeof e)e=JSON.parse(e);var t=0;if(e.sendId==kefu.user.id?t=e.receiveId:e.receiveId==kefu.user.id&&(t=e.sendId),"SYSTEM"!=e.type&&(console.log(t),"0"!=t&&t.length>0)){var n=kefu.storage.get("userid:"+t);(null==n||n.length<1)&&(n="[]");var i=JSON.parse(n);i.push(e),i.length>this.everyUserNumber&&i.splice(0,1),kefu.storage.set("userid:"+t,JSON.stringify(i)),null!=kefu.chat.otherUser&&null!=kefu.chat.otherUser.id&&kefu.chat.otherUser.id==t?kefu.cache.pushChatList(kefu.chat.otherUser,e):kefu.cache.getUser(t,function(t){kefu.cache.pushChatList(t,e)})}},getChatList:function(){var e=kefu.storage.get("list");return(null==e||e.length<1)&&(e="[]"),JSON.parse(e)},pushChatList:function(e,t){if(null!=e){var n=this.getChatList(),i=t.text;"EXTEND"==t.type&&(i=kefu.extend[t.extend.extend].name);var o={id:e.id,text:i,nickname:e.nickname,head:kefu.getImageUrl(e.head),time:t.time,read:t.read};null==o.time&&(o.time=parseInt((new Date).getTime()/1e3));for(var c=n.length,a=0;a<c;a++)null==n[a]||n[a].id!=e.id||n.splice(a,1);n.push(o),kefu.storage.set("list",JSON.stringify(n))}else msg.popups("出错，kefu.cache.pushChatList 传入的 otherUser 为null")},getUser:function(e,t){var n,i="user_id_"+e,o=kefu.storage.get(i);return null==o||o.length<1?request.send(kefu.api.getChatOtherUser,{token:kefu.token.get(),id:e},function(e){"1"==e.result&&(n=e.user,kefu.storage.set(i,JSON.stringify(e.user)),null!=t&&t(n))},"post",!0,{"content-type":"application/x-www-form-urlencoded"},function(e){console.log("kefu.cache.getUser() 异常："),console.log(e)}):(n=JSON.parse(o),t(n)),n}},extend:{face:{name:"表情",icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894373099" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2514" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512 979C263.472 979 62 777.528 62 529S263.472 79 512 79s450 201.472 450 450-201.472 450-450 450zM337 479c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75z m350 0c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75zM312 629c0 110.457 89.543 200 200 200s200-89.543 200-200H312z" fill="{color}" p-id="2515"></path></svg>',format:function(e){return e},faces:{xiaolian:"😀",huaixiao:"😁",se:"😍",feiwen:"😘",waiziuxiao:"😏",yumen:"😒",ai:"😔",tu:"🤮",yun:"😵",nanguo:"🙁",jingkong:"😲",ku:"😭",yangmei:"🤨",miyan:"😆",liuhan:"😅",weixiao:"🙂",xiaoxingxing:"🤩",sikao:"🤔",xu:"🤫",yanmaoqian:"🤑",shenshetou:"😝"},onclick:function(){var e='<div id="inputExtend_Face">';for(var t in kefu.extend.face.faces)e=e+"<span onclick=\"kefu.extend.face.insert('"+t+"');\">"+kefu.extend.face.faces[t]+"</span>";e+="</div>",document.getElementById("inputExtend").style.display="none",document.getElementById("inputExtendShowArea").style.display="",document.getElementById("inputExtendShowArea").innerHTML=e,kefu.chat.shuruType="more"},insert:function(e){document.getElementById("text").innerHTML=document.getElementById("text").innerHTML+kefu.extend.face.faces[e]}},image:{name:"图片",icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894900121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2954" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M955.733333 136.533333H68.266667c-37.546667 0-68.266667 30.72-68.266667 68.266667v614.4c0 37.546667 30.72 68.266667 68.266667 68.266667h887.466666c37.546667 0 68.266667-30.72 68.266667-68.266667V204.8c0-37.546667-30.72-68.266667-68.266667-68.266667z m-154.146133 171.485867a51.2 51.2 0 1 1 0 102.4 51.2 51.2 0 0 1 0-102.4z m48.520533 442.282667H174.1312c-32.392533 0-50.193067-37.6832-29.610667-62.702934l186.504534-226.781866a38.3488 38.3488 0 0 1 59.2384 0L556.373333 662.818133a38.3488 38.3488 0 0 0 59.2384 0l92.2624-112.1792a38.3488 38.3488 0 0 1 59.2384 0l112.64 136.977067c20.548267 25.002667 2.7648 62.685867-29.6448 62.685867z" fill="{color}" p-id="2955"></path></svg>',template:'<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\'{url}\');" src="{url}" />',initChat:function(){var e=document.createElement("input");e.setAttribute("accept","image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp"),e.id="imageInput",e.style.display="none",e.type="file",document.body.appendChild(e)},format:function(e){return e.text=kefu.extend.image.template.replace(/{url}/g,kefu.filterXSS(kefu.getImageUrl(e.extend.url))),e},onclick:function(){null==document.getElementById("imageInput").oninput&&(document.getElementById("imageInput").oninput=function(e){if(void 0!==e.srcElement.files[0]){var t=e.srcElement.files[0];msg.loading("上传中"),request.upload(kefu.api.uploadImage,{token:kefu.token.get()},t,function(e){if(msg.close(),"1"==e.result){var t={url:kefu.getImageUrl(e.url)};kefu.chat.sendPluginMessage(t,"image"),kefu.chat.switchToJianpanShuruType()}else msg.failure(e.info)},null,function(){msg.close(),msg.failure("异常")}),document.getElementById("imageInput").value=""}}),document.getElementById("imageInput").click()},fullScreen:function(e){msg.popups({text:'<img src="'+e+'" style="width: 100%; max-width: 100%; " />',width:"95%",opacity:100,padding:"1px"})}},order:{name:"订单",icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894275814" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1559" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M128 891.663059h768a128 128 0 0 0 128-128V260.336941a128 128 0 0 0-128-128H128A128 128 0 0 0 0 260.336941v503.326118a128 128 0 0 0 128 128z m83.425882-475.376941v281.178353c0 31.051294-57.705412 31.171765-57.705411 0V334.697412c0-21.202824 7.589647-31.051294 22.64847-31.834353 12.137412-0.632471 25.057882 5.692235 38.701177 24.244706l202.390588 275.365647v-272.323765c0-37.255529 55.898353-37.225412 55.898353 0v362.767059c0 18.100706-7.559529 26.383059-22.648471 27.196235-13.673412 0.722824-24.786824-6.746353-36.261647-22.64847L211.425882 416.286118z m292.352 149.62447c0-213.232941 272.022588-212.781176 272.022589 0 0 206.667294-272.022588 208.956235-272.022589 0z m52.555294 0c0 128.813176 165.586824 133.782588 165.586824 0 0-73.667765-40.749176-103.695059-83.245176-102.912-42.496 0.783059-82.341647 32.406588-82.341648 102.912z m285.093648 97.249883c15.872 0 28.822588 12.950588 28.822588 28.822588s-12.950588 28.822588-28.822588 28.822588-28.822588-12.950588-28.822589-28.822588 12.950588-28.822588 28.822589-28.822588z" fill="{color}" p-id="1560"></path></svg>',requestApi:"orderList.json",format:function(e){return e.text=kefu.extend.order.getOrderByTemplate(e.extend),e},listTemplate:'\n\t\t\t\t<div class="extend_order_item" onclick="kefu.extend.order.sendOrder(\'{order.no}\', this, \'{id}\');">  \n\t\t\t\t    <div class="orderInfo">\n\t\t\t\t        <div class="order_no">订单号：{order.no}</div>\n\t\t\t\t        <div class="order_time">{order.time}</div>\n\t\t\t\t    </div>\n\t\t\t\t    <div class="goodsInfo">\n\t\t\t\t    \t<img class="image" src="{goods.image}" />\n\t\t\t\t\t    <div class="goodsAttr">\n\t\t\t\t\t        <div class="name">{goods.name}</div>\n\t\t\t\t\t        <div class="priceState">\n\t\t\t\t\t            <div class="price">{goods.price}</div>\n\t\t\t\t\t            <div class="state">{order.state}</div>\n\t\t\t\t\t        </div>\n\t\t\t\t\t    </div>\n\t\t\t\t    </div>\n\t\t\t\t</div>\n\t\t\t\t<hr class="extend_order_hr" />\n\t\t\t',orderMap:{},getOrderByTemplate:function(e){return kefu.extend.order.listTemplate.replace(/{order.no}/g,kefu.filterXSS(e.no+"")).replace(/{order.time}/g,kefu.filterXSS(e.time+"")).replace(/{goods.image}/g,kefu.filterXSS(e.image)).replace(/{id}/g,kefu.filterXSS(e.id+"")).replace(/{goods.name}/g,kefu.filterXSS(e.name)).replace(/{goods.price}/g,kefu.filterXSS(e.price+"")).replace(/{order.state}/g,kefu.filterXSS(e.state+""))},onclick:function(){msg.loading("获取中"),request.post(kefu.extend.order.requestApi,{token:kefu.token.get(),zuoxiid:kefu.chat.otherUser.id,myid:kefu.user.id},function(e){msg.close();for(var t="",n=0;n<e.length;n++)kefu.extend.order.orderMap[e[n].id]=e[n],t+=kefu.extend.order.getOrderByTemplate(e[n]);msg.popups({text:t,top:"10%",height:"20rem"})})},sendOrder:function(e,t,n){if("text"!=t.parentElement.className){var i=kefu.extend.order.orderMap[n];msg.close(),kefu.chat.sendPluginMessage(i,"order")}else kefu.extend.order.otherShow(e)},otherShow:function(e){void 0!==window.webkit&&void 0!==window.webkit.messageHandlers?"function"==typeof window.webkit.messageHandlers.appShowOrder.postMessage&&window.webkit.messageHandlers.appShowOrder.postMessage(e):alert("待编写。这里应该是跳转到原生app的订单详情中进行查看")}},goods:{name:"商品",init:function(){},format:function(e){return e.text=kefu.extend.goods.getGoodsByTemplate(e.extend),e},template:'\n\t\t\t\t\x3c!-- 弹出的商品发送 --\x3e\n\t\t\t    <div class="extend_goods_item" onclick="kefu.extend.goods.sendGoods(\'{id}\', this);">  \n\t\t\t        <img class="image" src="{image}" />\n\t\t\t        <div class="goodsInfo">\n\t\t\t            <div class="name">{name}</div>\n\t\t\t            <div class="priceDiv">\n\t\t\t            \t<div class="price">{price}</div>\n\t\t\t            \t<div class="sendButtonDiv"><button>发送商品</button></div></div>\n\t\t\t        </div>\n\t\t\t    </div>\n\t\t\t',goods:{},getGoodsByTemplate:function(e){return kefu.extend.goods.template.replace(/{id}/g,kefu.filterXSS(e.id)).replace(/{name}/g,kefu.filterXSS(e.name)).replace(/{price}/g,kefu.filterXSS(e.price)).replace(/{image}/g,kefu.filterXSS(e.image))},sendGoods:function(e,t){"text"!=t.parentElement.className?(e!=kefu.extend.goods.goods.id&&msg.failure("商品id异常！"),msg.close(),kefu.chat.sendPluginMessage(kefu.extend.goods.goods,"goods")):kefu.extend.goods.otherShow(e)},otherShow:function(e){void 0!==window.webkit&&void 0!==window.webkit.messageHandlers?"function"==typeof window.webkit.messageHandlers.appShowGoods.postMessage&&window.webkit.messageHandlers.appShowGoods.postMessage(e):alert("待编写。这里应该是跳转到原生app的商品详情中进行查看")}}},socket:{url:"ws://xxxxxx",socket:null,heartBeat:{time:50,text:'{"type":"HEARTBEAT","text":"AreYouThere"}',isStart:!1,startHeartBeat:function(){if(0==kefu.socket.heartBeat.isStart){setInterval(function(){kefu.socket.send(kefu.socket.heartBeat.text)},1e3*kefu.socket.heartBeat.time);kefu.socket.heartBeat.isStart=!0,console.log("kefu.socket headrtBeat thread start")}}},onopen:function(){kefu.socket.send(JSON.stringify({type:"CONNECT",token:kefu.token.get()})),kefu.socket.heartBeat.startHeartBeat()},onmessage:function(e){var t=JSON.parse(e.data);null!=t.type&&"HEARTBEAT"==t.type||(t.text=kefu.getReceiveMessageText(t),t.read=!1,"pc"==kefu.mode?"chat"==kefu.currentPage&&(t.sendId==kefu.chat.otherUser.id?(t.read=!0,kefu.ui.chat.appendMessage(t)):console.log("不是这个人的，不再这个chat中显示消息")):"list"==kefu.currentPage||(t.sendId==kefu.chat.otherUser.id||"SYSTEM"==t.type?(t.read=!0,kefu.ui.chat.appendMessage(t)):kefu.ui.chat.newMessageRemind(t)),kefu.cache.add(t),"pc"!=kefu.mode&&"list"!=kefu.currentPage||kefu.cache.getUser(t.sendId,function(e){kefu.ui.list.render()}),kefu.notification.execute("您有新消息",t.text))},connect:function(e){this.url=e,this.reconnect.connect();setInterval(function(){kefu.socket.socket.readyState==kefu.socket.socket.CLOSED&&(console.log("socketCloseAgainConnectInterval : socket closed , again connect ..."),kefu.socket.reconnect.connect())},3e3)},reconnect:{connecting:!1,connect:function(){this.connecting||(console.log("socket connect ... "+(new Date).toLocaleString()),kefu.socket.reconnect.connecting=!0,kefu.socket.socket=new WebSocket(kefu.socket.url),kefu.socket.socket.onopen=function(){kefu.socket.onopen()},kefu.socket.socket.onmessage=function(e){kefu.socket.onmessage(e)},this.connecting=!1)}},send:function(e){kefu.socket.socket.readyState==kefu.socket.socket.OPEN?("object"==typeof e&&(e=JSON.stringify(e)),kefu.socket.socket.send(e)):kefu.socket.socket.readyState!=kefu.socket.socket.CLOSED&&kefu.socket.socket.readyState!=kefu.socket.socket.CLOSING||(console.log("socket 已关闭，正在开启重连"),kefu.socket.reconnect.connect(),kefu.socket.send(e))}}};
+/* 生成一个随机UUID */
+function generateUUID() {
+    var d = new Date().getTime();
+    if (window.performance && typeof window.performance.now === "function") {
+        d += performance.now(); //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+}
+
+/**
+ * 获取网址的get参数。
+ * @param name get参数名
+ * @returns value
+ */
+function getUrlParams(name){
+     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+     var r = window.location.search.substr(1).match(reg);
+     if(r!=null)return  unescape(r[2]); return null;
+}
+
+//时间戳转时间的数据转化
+function formatNumber(n) {
+  n = n.toString();
+  return n[1] ? n : '0' + n;
+}
+/** 
+ * 时间戳转化为年 月 日 时 分 秒 
+ * number: 传入时间戳 如 1587653254
+ * format：返回格式，如 'Y-M-D h:m:s'
+*/
+function formatTime(number,format) {
+	var formateArr  = ['Y','M','D','h','m','s'];
+	var returnArr   = [];
+	if((number + '').length == 10){
+		number = number * 1000;
+  	}
+	var date = new Date(number);
+  returnArr.push(date.getFullYear());
+  returnArr.push(formatNumber(date.getMonth() + 1));
+  returnArr.push(formatNumber(date.getDate()));
+  returnArr.push(formatNumber(date.getHours()));
+  returnArr.push(formatNumber(date.getMinutes()));
+  returnArr.push(formatNumber(date.getSeconds()));
+  for (var i in returnArr){
+    format = format.replace(formateArr[i], returnArr[i]);
+  }
+  return format;
+}
+
+/**
+ * ajax请求 不依赖任何框架及其他文件
+ * 作者：管雷鸣
+ * 个人网站：www.guanleiming.com
+ * 个人微信: xnx3com
+ * 公司：潍坊雷鸣云网络科技有限公司
+ * 公司官网：www.leimingyun.com
+ */
+var request = {
+	/**
+	 * get请求
+	 * @param url 请求的接口URL，传入如 http://www.xxx.com/a.php
+	 * @param data 请求的参数数据，传入如 {"goodsid":"1", "author":"管雷鸣"}
+	 * @param func 请求完成的回调，传入如 function(data){ console.log(data); }
+	 */
+	get:function(url, data, func){
+		var headers = {
+			'content-type':'application/x-www-form-urlencoded'
+		};
+		this.send(url, data, func, 'get', true, headers, null);
+	},
+	/**
+	 * post请求
+	 * @param url 请求的接口URL，传入如 http://www.xxx.com/a.php
+	 * @param data 请求的参数数据，传入如 {"goodsid":"1", "author":"管雷鸣"}
+	 * @param func 请求完成的回调，传入如 function(data){ console.log(data); }
+	 */
+	post:function(url, data, func){
+		var headers = {
+			'content-type':'application/x-www-form-urlencoded'
+		};
+		this.send(url, data, func, 'POST', true, headers, null);
+	},
+	/**
+	 * 发送请求
+	 * url 请求的url
+	 * data 请求的数据，如 {"author":"管雷鸣",'site':'www.guanleiming.com'} 
+	 * func 请求完成的回调，传入如 function(data){}
+	 * method 请求方式，可传入 post、get
+	 * isAsynchronize 是否是异步请求， 传入 true 是异步请求，传入false 是同步请求
+	 * headers 设置请求的header，传入如 {'content-type':'application/x-www-form-urlencoded'};
+	 * abnormalFunc 响应异常所执行的方法，响应码不是200就会执行这个方法 ,传入如 function(xhr){}
+	 */
+	send:function(url, data, func, method, isAsynchronize, headers, abnormalFunc){
+		//post提交的参数
+		var params = '';
+		if(data != null){
+			for(var index in data){
+				if(params.length > 0){
+					params = params + '&';
+				}
+				params = params + index + '=' + data[index];
+			}
+		}
+		
+		var xhr=null;
+		try{
+			xhr=new XMLHttpRequest();
+		}catch(e){
+			xhr=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		//2.调用open方法（true----异步）
+		xhr.open(method,url,isAsynchronize);
+		//设置headers
+		if(headers != null){
+			for(var index in headers){
+				xhr.setRequestHeader(index,headers[index]);
+			}
+		}
+		xhr.send(params);
+		//4.请求状态改变事件
+		xhr.onreadystatechange=function(){
+		    if(xhr.readyState==4){
+		        if(xhr.status==200){
+		        	//请求正常，响应码 200
+		        	var json = null;
+		        	try{
+		        		json = JSON.parse(xhr.responseText);
+		        	}catch(e){
+		        		console.log(e);
+		        	}
+		        	if(json == null){
+		        		func(xhr.responseText);
+		        	}else{
+		        		func(json);
+		        	}
+		        }else{
+		        	if(abnormalFunc != null){
+		        		abnormalFunc(xhr);
+		        	}
+		        }
+		    }
+		}
+	},
+
+	/**
+	 * 文件上传
+	 * url 请求的url
+	 * data 请求的数据，如 {"author":"管雷鸣",'site':'www.guanleiming.com'} 
+	 * file 要上传的文件。可以通过input的 e.srcElement.files[0] 获取
+	 * successFunc 请求成功的回调，响应码是200就会执行这个。传入如 function(data){}
+	 * headers 设置请求的header，传入如 {'content-type':'application/x-www-form-urlencoded'};
+	 * abnormalFunc 响应异常所执行的方法，响应码不是200就会执行这个方法 ,传入如 function(xhr){}
+	 */
+	upload:function(url,data, file, successFunc, headers, abnormalFunc){
+		//post提交的参数
+		var fd = new FormData();
+		fd.append('file', file);
+		if(data != null){
+			for(var index in data){
+				fd.append(index, data[index]);
+			}
+		}
+		
+		var xhr=null;
+		try{
+			xhr=new XMLHttpRequest();
+		}catch(e){
+			xhr=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		//2.调用open方法（true----异步）
+		xhr.open('POST',url,true);
+		//设置headers
+		if(headers != null){
+			for(var index in headers){
+				xhr.setRequestHeader(index,headers[index]);
+			}
+		}
+		xhr.send(fd);
+		//4.请求状态改变事件
+		xhr.onreadystatechange=function(){
+		    if(xhr.readyState==4){
+		        if(xhr.status==200){
+		        	//请求正常，响应码 200
+		        	var json = null;
+		        	try{
+		        		json = JSON.parse(xhr.responseText);
+		        	}catch(e){
+		        		console.log(e);
+		        	}
+		        	if(json == null){
+		        		successFunc(xhr.responseText);
+		        	}else{
+		        		successFunc(json);
+		        	}
+		        }else{
+		        	if(abnormalFunc != null){
+		        		abnormalFunc(xhr);
+		        	}
+		        }
+		    }
+		}
+	}
+
+}
+
+var kefu = {
+	api:{
+		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
+		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
+		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
+		uploadImage:''			//图片上传接口
+	},
+	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
+	currentPage:'list',	//当前所在哪个页面， 有 list 、 chat。 默认是list
+	mode:'mobile',	//pc、mobile  两种模式。 pc模式是左侧是list、右侧是chat，  mobile是一栏要么是list要么是chat。  默认是mobile模式
+	remindVoicePath:'https://res.weiunity.com/kefu/media/voice.mp3',	//声音提醒的声音路径，可传入如  https://xxxxxx.com/a.mp3
+	//初始化，当kefu.js 加载完毕后，可以执行这个，进行im的初始化
+	init:function(){
+		var head0 = document.getElementsByTagName('head')[0];
+
+		for(var key in kefu.extend){
+			//加载模块的js
+			if(kefu.extend[key].js != null && kefu.extend[key].js.length > 0){
+				var script = document.createElement("script");  //创建一个script标签
+				script.type = "text/javascript";
+				script.src = kefu.extend[key].js;
+				head0.appendChild(script);
+			}
+
+			//加载模块的css
+			if(kefu.extend[key].css != null && kefu.extend[key].css.length > 0){
+				var link = document.createElement('link');
+				link.type='text/css';
+				link.rel = 'stylesheet';
+				link.href = kefu.extend[key].css;
+				head0.appendChild(link);
+			}
+			
+			//如果模块有初始化，那么执行其初始化 init() 方法的代码
+			if(kefu.extend[key].init != null){
+				try{
+					//避免某个模块中的初始化失败，导致整个im 初始化中断
+					kefu.extend[key].init();
+				}catch(e){ console.log(e); }
+			}
+		
+		}
+		 
+		//下载音频文件
+		kefu.notification.audio.load();
+	},
+	//新消息通知、提醒
+	notification:{
+		use:true,	//是否使用通知，默认为true，使用。如果不使用，那么就是false，false不再播放声音通知、桌面通知
+		audioPath:'https://res.weiunity.com/kefu/media/voice.mp3',	//播放的音频文件路径，格式如： https://res.weiunity.com/kefu/media/voice.mp3 。不设置默认便是  https://res.weiunity.com/kefu/media/voice.mp3
+		//播放提醒，执行提醒
+		execute:function(title,text){
+			if(!kefu.notification.use){
+				//不使用
+				return;
+			}
+			
+			//播放声音
+			try{
+				kefu.notification.audio.play();
+			}catch(e){
+				console.log(e);
+			}
+			
+			if(document.location.protocol != 'https:'){
+				console.log('当前使用的不是https请求！只有https请求才可以有浏览器消息通知。这里只是声音通知');
+				return;
+			}
+			
+			//是https，那么支持Notification通知，使用通知提醒
+			if (window.Notification != null){
+				//支持通知
+				
+				if(Notification.permission === 'granted'){
+					var notification = new Notification(title, {
+						body: text,
+						silent: false	//不播放声音。播放声音交给 kefu.notification.audio.play
+						//sound:kefu.notification.audioPath
+						//icon: 'https://res.weiunity.com/kefu/images/head.png'
+					});
+				}else {
+					//未授权，弹出授权提示
+					Notification.requestPermission();
+				};
+			}
+		},
+		audio:{
+			audioBuffer:null,	//声音文件的音频流，通过url加载远程的音频流
+			audioContext : new (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext),
+			//初始化预加载，将加载远程的mp3文件下载下来。这项应该在socket建立完链接之后在进行下载，不然会提前占用网速，导致socket建立连接过慢
+			load:function(){
+				if(kefu.notification.audioPath == null || kefu.notification.audioPath.length < 1){
+					console.log('已将 kefu.notification.audioPath 设为空，将不再出现声音提醒');
+					return;
+				}
+				var xhr = new XMLHttpRequest(); //通过XHR下载音频文件
+		        xhr.open('GET', kefu.notification.audioPath, true);
+		        xhr.responseType = 'arraybuffer';
+		        xhr.onload = function (e) { //下载完成
+		        	kefu.notification.audio.audioContext.decodeAudioData(this.response, function (buffer) { //解码成功时的回调函数
+		        		kefu.notification.audio.audioBuffer = buffer;
+		        	}, function (e) { //解码出错时的回调函数
+		        		console.log('kefu.notification.load() Error decoding file', e);
+		        	});
+		        };
+		        xhr.send();
+			},
+			//进行播放声音
+			play:function(){
+				if(kefu.notification.audio.audioBuffer == null){
+					//网络加载音频文件。就不判断是否正在加载中了，多加载几次也无所谓了
+					kefu.notification.audio.load();
+					return; 
+				}
+				var audioSource = kefu.notification.audio.audioContext.createBufferSource();
+				audioSource.buffer = kefu.notification.audio.audioBuffer;
+				audioSource.connect(kefu.notification.audio.audioContext.destination);
+				audioSource.start(0); //立即播放
+			}
+		}
+	},
+	//存储，比如存储聊天记录、用户信息等。都是以key、value方式存储。其中value是string字符串类型。可重写，自定义自己的存储方式
+	storage:{
+		get:function(key){
+			return localStorage.getItem(key);
+		},
+		set:function(key, value){
+			localStorage.setItem(key,value);
+		}
+	},
+	token:{
+		/* 如果用户已登录，这里存储的是用户的session，如果用户未登录，这里存储的是生成的 "youke+uuid" */
+		token:null,
+		/**
+		 * 获取token，也就是 session id。获取的字符串如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
+		 * 如果用户未登录，那么获取到的是  youke_uuid。 这个会设置成layim 的  mine.id
+		 */
+		get:function(){
+			if(this.token == null){
+				this.token = kefu.storage.get('token');
+			}
+			if(this.token == null || this.token.length < 5){
+				this.token = 'youke_'+generateUUID();
+			}
+			this.set(this.token);
+			return this.token;
+		},
+		/**
+		 * 设置token，也就是session id
+		 * 格式如 f26e7b71-90e2-4913-8eb4-b32a92e43c00
+		 */
+		set:function(t){
+			this.token = t;
+			kefu.storage.set('token',this.token);
+		}
+	},
+	/**
+	 * 获取当前用户(我)的User信息
+	 */
+	getMyUser:function(func){
+		if(kefu.api.getMyUser == null || kefu.api.getMyUser.length < 1){
+			msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
+			return;
+		}
+		request.post(kefu.api.getMyUser,{token:kefu.token.get()}, function(data){
+			kefu.user = data.user;
+			if(typeof(func) == 'function'){
+				func(data);
+			}
+		});
+	},
+	//过滤html标签，防XSS攻击
+	filterXSS:function (text) {
+		text = text.replace(/<\/?[^>]*>/g, ''); //去除HTML Tag
+		text = text.replace(/[|]*\n/, '') //去除行尾空格
+		text = text.replace(/&npsp;/ig, ''); //去掉npsp
+		return text;
+	},
+	//获取图片的url，正常使用时图片路径可能是 //cdn.xxxx.com/a.jpg ，但是在本地测试时，就会自动加上 file: 导致图片破裂了。这个方法作用就是自动补上协议，如果是本地，那就补上http协议，让图片能正常显示
+	getImageUrl:function(imgUrl){
+		if(typeof(imgUrl) == 'undefined'){
+			return '';
+		}
+		
+		if(imgUrl.indexOf('http://') == 0 || imgUrl.indexOf('https://') == 0){
+			//如果图片路径是正常带有协议的，那么直接原样返回
+			return imgUrl;
+		}
+		
+		//判断一下是否是以 // 开头的，如果不是，那么也是原样返回
+		if(imgUrl.indexOf('//') != 0){
+			return imgUrl;
+		}
+		
+		//如果是自动补齐协议，那么就要判断一下是否是本地使用了
+		if(window.location.protocol == 'file:'){
+			//本地使用，那图片默认补上 http 协议
+			return 'http:'+imgUrl;
+		}
+		
+		//其他情况，直接原样返回
+		return imgUrl;
+	},
+	//将[ul][li][br]等转化为html
+	ubb:function(text){
+		return text.replace(/\[ul\]/g, '<ul>')
+			.replace(/\[\/ul\]/g, '</ul>')
+			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);" class="question">')
+			.replace(/\[\/li\]/g, '</li>')
+			.replace(/\[br\]/g, '<br>');
+	},
+	//客户端方面的，如判断是手机还是电脑
+	client:{
+		//判断当前是手机（包括平板）还是电脑访问。是手机访问，则返回true，否则返回false
+		isMobile:function(){
+			if ((navigator.userAgent.match(/(iPhone|iPod|Android|ios|iOS|iPad|Backerry|WebOS|Symbian|Windows Phone|Phone)/i))) {
+		        return true;
+		    }else{
+		        return false;
+		    }
+		}
+	},
+	//获取接收到的消息的text内容。 msg:socket传过来的消息，会把这个消息进行处理，返回最终显示给用户看的消息体
+	getReceiveMessageText:function(message){
+		if(message.extend != null && message.extend.name != null){
+			//如果是插件，那么将json变为插件显示的样式
+			message = kefu.extend[message.extend.name].format(message);
+		}
+		//将[ul][li][br]等转化为html
+		message['text'] = kefu.ubb(message['text']);
+		return message['text'];
+	},
+	//UI界面方面
+	ui:{
+		//颜色相关控制
+		color:{
+			// 默认蓝色， 键盘、鼠标、发送按钮
+			shuruTypeColor:'#1296db',
+			extendIconColor:'#808080',	//插件图标的颜色，在chat底部显示的插件图标。 16进制颜色编码
+		},
+		//图片
+		images:{
+			//chat底部的更多，chat底部的输入方式切换
+			more:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880506122" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7418" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512.512 112.384c-219.6992 0-398.4896 178.7392-398.4896 398.4896 0 219.6992 178.7392 398.4896 398.4896 398.4896 219.6992 0 398.4896-178.7392 398.4896-398.4896s-178.7392-398.4896-398.4896-398.4896z m167.8848 424.0384H538.112v142.2848c0 14.1312-11.4688 25.6-25.6 25.6s-25.6-11.4688-25.6-25.6v-142.2848H344.6784c-14.1312 0-25.6-11.4688-25.6-25.6s11.4688-25.6 25.6-25.6H486.912V342.9888c0-14.1312 11.4688-25.6 25.6-25.6s25.6 11.4688 25.6 25.6v142.2848h142.2848c14.1312 0 25.6 11.4688 25.6 25.6s-11.4688 25.5488-25.6 25.5488z" fill="{color}" p-id="7419"></path></svg>',
+			//键盘输入，chat底部的输入方式切换
+			jianpan:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603880701592" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10768" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M513.788813 938.289925c-113.566274 0-220.223734-44.167967-300.444149-124.388381-80.220415-80.220415-124.388382-186.877876-124.388382-300.44415s44.167967-220.227983 124.388382-300.448398c165.543834-165.548083 435.348714-165.548083 600.892548 0 165.548083 165.548083 165.548083 435.348714 0 600.892548-80.220415 80.220415-186.877876 124.388382-300.44415 124.388381z m0-785.973112c-92.538158 0-185.072066 35.453344-255.379651 105.756681-68.2001 68.204349-105.75668 158.63927-105.756681 255.3839s37.556581 187.175303 105.756681 255.379652c68.204349 68.2001 158.936697 106.054108 255.379651 105.75668 96.74888 0 187.179552-37.556581 255.379652-105.75668 140.912598-140.912598 140.912598-369.850954 0-510.759303-70.303336-70.307585-162.841494-105.75668-255.379652-105.756681z" p-id="10769" fill="{color}"></path><path d="M318.672199 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545229 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.73859c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 341.705826h46.313693c11.047303 0 19.545228 8.497925 19.545228 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.738589c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695436v-46.738589c0-10.622407 8.497925-19.120332 19.120332-19.120332zM318.672199 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332H318.672199c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM488.630705 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM658.589212 469.174705h46.313693c10.622407 0 19.120332 8.497925 19.120332 19.120332v46.313693c0 10.622407-8.497925 19.120332-19.120332 19.120332h-46.313693c-10.622407 0.424896-19.120332-8.073029-19.120332-18.695435v-46.73859c0-10.622407 8.497925-19.120332 19.120332-19.120332zM458.887967 660.378025h106.224066c17.420747 0 31.86722 14.446473 31.86722 31.86722s-14.446473 31.86722-31.86722 31.86722h-106.224066c-17.420747 0-31.86722-14.446473-31.86722-31.86722s14.446473-31.86722 31.86722-31.86722z" p-id="10770" fill="{color}"></path></svg>',
+			//叉号，错误符号
+			close:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1604403666528" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1160" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M583.168 523.776L958.464 148.48c18.944-18.944 18.944-50.176 0-69.12l-2.048-2.048c-18.944-18.944-50.176-18.944-69.12 0L512 453.12 136.704 77.312c-18.944-18.944-50.176-18.944-69.12 0l-2.048 2.048c-19.456 18.944-19.456 50.176 0 69.12l375.296 375.296L65.536 899.072c-18.944 18.944-18.944 50.176 0 69.12l2.048 2.048c18.944 18.944 50.176 18.944 69.12 0L512 594.944 887.296 970.24c18.944 18.944 50.176 18.944 69.12 0l2.048-2.048c18.944-18.944 18.944-50.176 0-69.12L583.168 523.776z" p-id="1161" fill="{color}"></path></svg>',
+		},
+		list:{
+			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
+			listItemTemplate:'', //当list页面渲染出来后，这里自动从html中取
+			html:`
+				<section id="chatlist">
+
+			        <section class="item" onclick="kefu.ui.chat.entry('{id}');">
+			            <div class="head" style="background-image: url({head});"></div>
+			            <div>
+			                <div class="nickname">
+			                    <span class="time">{time}</span>
+			                    {nickname}
+			                </div>
+			                <div>
+			                    <span class="num">{read}</span>
+			                    <div class="text">{text}</div>
+			                </div>
+			            </div>
+			        </section>
+
+			    </section>
+
+			    <!-- <div style="position: absolute;bottom: 1rem;">
+			        <a href="javascript:kefu.ui.chat.render('243');" >测试聊天</a>
+			    </div> -->
+			`,
+			getListItemByTemplate:function(item){
+				//消息是否已读
+				var read = '';
+				if(typeof(item['read']) != 'undefined'){
+					if(!item['read']){
+						read = '<div>&nbsp;</div>'; 
+					}
+				}
+			    return kefu.ui.list.listItemTemplate
+			            .replace(/{id}/g, item['id'])
+			            .replace(/{text}/g, item['text'])
+			            .replace(/{nickname}/g, item['nickname'])
+			            .replace(/{head}/g, kefu.getImageUrl(item['head']))
+			            .replace(/{time}/g, formatTime(item['time'], 'M-D h:m'))
+			            .replace(/{read}/g, read);
+			},
+			render:function(){
+				if(kefu.ui.list.renderAreaId.length > 0){
+					//有设置渲染区域，那么渲染到设置的id上
+					if(document.getElementById(kefu.ui.list.renderAreaId) != null){
+						document.getElementById(kefu.ui.list.renderAreaId).innerHTML = kefu.ui.list.html;
+					}
+				}else{
+					document.body.innerHTML = kefu.ui.list.html;
+				}
+				
+				if(kefu.ui.list.listItemTemplate.length < 1){
+					//设置某个用户聊天item的模板
+					kefu.ui.list.listItemTemplate = document.getElementById('chatlist').innerHTML;   
+				}
+
+			    var chatList = kefu.cache.getChatList();
+			    var chatListLength = chatList.length;
+			    var html = '';
+			    for (var i = 0; i < chatListLength; i++) {
+			        html = kefu.ui.list.getListItemByTemplate(chatList[i]) + html;
+			    }
+			    if(html == ''){
+			    	//还没有聊天记录
+			    	html = '<div class="not_hostory_list">当前还没有沟通记录</div>';
+			    }
+			    document.getElementById('chatlist').innerHTML = html;
+
+			    //下面注释的这写应该是在chat中的，待测试正常后删除
+			    //去掉chat一对一聊天窗中的监听
+			    //window.onscroll = null;
+			    //如果chat显示，那么自动执行插件的initChat 方法,如果插件设置了的话
+//			    for(var key in kefu.extend){
+//					if(kefu.extend[key].initList != null){
+//						try{
+//							//避免某个模块中的初始化失败，导致整个im 初始化中断
+//							kefu.extend[key].initList();
+//						}catch(e){ console.log(e); }
+//					}
+//				}
+			    
+			    //kefu.currentPage = 'list';	//赋予当前所在页面为list
+			},
+			//进入list页面，打开list页面。如从chat聊天页面，点击左上角返回按钮，跳转到list列表页面中，就是点击返回按钮触发的此方法。
+			entry:function(){
+				kefu.currentPage = 'list';
+				kefu.ui.list.render();
+			}
+		},
+		
+		chat:{
+			renderAreaId:'',		//渲染区域的id，如果不赋值，那么默认就是渲染到body
+			html:`
+				<div id="mobile">
+					<header class="chat_header" id="head">
+				        <div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
+				        <div class="title" id="title"><span id="nickname">在线咨询</span><span id="onlineState">在线</span></div>
+				    </header>
+					<div id="newMessageRemind">
+						<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
+						<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
+					</div>
+					
+				    <section id="chatcontent" onclick="kefu.chat.switchToJianpanShuruType();">
+				    </section>
+				    
+				    <footer id="chat_footer">
+				        <div id="input_area">
+				            <div id="textInput">
+				            	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
+				                <!-- 键盘输入 -->
+				                <!-- <input type="text" id="text111" onclick="kefu.ui.chat.textInputClick();"> -->
+				                <div id="text" contenteditable="true" onclick="kefu.ui.chat.textInputClick();"></div>
+				                <input type="submit" value="发送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick();">
+				            </div>
+				            <div id="inputExtend">
+				                <!-- 其他，如图片、商品、订单 -->
+	
+				            </div>    
+				            <div id="inputExtendShowArea">
+				                <!-- inputExtend的显示区域，如表情的显示 -->
+				            </div>
+				        </div>
+				    </footer>
+				</div>
+			`,
+			//发送一条消息，在双方聊天的消息末尾追加消息
+			appendMessage: function(message){
+				if(typeof(message) == 'string'){
+			        message = JSON.parse(message);   //转成json
+			    }
+			    //判断一下，消息的类型。
+			    if(message == null){
+			        return;
+			    }
+			    if(message.type == 'SYSTEM'){
+			        //系统类型消息
+			        kefu.ui.chat.appendSystemMessage(kefu.filterXSS(message['text']));
+			    }else{
+			        //其他类型，那么出现对话框的
+			        var section = kefu.ui.chat.generateMessageSection(message);
+			    
+			        document.getElementById('chatcontent').appendChild(section);
+			        //滚动条滚动到最底部
+			        kefu.ui.chat.scrollToBottom();
+			    }
+			},
+			//创建聊天正常沟通收发消息的 section dom 元素
+			generateMessageSection:function(message){
+				message['text'] = kefu.getReceiveMessageText(message);
+			    //发送文本消息后绘制对话窗口
+			    var section = document.createElement("section");
+			    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
+			    if(message['receiveId'] == kefu.chat.otherUser.id){
+			        //是自己发送的这条消息，那么显示在右侧
+			        section.className = 'chat user '+message['type'];
+			        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			    }else if(message['sendId'] == kefu.chat.otherUser.id){
+			        //是自己接受的这个消息，那么显示在左侧
+			        section.className = 'chat otherUser '+message['type'];
+			        section.innerHTML = '<div class="head" style="background-image: url('+kefu.getImageUrl(kefu.chat.otherUser.head)+');"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			    }
+			    return section;
+			},
+			//创建聊天系统提示消息的 section dom 元素 
+			generateSystemMessageSection:function(text){
+				var section = document.createElement("section");
+				section.className = 'chat bot systemChat';
+				section.innerHTML = '<div class="text systemText">'+text+'</div>';
+				return section;
+			},
+			//聊天窗口滚动到最底部
+			scrollToBottom:function(){
+				//console.log('height:'+document.getElementById('chatcontent').scrollHeight);
+				document.getElementById('chatcontent').scrollTo(0,document.getElementById('chatcontent').scrollHeight);
+			},
+			//在当前chat一对一聊天界面的消息最末尾追加显示一条系统消息, text:要显示的消息内容
+			appendSystemMessage:function(text){
+				chatcontent = document.getElementById('chatcontent');
+				chatcontent.innerHTML =  chatcontent.innerHTML + 
+					'<section class="chat bot systemChat"><div class="text systemText">'+text+'</div></section>';
+				kefu.ui.chat.scrollToBottom();
+			},
+			//新消息提醒，当我跟A用户一对一聊天时，恰好B用户给我发送消息了，这时要在当前的chat一对一聊天页面中，显示B用户给我发送消息的提示，提醒用户B用户也给我发消息了。
+			//message:接收到的消息对象，json对象。这里message.text已经是可以显示给用户的消息内容，已经处理好了，直接调用显示即可。
+			newMessageRemind:function(message){
+				kefu.cache.getUser(message.sendId, function(user){
+					var remindTextDiv = document.getElementById('newMessageRemindText');
+					remindTextDiv.innerHTML = user.nickname + ' : ' + message.text;
+					console.log(remindTextDiv);
+					remindTextDiv.onclick = function(){
+						//点击后跳转到跟这个人的聊天窗口中对话。
+						kefu.ui.chat.render(message.sendId);
+					};
+					//显示这条消息
+					document.getElementById('newMessageRemind').style.display = 'block';
+				});
+			},
+			//文字输入框被点击，隐藏扩展功能区域,已废弃，有 kefu.chat.switchToJianpanShuruType() 代替
+			textInputClick:function (){
+				//隐藏扩展功能输入区域
+//				document.getElementById('inputExtend').style.display = '';
+//				document.getElementById('inputExtendShowArea').style.display = 'none';
+//				if(kefu.chat.shuruType != 'jianpan'){
+//					kefu.chat.shuruTypeChange();
+//				}
+				//切换到键盘输入方式
+				kefu.chat.switchToJianpanShuruType();
+			},
+			//渲染出chat一对一聊天页面。 otherUserId跟我聊天的对方的userid
+			render:function(otherUserId){
+				if(kefu.ui.list.renderAreaId.length > 0){
+					//有设置渲染区域，那么渲染到设置的id上
+					if(document.getElementById(kefu.ui.chat.renderAreaId) != null){
+						document.getElementById(kefu.ui.chat.renderAreaId).innerHTML = kefu.ui.chat.html;
+					}
+				}else{
+					//赋予chat聊天窗html的大框信息显示
+					document.body.innerHTML = kefu.ui.chat.html;
+				}
+				
+				//加载跟这个人聊天的历史对话记录。不过当前是在获取对方数据之前先拉历史记录，kefu.chat.otherUser 肯定是null，所以先赋予默认值
+				kefu.chat.otherUser = {
+						id:otherUserId,	
+						nickname:'加载中..',
+						head:'./images/head.png'
+				}
+		        var chatCacheList = kefu.cache.getUserMessageList(kefu.chat.otherUser.id);
+		        for(var i = 0; i<chatCacheList.length; i++){
+		            var message = chatCacheList[i];
+		            kefu.ui.chat.appendMessage(message);
+		        }
+				
+			    //获取聊天对方的用户信息
+			    kefu.chat.getOtherUser(otherUserId, function(data){
+			        //设置网页聊天窗title 的对方昵称
+					document.getElementById('nickname').innerHTML = kefu.chat.otherUser.nickname;
+					//对方在线状态
+			        document.getElementById('onlineState').innerHTML = data.onlineState;
+			        if(document.getElementById('otherUserHead') != null){
+			        	//聊天窗口中对方用户的头像
+			        	document.getElementById('otherUserHead').src = kefu.getImageUrl(data.user.head);
+			        }
+			        
+			        //将对方用户发言的头像换为接口拉取的真实头像。如果当前chat模板中显示头像的话
+			        try{
+			        	var heads = document.getElementsByClassName("otherUser");
+				        for(var i = 0; i < heads.length; i++){
+				        	heads[i].getElementsByClassName("head")[0].style.backgroundImage = 'url(\''+kefu.getImageUrl(kefu.chat.otherUser.head)+'\')';
+				        }
+			        }catch(e){
+			        	console.log('当前chat聊天模板中没有显示头像吧？下面这个错误只是个提示，无需理会');
+			        	console.log(e);
+			        }
+			        
+			        //取得跟这个用户聊天时，聊天窗口中显示的聊天记录的开始时间，用这个时间来获取往上滑动时的更多消息记录
+			        if(chatCacheList.length > 0){
+			            var lastMsg = chatCacheList[0];
+			            if(lastMsg.time != null){
+			                kefu.chat.chatMessageStartTime = lastMsg.time;
+			            }
+			        }
+			        //如果kefu.chat.chatMessageStartTime还是0，那么赋予当前的13位时间戳
+			        if(kefu.chat.chatMessageStartTime < 1){
+			            kefu.chat.chatMessageStartTime = new Date().getTime();
+			        }
+			        //拉取对方设置的自动回复欢迎语
+			        var autoReplyInterval = setInterval(function(){
+			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
+			            	if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
+			            		//socket也已经打开了
+			            		//拉对方的自动回复欢迎语
+			            		kefu.socket.send(JSON.stringify({
+				                    token: kefu.token.get()
+				                    ,receiveId: kefu.chat.otherUser.id
+				                    ,type:"AUTO_REPLY"
+				                }));
+			            		
+			            		
+			            		
+			            		//拉取历史记录。 这个暂时用离线消息取代
+//			            		console.log('---');
+//			            		if(chatCacheList != null && chatCacheList.length > 0){
+//			            			//取出本地缓存的最新的一条记录
+//			            			var lastMessage = chatCacheList[chatCacheList.length-1];
+//			            			console.log(lastMessage);
+//			            			//拉取当前时间以后的离线消息。这个应该是socket在拉取离线消息结束后，再执行这个
+//				    				request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:lastMessage.time, type:'after'}, function(data){
+//				    					if(data.result == '0'){
+//				    						//失败，弹出提示
+//				    						msg.failure(data.info);
+//				    					}else if(data.result == '1'){
+//				    						//成功
+//				    						//判断一下请求到的消息记录有多少条
+//
+//				    						if(data.number > 0){
+//				    							//有消息记录，那么绘制出来
+//				    							
+//				    							//判断一下当前是否已经有自动回复了，如果有先删除掉自动回复的消息，同步完在显示自动回复
+//				    							var auto = document.getElementsByClassName('AUTO_REPLY')[0];
+//				    							if(typeof(auto) != 'undefined'){
+//				    								auto.parentElement.removeChild(auto);
+//				    							}
+//				    							
+//				    							//绘制同步过来的消息
+//				    							var chatcontent = document.getElementById('chatcontent');
+//						    					//取第一个正常聊天沟通的section，用来作为插入的定位
+//						    					var firstItem = chatcontent.getElementsByTagName("section")[0];
+//						    					//遍历最新消息，绘制到界面，也加入本地缓存
+//				    							for(var i = data.list.length-1; i >= 0; i--){
+//				    								var message = data.list[i];
+//				    								console.log(message);
+//				    								var msgSection = kefu.ui.chat.generateMessageSection(message);
+//				    								chatcontent.appendChild(msgSection);	//在聊天最后插入这条发言信息
+//				    								kefu.cache.add(message) //将这条消息加入本地缓存
+//				    							}
+//				    							
+//				    							//同步消息结束，再将自动回复加入进来
+//				    							chatcontent.appendChild(auto);
+//				    							
+//				    							kefu.ui.chat.scrollToBottom()	//滚动到最底部
+//				    						}else{
+//				    							//没有离线消息
+//				    							console.log('信息同步检测完毕，没有离线消息');
+//				    						}
+//				    					}
+//				    				});
+//			            		}
+			            		
+			            		
+			            		clearInterval(autoReplyInterval);//停止
+				                console.log('autoReplyInterval stop');
+			            	}
+			            }
+			        }, 200);
+			        
+			        kefu.chat.init(); //执行chat的初始化
+
+			        //监听滚动条，如果上滑超过多少，那么从服务器拉历史聊天记录
+			        document.getElementById('chatcontent').onscroll = function(){
+			            //console.log(document.getElementById('chatcontent').scrollTop);
+			            if(document.getElementById('chatcontent').scrollTop < 900){
+			                //还剩一页半了，那么提前开始加载上一页
+			                kefu.chat.loadHistoryList();
+			            }
+			        }
+
+			    });
+
+				
+				//如果chat显示，那么自动执行插件的initChat 方法,如果插件设置了的话
+				for(var key in kefu.extend){
+					if(kefu.extend[key].initChat != null){
+						try{
+							//避免某个模块中的初始化失败，导致整个im 初始化中断
+							kefu.extend[key].initChat();
+						}catch(e){ console.log(e); }
+					}
+				}
+			},
+			//进入chat页面，打开chat页面。如从list列表页面中，点击某项打开跟某人的chat聊天窗口，点击触发的就是这个。
+			//传入userid，字符串类型，跟谁聊天，就传入谁的userid
+			entry:function(userid){
+				kefu.currentPage = 'chat';
+				kefu.ui.chat.render(userid);
+				//从list中标记这个用户的聊天已经全部看过了，将未读消息变为已读消息
+				var cacheList = kefu.cache.getChatList();
+				var message = null;
+				for(var i = cacheList.length; i >= 0; i--){ 
+					if(typeof(cacheList[i]) != 'undefined' && userid == cacheList[i].id){
+						message = cacheList[i];
+					}
+				}
+				if(message != null){
+					//如果这个chat窗口在list中有缓存消息，那么将其中的read变为已读
+					if(!message.read){
+						message.read = true;
+						kefu.cache.getUser(userid, function(user) {
+							kefu.cache.pushChatList(user, message);
+							if(kefu.mode == 'pc'){
+								//如果是pc模式，那么还要刷新list
+								kefu.ui.list.render();
+							}
+						})
+					}
+				}
+			},
+			//PC端chat专用
+			pc:{
+				html : `
+					<div id="pc">    	
+						<header class="chat_header" id="head">
+							<div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
+							<div class="title" id="title">
+								<img src="https://res.weiunity.com/kefu/images/head.png" id="otherUserHead" />
+								<div id="headNameState">
+									<div id="nickname">在线咨询</div>
+									<div id="onlineState">在线</div>
+								</div>
+							</div>
+							<div id="windowControl">
+								<div id="close" onclick="kefu.ui.chat.pc.close();">&nbsp;</div>
+							</div>
+						</header>
+						<div id="newMessageRemind">
+							<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
+							<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
+						</div>
+						
+						<section id="chatcontent" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();">
+						</section>
+						
+						<footer id="chat_footer">
+						    <div id="input_area">
+						    	<div id="inputExtend">
+						            <!-- 其他，如图片、商品、订单 -->
+						
+						        </div>
+						        <div id="inputExtendShowArea">
+						            <!-- inputExtend的显示区域，如表情的显示 -->
+						        </div>
+						        <div id="textInput">
+						        	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
+						            <!-- 键盘输入 -->
+						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>
+						        </div>
+						        <div id="footerButton">
+						        	<div id="copyright" onclick="window.open('http://www.kefu.zvo.cn');">power by 雷鸣云客服</div>
+						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
+						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">
+						        </div>
+						    </div>
+						</footer>
+					</div>
+					`,
+				//关闭chat窗口
+				close:function(){
+					document.getElementById('pc').parentNode.removeChild(document.getElementById('pc'));
+					kefu.ui.list.entry();
+				},
+				//切换到正常键盘输入方式，也就是如果之前使用了表情，出现了表情选择，执行这个后就会将表情选择关掉，还原回刚打开聊天界面时的输入方式
+				switchToJianpanShuruType:function(){
+					//先切换到键盘输入方式
+					kefu.chat.shuruType = 'more';
+					kefu.chat.switchToJianpanShuruType();
+					//在更改为插件输入方式
+					kefu.chat.shuruTypeChange();
+					//再切换一次到键盘输入方式
+					kefu.chat.switchToJianpanShuruType();
+				},
+				//初始化pc端客服坐席
+				init:function(){
+					kefu.mode='pc';
+					kefu.ui.list.renderAreaId = 'list';
+					kefu.ui.chat.renderAreaId = 'chat';
+					kefu.ui.chat.html = kefu.ui.chat.pc.html;
+					
+					/* pc chat */
+					kefu.extend.pc={
+						initChat:function(){
+							kefu.chat.shuruType = 'jianpan'
+							kefu.chat.shuruTypeChange();
+							
+							kefu.ui.chat.pc.moveInit();	//鼠标移动
+							//kefu.ui.chat.pc.sizeChange.moveInit();	//拖动大小
+							document.getElementById('close').innerHTML = kefu.ui.images.close.replace(/{color}/g,kefu.ui.color.extendIconColor);
+						}
+					};
+					
+					/*不再pc端显示订单输入*/
+					kefu.extend.order.icon = null;
+					kefu.extend.order.sendOrder=function(str, obj, str2){};
+					/* 商品相关 */
+					kefu.extend.goods.sendGoods=function(str,obj){};
+					
+					/* 重写 图片插件的放大方法 */
+					kefu.extend.image.fullScreen = function(imagesUrl){
+						window.open(imagesUrl);
+					}
+					
+					//kefu.js 初始化
+					kefu.init();
+				},
+//				//打开一个聊天窗口，比如可用于网站漂浮的在线客服，点击图标后打开chat聊天窗口
+//				chat:function(userid){
+//					//kefu.ui.chat.pc.init();
+//					kefu.ui.chat.entry('403');
+//				},
+				chatWindowDiv : null, //chat窗口的dom
+				chatHeadWindowDiv:null,	//chat窗口头部的dom，拖动头部进行拖动chat窗口
+				x : 0,
+				y : 0,
+				left : 0,
+				top : 0,
+				isDown:false,
+				
+				
+				//拖动改变大小
+				sizeChange:{
+					currentX:0,
+					currentY:-1,	//上一次鼠标移动的鼠标在屏幕的y坐标
+					chatWindowHeight:0,	//上一次的chat窗口高度
+					height_chat_content_size:0,	//chat窗口高度-content聊天区域的高度等于多少
+					moveInit:function(){
+						var chatWindows = document.getElementById('pc');
+						//var chatWindowsHeight = (chatWindows.offsetHeight+chatWindows.borderTop+chatWindows.borderBottom);
+						var chatWindowsHeight = chatWindows.offsetHeight;
+						//chatWindows.style.height =  chatWindowsHeight+'px';
+			        	
+						var contentWindows = document.getElementById('chatcontent');
+						//var contentWindowsHeight = (contentWindows.offsetHeight+contentWindows.borderTop+contentWindows.borderBottom);
+						var contentWindowsHeight = contentWindows.offsetHeight;
+						//contentWindows.style.height = contentWindowsHeight+'px';
+						
+						console.log('chatWindowsHeight:'+chatWindowsHeight+", contentWindowsHeight:"+contentWindowsHeight)
+						kefu.ui.chat.pc.sizeChange.height_chat_content_size = chatWindowsHeight - contentWindowsHeight; 
+						//缩放效果
+						var father = document.body;
+						var scale = document.getElementById('footerButton');
+					    scale.onmousedown = function (e) {
+					      // 阻止冒泡,避免缩放时触发移动事件
+					      e.stopPropagation();
+					      e.preventDefault();
+					      let pos = {
+					        'w': kefu.ui.chat.pc.chatWindowDiv.offsetWidth,
+					        'h': kefu.ui.chat.pc.chatWindowDiv.offsetHeight,
+					        'x': e.clientX,
+					        'y': e.clientY
+					      };
+					      father.onmousemove = function (ev) {
+					        ev.preventDefault();
+					        // 设置图片的最小缩放为30*30
+					        let w = Math.max(300, ev.clientX - pos.x + pos.w)
+					        let h = Math.max(300, ev.clientY - pos.y + pos.h)
+					        //console.log("ev.clientY:"+ev.clientY+" , pos.y:"+pos.y+" , pos.h:"+pos.h);
+					        h = pos.h;
+					        var yuanheight =pos.h; 
+					        
+					        // 设置图片的最大宽高
+					        w = w >= father.offsetWidth - kefu.ui.chat.pc.chatWindowDiv.offsetLeft ? father.offsetWidth - kefu.ui.chat.pc.chatWindowDiv.offsetLeft : w
+					        //h = h >= father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop ? father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop : h
+					        h=father.offsetHeight - kefu.ui.chat.pc.chatWindowDiv.offsetTop;
+					        //console.log("w:"+w+", h:"+h);
+					        
+					        if(kefu.ui.chat.pc.sizeChange.currentY > 0){
+					        	var height= kefu.ui.chat.pc.sizeChange.chatWindowHeight - (kefu.ui.chat.pc.sizeChange.currentY - ev.clientY) ;
+					        	console.log((kefu.ui.chat.pc.sizeChange.currentY - ev.clientY)+", height:"+height);
+					        	kefu.ui.chat.pc.chatWindowDiv.style.height = height + 'px';
+					        	kefu.ui.chat.pc.sizeChange.chatWindowHeight = height;
+					        	document.getElementById('chatcontent').style.height = (height-kefu.ui.chat.pc.sizeChange.height_chat_content_size)+'px';
+					        }else{
+					        	kefu.ui.chat.pc.sizeChange.chatWindowHeight = kefu.ui.chat.pc.chatWindowDiv.offsetHeight;
+					        }
+					        kefu.ui.chat.pc.chatWindowDiv.style.width = w + 'px';
+					        
+					        kefu.ui.chat.pc.sizeChange.currentY = ev.clientY;
+					      }
+					      father.onmouseleave = function () {
+					        father.onmousemove = null;
+					        father.onmouseup = null;
+					      }
+					      father.onmouseup = function () {
+					        father.onmousemove = null;
+					        father.onmouseup = null;
+					      }
+					    }
+					    
+					}
+				},
+				//鼠标点击移动、放大缩小的初始化
+				moveInit:function(){
+					kefu.ui.chat.pc.chatWindowDiv = document.getElementById('pc');
+					kefu.ui.chat.pc.chatHeadWindowDiv = document.getElementById('head');
+					
+					//鼠标按下事件
+					kefu.ui.chat.pc.chatHeadWindowDiv.onmousedown = function(e) {
+					    //获取x坐标和y坐标
+						kefu.ui.chat.pc.x = e.clientX;
+						kefu.ui.chat.pc.y = e.clientY;
+
+					    //获取左部和顶部的偏移量
+					    kefu.ui.chat.pc.left = kefu.ui.chat.pc.chatHeadWindowDiv.offsetLeft;
+					    kefu.ui.chat.pc.top = kefu.ui.chat.pc.chatHeadWindowDiv.offsetTop;
+					    //开关打开
+					    kefu.ui.chat.pc.isDown = true;
+					    //设置样式  
+					    kefu.ui.chat.pc.chatHeadWindowDiv.style.cursor = 'move';
+					};
+					//鼠标移动
+					window.onmousemove = function(e) {
+					    if (kefu.ui.chat.pc.isDown == false) {
+					        return;
+					    }
+					    //获取x和y
+					    var nx = e.clientX;
+					    var ny = e.clientY;
+					    //计算移动后的左偏移量和顶部的偏移量
+					    var nl = nx - (kefu.ui.chat.pc.x - kefu.ui.chat.pc.left);
+					    var nt = ny - (kefu.ui.chat.pc.y - kefu.ui.chat.pc.top);
+					    kefu.ui.chat.pc.chatWindowDiv.style.marginLeft = nl + 'px';
+					    kefu.ui.chat.pc.chatWindowDiv.style.marginTop = nt + 'px';
+					};
+					//鼠标抬起事件
+					kefu.ui.chat.pc.chatHeadWindowDiv.onmouseup = function() {
+					    //开关关闭
+						kefu.ui.chat.pc.isDown = false;
+					    kefu.ui.chat.pc.chatHeadWindowDiv.style.cursor = 'default';
+					};
+					
+				}
+			}
+		}
+		
+	},
+	/* 在聊天窗口中使用的 */
+	chat:{
+		otherUser:{},	//当前用户正在跟谁聊天，对方的user信息。每当打开一个跟某人的聊天窗时，会自动初始化此信息
+		chatMessageStartTime:0,	//当前正在跟这个用户聊天时，聊天窗口中显示的消息列表的开始时间，13位时间戳，会根据这个来加载用户的网上滑动的消息
+		shuruType:'jianpan',	//当前输入方式，默认进入是键盘方式输入。取值两个， jianpan:键盘方式输入； more:更多输入方式
+		
+		/**
+		 * 获取当前聊天窗口中，跟我聊天的对方的user信息
+		 * @param userid 当前谁在跟谁聊天，对方的userid
+		 * @param func 获取到对方的用户信息后，要执行的方法
+		 */
+		getOtherUser:function(userid, func){
+			if(kefu.api.getChatOtherUser == null || kefu.api.getChatOtherUser.length < 1){
+				msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
+				return;
+			}
+			request.post(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
+				kefu.chat.otherUser = data.user;
+				if(typeof(func) != 'undefined'){
+					func(data);
+				}
+			});
+		},
+		//进入一对一聊天窗口时，先进行的初始化。主要是加载插件方面的设置
+		init:function(){
+			kefu.chat.currentLoadHistoryList=false;	//允许拉去所有历史聊天记录
+			
+			//聊天窗口最下方用户输入项的插件显示
+//			var inputExtendHtml = '';
+//			for(var key in kefu.extend){
+//				if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+//			        inputExtendHtml = inputExtendHtml + '<span onclick="kefu.extend[\''+key+'\'].onclick();">'+ kefu.extend[key].name + '</span>';
+//			    }
+//			}
+//			document.getElementById('inputExtend').innerHTML = inputExtendHtml;
+			
+			
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') != null){
+				//先设置输入方式是more，然后切换一次，切换回键盘输入
+				kefu.chat.shuruType = 'more';
+				kefu.chat.shuruTypeChange();
+			}
+		},
+		currentLoadHistoryList:false,	//跟loadHistoryList() 一起用，当加载历史列表时，此处为true，加载完后，此处变为false
+		/* 加载历史聊天列表 */
+		loadHistoryList(){
+			if(!kefu.chat.currentLoadHistoryList){
+				kefu.chat.currentLoadHistoryList = true;	//标记正在请求历史记录中
+				if(kefu.cache.getUserMessageList(kefu.chat.otherUser.id).length < kefu.cache.everyUserNumber){
+					//如果跟对方聊天的记录，本地缓存的几率条数小于本地缓存最大条数，那么就是刚开始聊天，都还没超过缓存最大数，那么也就没必要在从服务器拉更多聊天记录了
+					console.log('聊天记录不足，没必要再拉更多');
+					return;
+				}
+
+				var chatcontent = document.getElementById('chatcontent');
+				var firstItem = chatcontent.getElementsByTagName("section")[0];
+
+				//创建加载中的提示
+				var section = document.createElement("section");
+				section.className = 'chat bot systemChat';
+				section.id = 'historyListLoading';
+				section.innerHTML = '<div class="text systemText">历史聊天加载中...</div>';
+				chatcontent.insertBefore(section,firstItem);
+
+				//创建网络请求
+				request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
+					kefu.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
+
+					var chatcontent = document.getElementById('chatcontent');
+					//删除聊天记录加载中的提示
+					chatcontent.removeChild(document.getElementById('historyListLoading'));
+					//删除聊天记录加载中的提示section后，取第一个正常聊天沟通的section，用来作为插入的定位
+					var firstItem = chatcontent.getElementsByTagName("section")[0];
+
+					if(data.result == '0'){
+						//如果失败了，那么就删掉绑定的滚动条监控，避免死循环一直请求
+						document.getElementById('chatcontent').onscroll = function(){}
+						//失败，弹出提示
+						msg.failure(data.info);
+					}else if(data.result == '1'){
+						//成功
+						//判断一下请求到的消息记录有多少条
+
+						if(data.number > 0){
+							//有消息记录，那么绘制出来
+							for(var i = data.list.length-1; i >= 0; i--){
+								var message = data.list[i];
+								var msgSection = kefu.ui.chat.generateMessageSection(message);
+								chatcontent.insertBefore(msgSection,firstItem);
+							}
+							//重新标记历史消息的开始时间
+							kefu.chat.chatMessageStartTime = data.startTime;
+						}else{
+							//没有更多消息了
+							kefu.chat.currentLoadHistoryList = true;	//标记请求历史记录不再继续请求了，因为已经没有更多记录了
+							//msg.info('没有更多消息了');
+							chatcontent.insertBefore(kefu.ui.chat.generateSystemMessageSection('没有更多了'),firstItem);
+						}
+
+						
+						
+						
+					}
+				});
+			}
+		},
+		/* 常见问题 */
+		question:function(obj){
+			var text = obj.innerHTML;
+			kefu.chat.sendTextMessage(text);
+		},
+		/* 发送文本格式消息  text:要发送的文本消息。 返回json对象的message */
+		sendTextMessage:function(text){
+			text = text.replace(/\n/g,'[br]');	//将用户输入的换行替换为[br]
+			var data = {
+		    	token:kefu.token.get(),
+		    	type:'MSG',	//消息类型
+		    	//sendId:kefu.user.id,		//发送者ID
+		    	receiveId:kefu.chat.otherUser.id,	//接受者id
+		    	text:text,
+		        time:new Date().getTime()      
+		    }
+		    var message = JSON.stringify(data);
+		    kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+		    kefu.socket.send(message);       //socket发送
+		    kefu.cache.add(message);   //缓存
+
+		    return message;
+		},
+		/*
+		 * 发送插件消息。只有插件消息的发送才使用这个。正常发送文字消息使用的是 sendTextMessage
+		 * @param data 要发送的插件消息的消息体对象，如 {goodsid:'123',goodsName:'西瓜', price:'12元'} ，但是为json对象的格式
+		 * @param name 发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 'explain'
+		 */
+		sendPluginMessage:function(data, name){
+			if(name == null){
+				msg.popups('kefu.chat.sendPluginMessage(data,name) 方法中，请传入name的值。<br/>name是发送这个消息的插件的名字，比如这个插件是 kefu.extend.explain ，那么这里传入的是 \'explain\'');
+				return;
+			}
+			if(data != null){
+				data.name = name;
+			}else{
+				data = {};
+			}
+			//组合后的消息体
+			var message = {
+				token:kefu.token.get(),
+				receiveId:kefu.chat.otherUser.id,
+				sendId:kefu.user.id,
+				type:'EXTEND',
+				time:new Date().getTime(),
+				extend:data
+			};
+			//更新聊天窗口
+			message.text = kefu.extend[name].format(message);
+			kefu.ui.chat.appendMessage(message);
+			
+			//socket发送消息
+			message.text = '';	//清理掉message.text 因为这个本来就是自动生成出来的不必额外占用带宽、流量
+			kefu.socket.send(message);
+
+			kefu.cache.add(message);   //缓存
+		},
+		//text文本，打字沟通交流， 点击提交按钮后发送
+		sendButtonClick:function (){
+		    var value = document.getElementById('text').innerHTML;
+		    if(value.length == 0){
+		        msg.info('尚未输入');
+		        return;
+		    }
+
+		    //接口提交-文本对话，输入文字获取对话结果
+		    msg.loading("发送中");    //显示“更改中”的等待提示
+		    
+		    kefu.chat.sendTextMessage(document.getElementById('text').innerHTML);
+			msg.close();	//关闭发送中提示
+		    //清空内容区域
+		    document.getElementById('text').innerHTML = '';
+
+		    //隐藏表情等符号输入区域
+		    kefu.ui.chat.textInputClick();
+		},
+		//输入类型改变，切换，比如有更多切换到键盘输入
+		shuruTypeChange:function(){
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') == null){
+				return;
+			}
+			if(kefu.chat.shuruType == 'jianpan'){
+				//当前是键盘输入，切换到更多输入方式
+				kefu.chat.shuruType = 'more';
+				document.getElementById('shuruType').innerHTML = kefu.ui.images.jianpan.replace(/{color}/g,kefu.ui.color.shuruTypeColor);
+				
+				//更多输入放大
+				var inputExtendHtml = '';
+				for(var key in kefu.extend){
+				    if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+				    	inputExtendHtml = inputExtendHtml + 
+					    	'<div class="item" onclick="kefu.extend[\''+key+'\'].onclick();"><div class="iconButton">'+(kefu.extend[key].icon.replace(/{color}/g, kefu.ui.color.extendIconColor))+'</div><div class="iconName">'+kefu.extend[key].name+'</div></div>'; 
+				    }
+				}
+				document.getElementById('inputExtend').innerHTML = inputExtendHtml;
+				//显示扩展功能栏
+				document.getElementById('inputExtend').style.display = '';
+				
+				//显示 插件内容显示的区域，如表情插件显示出来的表情选择所在的区域
+				document.getElementById('inputExtendShowArea').style.display = '';
+			}else{
+				//当前是更多输入，切换到键盘输入方式
+				kefu.chat.shuruType = 'jianpan';
+				document.getElementById('shuruType').innerHTML = kefu.ui.images.more.replace(/{color}/g,kefu.ui.color.shuruTypeColor);;
+				
+				//清空掉插件内容显示的区域，如表情插件显示出来的表情选择所在的区域，将表情列表清空掉
+				document.getElementById('inputExtendShowArea').innerHTML = '';
+				
+				//更多简化缩小
+				var inputExtendHtml = '';
+				for(var key in kefu.extend){
+					if(kefu.extend[key].icon != null && kefu.extend[key].icon.length > 0){
+						inputExtendHtml = inputExtendHtml + '<span class="smallIcon" onclick="kefu.extend[\''+key+'\'].onclick();">'+ (kefu.extend[key].icon.replace(/{color}/g, kefu.ui.color.extendIconColor)) + '</span>';
+				    }
+				}
+				document.getElementById('inputExtend').innerHTML = '<div class="extendSmallIcon">'+inputExtendHtml+'</div>';
+			}
+		},
+		//切换到键盘输入类型
+		switchToJianpanShuruType(){
+			//设置底部的输入方式切换
+			if(document.getElementById('shuruType') == null){
+				return;
+			}
+			if(kefu.chat.shuruType != 'jianpan'){
+				//如果当前不是键盘输入，那么触发执行输入类型改变
+				this.shuruTypeChange();
+			}
+		}
+
+	},
+	cache:{
+		everyUserNumber:20,	//每个用户缓存20条最后的聊天记录
+		/* 根据userid，获取跟这个用户的本地缓存的20条最近聊天记录 */
+		getUserMessageList:function(userid){
+			var chatListStr = kefu.storage.get('userid:'+userid);
+			if(chatListStr == null || chatListStr.length < 1){
+				chatListStr = '[]';
+			}
+			var chatList = JSON.parse(chatListStr);
+			return chatList;
+		},
+		/* 发送或者接收消息，都会加到这里，进行缓存 */
+		add:function(message){
+			if(typeof(message) == 'string'){
+				var message = JSON.parse(message);	//转成json
+			}
+			var otherUserId = 0;	//聊天对方的userid
+			if(message['sendId'] == kefu.user.id){
+				//这条消息是自己发送出去的
+				otherUserId = message['receiveId'];
+			}else if(message['receiveId'] == kefu.user.id){
+				//自己是消息接收者，别人发过来的消息
+				otherUserId = message['sendId'];
+			}
+			//判断一下消息类型，如果是系统提示消息， type = 'SYSTEM' ，没意义的提醒，那么不保存
+			if(message['type'] == 'SYSTEM'){
+				return;
+			}
+			console.log(otherUserId);
+			if(otherUserId != '0' && otherUserId.length > 0){
+
+				//保存单独跟这个用户的聊天记录
+				var chatUserStr = kefu.storage.get('userid:'+otherUserId);
+				if(chatUserStr == null || chatUserStr.length < 1){
+					chatUserStr = '[]';
+				}
+				var chatUser = JSON.parse(chatUserStr);
+				chatUser.push(message);
+				if(chatUser.length > this.everyUserNumber) {
+					//console.log('移除：'+chatUser[0]);
+					chatUser.splice(0, 1);	//移除最后一个
+				}
+				kefu.storage.set('userid:'+otherUserId, JSON.stringify(chatUser));
+				//console.log('保存：'+JSON.stringify(chatList))
+
+				//保存聊天列表的最后一条聊天消息
+				//判断一下当天保存的消息，是否是 kefu.chat.otherUser 这个人的，如果不是，那么要重新拉取message.sendId 这个用户的信息
+				if(kefu.chat.otherUser != null && kefu.chat.otherUser.id != null && kefu.chat.otherUser.id == otherUserId){
+					kefu.cache.pushChatList(kefu.chat.otherUser, message);
+				}else{
+					//不是这个人的，那么用getUser来取用户信息
+					kefu.cache.getUser(otherUserId, function(user) {
+						kefu.cache.pushChatList(user, message);
+					})
+				}
+			}
+		},
+		/* 获取聊天列表的缓存 */
+		getChatList:function(){
+			var chatListStr = kefu.storage.get('list');
+			if(chatListStr == null || chatListStr.length < 1){
+				chatListStr = '[]';
+			}
+			var chatList = JSON.parse(chatListStr);
+			return chatList;
+		},
+		// 往聊天列表中添加最后一次沟通的记录 otherUser 用户对象信息    message:消息json
+		pushChatList:function(otherUser, message){
+			if(otherUser == null){
+				msg.popups('出错，kefu.cache.pushChatList 传入的 otherUser 为null');
+				return;
+			}
+			var chatList = this.getChatList();
+
+			//聊天内容
+			var text = message.text;
+		    if(message.type == 'EXTEND'){
+		        text = kefu.extend[message.extend.name].name;
+		    }
+
+			//组合新的消息
+			var newMessage = {
+				id:otherUser.id,	//对方的userid
+				text:text,		//最后一次沟通的内容
+				nickname:otherUser.nickname,	//对方的昵称
+				head:kefu.getImageUrl(otherUser.head), 	//对方的头像
+				time:message.time, 			//消息产生的时间。
+				read:message.read		//消息是否已读
+			}
+			if(newMessage.time == null){
+				newMessage.time = parseInt(new Date().getTime()/1000);
+			}
+
+			var chatListLength = chatList.length;
+			for (var i = 0; i < chatListLength; i++) {
+				if(chatList[i] != null && chatList[i]['id'] == otherUser.id){
+					chatList.splice(i, 1);	//移除跟这个用户的上一条记录。以便存最新的
+					continue;
+				}
+			}
+			chatList.push(newMessage);
+			kefu.storage.set('list', JSON.stringify(chatList));
+		},
+		/*
+		 * 通过userid，获取这个用户的其他信息。
+		 * @param userid 要获取的是哪个用户的信息
+		 * @param func 获取到这个用户信息后，要执行的方法。传入 function(user){ console.log(user); }
+		 * @return 如果缓存中有这个用户的信息，那么直接返回这个user对象。 如果没有，那么返回null。 这个返回值大多数情况用不到，都是使用 func 进行处理的
+		 */
+		getUser:function(userid, func){
+			var user;
+			var cache_key = 'user_id_'+userid;
+			var userStr = kefu.storage.get(cache_key);
+			if(userStr == null || userStr.length < 1){
+				//从网络获取
+				request.send(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
+					//请求完成
+					if(data.result == '1'){
+						user = data.user;
+						kefu.storage.set(cache_key, JSON.stringify(data.user));
+						if(func != null){
+							func(user);
+						}
+					}
+				},'post', true, {'content-type':'application/x-www-form-urlencoded'}, function(xhr){
+					//异常
+					console.log('kefu.cache.getUser() 异常：');
+					console.log(xhr);
+				})
+				
+			}else{
+				user = JSON.parse(userStr);
+				func(user);
+			}
+			
+			return user;
+		}
+	},
+	/* 扩展，比如表情、图片、订单、商品 */
+	extend:{
+		/* 表情 */
+		face:{
+			name:'表情',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894373099" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2514" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512 979C263.472 979 62 777.528 62 529S263.472 79 512 79s450 201.472 450 450-201.472 450-450 450zM337 479c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75z m350 0c41.421 0 75-33.579 75-75s-33.579-75-75-75-75 33.579-75 75 33.579 75 75 75zM312 629c0 110.457 89.543 200 200 200s200-89.543 200-200H312z" fill="{color}" p-id="2515"></path></svg>',
+			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
+			format:function(message){
+				return message;
+			},
+			faces:{
+				xiaolian:'😀',
+				huaixiao:'😁',
+				se:'😍',
+				feiwen:'😘',
+				waiziuxiao:'😏',
+				yumen:'😒',
+				ai:'😔',
+				tu:'🤮',
+				yun:'😵',
+				nanguo:'🙁',
+				jingkong:'😲',
+				ku:'😭',
+				yangmei:'🤨',
+				miyan:'😆',
+				liuhan:'😅',
+				weixiao:'🙂',
+				xiaoxingxing:'🤩',
+				sikao:'🤔',
+				xu:'🤫',
+				yanmaoqian:'🤑',
+				shenshetou:'😝'
+			},
+			/* 点击后显示表情选择 */
+			onclick:function (){
+				var html = '<div id="inputExtend_Face">';
+				for(var key in kefu.extend.face.faces){
+					html = html + '<span onclick="kefu.extend.face.insert(\''+key+'\');">'+kefu.extend.face.faces[key]+'</span>';
+				};
+				html = html+'</div>';
+
+				//隐藏扩展功能栏
+				document.getElementById('inputExtend').style.display = 'none';
+				document.getElementById('inputExtendShowArea').style.display = '';
+
+				document.getElementById('inputExtendShowArea').innerHTML = html;
+				
+				//标记当前正在使用扩展的输入方式，而非键盘输入方式了
+				kefu.chat.shuruType = 'more';
+			},
+			/* 向输入框中插入表情 */
+			insert:function (key){
+				document.getElementById('text').innerHTML = document.getElementById('text').innerHTML + kefu.extend.face.faces[key];
+			}
+
+		},
+		/* 图片上传 */
+		image:{
+			name:'图片',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894900121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2954" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M955.733333 136.533333H68.266667c-37.546667 0-68.266667 30.72-68.266667 68.266667v614.4c0 37.546667 30.72 68.266667 68.266667 68.266667h887.466666c37.546667 0 68.266667-30.72 68.266667-68.266667V204.8c0-37.546667-30.72-68.266667-68.266667-68.266667z m-154.146133 171.485867a51.2 51.2 0 1 1 0 102.4 51.2 51.2 0 0 1 0-102.4z m48.520533 442.282667H174.1312c-32.392533 0-50.193067-37.6832-29.610667-62.702934l186.504534-226.781866a38.3488 38.3488 0 0 1 59.2384 0L556.373333 662.818133a38.3488 38.3488 0 0 0 59.2384 0l92.2624-112.1792a38.3488 38.3488 0 0 1 59.2384 0l112.64 136.977067c20.548267 25.002667 2.7648 62.685867-29.6448 62.685867z" fill="{color}" p-id="2955"></path></svg>',
+			template:'<img style="max-width: 100%;" onclick="kefu.extend.image.fullScreen(\'{url}\');" src="{url}" />',
+			initChat:function(){
+				var inputEle = document.createElement("input");
+				inputEle.setAttribute("accept", "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/bmp");
+				inputEle.id = 'imageInput';
+				inputEle.style.display = 'none';
+				inputEle.type = 'file';
+				document.body.appendChild(inputEle);
+			},
+			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
+			format:function(message){
+				message.text = kefu.extend.image.template.replace(/{url}/g, kefu.filterXSS(kefu.getImageUrl(message.extend.url)));
+				return message;
+			},
+			onclick:function(){
+				//添加input改动监听
+				if(document.getElementById('imageInput').oninput == null){
+					document.getElementById('imageInput').oninput = function(e){
+					    if(typeof(e.srcElement.files[0]) != 'undefined'){
+					        var file = e.srcElement.files[0];
+					        msg.loading('上传中');
+					        request.upload(kefu.api.uploadImage, {token:kefu.token.get()}, file,function(data){
+					            msg.close();
+					            if(data.result == '1'){
+					            	//组合extend的消息体
+					            	var extend = {
+					            			url:kefu.getImageUrl(data.url)
+					            	};
+					            	kefu.chat.sendPluginMessage(extend, 'image');
+					            	
+					            	//切换到键盘输入方式
+					            	kefu.chat.switchToJianpanShuruType();
+					            }else{
+					            	msg.failure(data.info);
+					            }
+					            
+					        }, null, function(){
+					        	msg.close();
+					            msg.failure('异常');
+					        });
+					        //清理掉input记录，避免上传两张相同的照片时第二次上传无反应
+					        document.getElementById('imageInput').value = '';
+					    }    
+					}
+				}
+
+				document.getElementById('imageInput').click();
+			},
+			//放大全屏查看图片
+			fullScreen:function(imageUrl){
+				msg.popups({
+					text:'<img src="'+imageUrl+'" style="width: 100%; max-width: 100%; " />',
+					width:'95%',
+					opacity:100,
+					padding:'1px'
+				});
+			}
+		},
+		/* 订单 */
+		order:{
+			name:'订单',
+			icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1603894275814" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1559" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M128 891.663059h768a128 128 0 0 0 128-128V260.336941a128 128 0 0 0-128-128H128A128 128 0 0 0 0 260.336941v503.326118a128 128 0 0 0 128 128z m83.425882-475.376941v281.178353c0 31.051294-57.705412 31.171765-57.705411 0V334.697412c0-21.202824 7.589647-31.051294 22.64847-31.834353 12.137412-0.632471 25.057882 5.692235 38.701177 24.244706l202.390588 275.365647v-272.323765c0-37.255529 55.898353-37.225412 55.898353 0v362.767059c0 18.100706-7.559529 26.383059-22.648471 27.196235-13.673412 0.722824-24.786824-6.746353-36.261647-22.64847L211.425882 416.286118z m292.352 149.62447c0-213.232941 272.022588-212.781176 272.022589 0 0 206.667294-272.022588 208.956235-272.022589 0z m52.555294 0c0 128.813176 165.586824 133.782588 165.586824 0 0-73.667765-40.749176-103.695059-83.245176-102.912-42.496 0.783059-82.341647 32.406588-82.341648 102.912z m285.093648 97.249883c15.872 0 28.822588 12.950588 28.822588 28.822588s-12.950588 28.822588-28.822588 28.822588-28.822588-12.950588-28.822589-28.822588 12.950588-28.822588 28.822589-28.822588z" fill="{color}" p-id="1560"></path></svg>',
+			//css:'./extend/order/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
+			//请求的api接口
+			requestApi:'orderList.json',
+			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
+			format:function(message){
+				message.text = kefu.extend.order.getOrderByTemplate(message.extend);
+				return message;
+			},
+
+			/*
+				订单号 {order.no}
+				订单时间 {order.time}
+				订单商品的图片 {goods.image}
+				订单商品的名字 {goods.name}
+				商品的价格 {goods.price}
+				订单的状态 {order.state}
+			*/
+			listTemplate:`
+				<div class="extend_order_item" onclick="kefu.extend.order.sendOrder('{order.no}', this, '{id}');">  
+				    <div class="orderInfo">
+				        <div class="order_no">订单号：{order.no}</div>
+				        <div class="order_time">{order.time}</div>
+				    </div>
+				    <div class="goodsInfo">
+				    	<img class="image" src="{goods.image}" />
+					    <div class="goodsAttr">
+					        <div class="name">{goods.name}</div>
+					        <div class="priceState">
+					            <div class="price">{goods.price}</div>
+					            <div class="state">{order.state}</div>
+					        </div>
+					    </div>
+				    </div>
+				</div>
+				<hr class="extend_order_hr" />
+			`,
+
+			orderMap:{},	//key: goodsid
+
+			getOrderByTemplate:function(order){
+				return kefu.extend.order.listTemplate
+							.replace(/{order.no}/g, kefu.filterXSS(order['no']+''))
+							.replace(/{order.time}/g, kefu.filterXSS(order['time']+''))
+							.replace(/{goods.image}/g, kefu.filterXSS(order['image']))
+							.replace(/{id}/g, kefu.filterXSS(order['id']+''))		//唯一标识，仅此而已
+							.replace(/{goods.name}/g, kefu.filterXSS(order['name']))
+							.replace(/{goods.price}/g, kefu.filterXSS(order['price']+''))
+							.replace(/{order.state}/g, kefu.filterXSS(order['state']+''));
+			},
+			onclick:function (){
+				msg.loading('获取中');
+				request.post(kefu.extend.order.requestApi,{token:kefu.token.get(), zuoxiid:kefu.chat.otherUser.id, myid:kefu.user.id}, function(data){
+					msg.close();
+					var html = '';
+					for (var i = 0; i < data.length; i++) {
+						kefu.extend.order.orderMap[data[i]['id']] = data[i];
+						html = html + kefu.extend.order.getOrderByTemplate(data[i]);
+					};
+					msg.popups({
+						text:html,
+						top:'10%',
+						height:'20rem'
+					});
+				});
+			},
+			//发送某个订单 orderid: 订单id、或订单号， obj:点击的当前dom对象， uniqueId:当前点击项在这个订单列表中的唯一id标识，在这些订单列表中是唯一
+			sendOrder:function (orderid, obj, uniqueId){
+				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
+				if(parentClassName == 'text'){
+					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
+					kefu.extend.order.otherShow(orderid);
+					return;
+				}
+				var order = kefu.extend.order.orderMap[uniqueId];
+				msg.close();
+				
+				kefu.chat.sendPluginMessage(order, 'order');
+			},
+			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
+			otherShow:function(orderid){
+				if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
+					if(typeof(window.webkit.messageHandlers.appShowOrder.postMessage) == 'function'){
+						window.webkit.messageHandlers.appShowOrder.postMessage(orderid);
+					}
+				}else{
+					alert('待编写。这里应该是跳转到原生app的订单详情中进行查看');
+				}
+			}
+		},
+		/* 商品 */
+		goods:{
+			name:'商品',
+			//chat:'<span onclick="">商品</span>',
+			//css:'./extend/goods/style.css',	//引入这个扩展的自定义css。引入的这个css会在加载完kefu.js后立马加载引入这里的css
+			//初始化，kefu.js 加载完毕后会先引入指定路径的js，再执行此方法
+			init:function(){
+
+			},
+			/* 将message.extend 的json消息格式化为对话框中正常浏览的消息 */
+			format:function(message){
+				message.text = kefu.extend.goods.getGoodsByTemplate(message.extend);
+				return message;
+			},
+			/*
+				商品图片 {image}
+				商品名字 {name}
+				商品价格 {price}
+			*/
+			template : `
+				<!-- 弹出的商品发送 -->
+			    <div class="extend_goods_item" onclick="kefu.extend.goods.sendGoods('{id}', this);">  
+			        <img class="image" src="{image}" />
+			        <div class="goodsInfo">
+			            <div class="name">{name}</div>
+			            <div class="priceDiv">
+			            	<div class="price">{price}</div>
+			            	<div class="sendButtonDiv"><button>发送商品</button></div></div>
+			        </div>
+			    </div>
+			`,
+			goods:{},
+			getGoodsByTemplate : function (goods){
+				return kefu.extend.goods.template
+						.replace(/{id}/g, kefu.filterXSS(goods['id']))
+						.replace(/{name}/g, kefu.filterXSS(goods['name']))
+						.replace(/{price}/g, kefu.filterXSS(goods['price']))
+						.replace(/{image}/g, kefu.filterXSS(goods['image']));
+			},
+			//发送商品
+			sendGoods : function (goodsid, obj){
+				var parentClassName = obj.parentElement.className;	//获取当前触发的onclick div的父级元素的class 的 name
+				if(parentClassName == 'text'){
+					//在聊天窗口中点击的，那么调取原生直接进入订单详情页面
+					kefu.extend.goods.otherShow(goodsid);
+					return;
+				}
+
+				if(goodsid != kefu.extend.goods.goods.id){
+					msg.failure('商品id异常！');
+				}
+				msg.close();
+				
+				kefu.chat.sendPluginMessage(kefu.extend.goods.goods, 'goods');
+			},
+			//在第三方平台中，点击订单这个消息后打开的。 orderid 订单的id
+			otherShow:function(goodsid){
+				if(typeof(window.webkit) != 'undefined' && typeof(window.webkit.messageHandlers) != 'undefined'){
+					//ios上用
+					if(typeof(window.webkit.messageHandlers.appShowGoods.postMessage) == 'function'){
+						window.webkit.messageHandlers.appShowGoods.postMessage(goodsid);
+					}
+				}else{
+					alert('待编写。这里应该是跳转到原生app的商品详情中进行查看');
+				}
+			}
+		}
+	},
+	socket:{
+		url:'ws://xxxxxx',	//websocket链接的url，在 socket.connect时传入赋值
+		socket:null,
+		//心跳相关
+		heartBeat:{
+			time:50, 	//心跳时间，50秒，单位是秒。每隔50秒自动发一次心跳
+			text:'{"type":"HEARTBEAT","text":"AreYouThere"}',	//心跳发起，询问服务端的心跳内容，默认是 {"type":"HEARTBEAT","text":"AreYouThere"}
+			isStart:false,	//当前自动发送心跳是否启动了， false：未启动，  true：已启动
+			startHeartBeat:function(){
+				if(kefu.socket.heartBeat.isStart == false){
+					//未启动，那么启动心跳
+			        var socketHeartBeatInterval = setInterval(function(){
+			        	kefu.socket.send(kefu.socket.heartBeat.text);
+			        }, kefu.socket.heartBeat.time*1000);
+			        kefu.socket.heartBeat.isStart = true;
+			        console.log('kefu.socket headrtBeat thread start');
+				}
+			}
+		},
+		//连接成功时触发
+		onopen:function(){
+			kefu.socket.send(JSON.stringify({
+		        'type': 'CONNECT' //第一次联通，登录
+		        ,'token':kefu.token.get()
+		    })); 
+			
+			//开启心跳
+			kefu.socket.heartBeat.startHeartBeat();
+		},
+		//监听收到的消息的function
+		onmessage:function(res){ 
+			var message = JSON.parse(res.data);
+			if(message.type != null && message.type == 'HEARTBEAT'){
+				//心跳消息，忽略
+				return;
+			}
+			message.text = kefu.getReceiveMessageText(message);
+			message.read = false;	//默认消息就是未读的。false：未读，true已读
+			
+			if(kefu.mode == 'pc'){
+				//pc
+				
+				if(kefu.currentPage == 'chat'){
+					//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+					if(message.sendId == kefu.chat.otherUser.id){
+						message.read = true;
+						kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+					}else{
+						//不是这个人的，不再这个chat中显示消息
+						console.log('不是这个人的，不再这个chat中显示消息');
+					}
+				}
+			}else{
+				//mobile模式，也就是要么在list页面，要么在chat页面
+				if(kefu.currentPage == 'list'){
+					//当前在list列表页
+					//弹出新消息提醒
+//						msg.popups('<div class="listPopupsNewMessage" onclick="kefu.ui.chat.render(\''+message.sendId+'\');">您有新消息：<div style="padding-left:1rem">'+message.text+'</div></div>');
+				}else{
+					//当前在chat,如果当前的chat沟通对象跟消息都是一个人，那么显示在当前chat
+					if(message.sendId == kefu.chat.otherUser.id || message.type == 'SYSTEM'){
+						message.read = true;
+						kefu.ui.chat.appendMessage(message);    //聊天窗口增加消息
+					}else{
+						//消息发送方跟当前chat聊天的用户不是同一个人，那么弹出个提醒吧
+						//msg.popups('<div onclick="kefu.ui.chat.render(\''+message.sendId+'\');">有新消息</div>');
+						kefu.ui.chat.newMessageRemind(message);
+					}
+				}
+			}
+			
+			//消息缓存
+			kefu.cache.add(message);   
+			
+			//渲染list消息列表
+			if(kefu.mode == 'pc' || kefu.currentPage == 'list'){
+				//如果是pc模式，或者mobile模式的当前页面是list，那么渲染list页面
+				kefu.cache.getUser(message.sendId, function(user){
+					kefu.ui.list.render();	//渲染页面
+				});
+			}
+			
+			//通知提醒
+			kefu.notification.execute('您有新消息',message.text);
+		},
+		//连接
+		connect:function(url){
+			this.url = url;
+			this.reconnect.connect();
+			
+			//socket断线重连
+	        var socketCloseAgainConnectInterval = setInterval(function(){
+	        	if(kefu.socket.socket.readyState == kefu.socket.socket.CLOSED){
+	                console.log('socketCloseAgainConnectInterval : socket closed , again connect ...');
+	                kefu.socket.reconnect.connect();
+	            }
+	        }, 3000);
+		},
+		//重新连接，主要用于断线重连
+		reconnect:{
+			connecting:false,	//当前websocket是否是正在连接中,断线重连使用
+			//重新连接
+			connect:function(){
+				if(!this.connecting){
+					console.log('socket connect ... '+new Date().toLocaleString());
+					kefu.socket.reconnect.connecting = true;	//标记已经有socket正在尝试连接了
+					kefu.socket.socket = new WebSocket(kefu.socket.url);
+					kefu.socket.socket.onopen = function(){
+						kefu.socket.onopen();
+					};
+					kefu.socket.socket.onmessage = function(res){
+						//res为接受到的值，如 {"emit": "messageName", "data": {}}
+						kefu.socket.onmessage(res);
+					};
+					this.connecting = false;
+				}
+			},
+		},
+		//发送消息
+		send:function(text){
+			if(kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
+				if(typeof(text) == 'object'){
+					text = JSON.stringify(text);
+				}
+				kefu.socket.socket.send(text);
+			}else if(kefu.socket.socket.readyState == kefu.socket.socket.CLOSED || kefu.socket.socket.readyState == kefu.socket.socket.CLOSING){
+				console.log('socket 已关闭，正在开启重连');
+				kefu.socket.reconnect.connect();
+				kefu.socket.send(text);	//重新发送
+			}
+		}
+	}
+}
+
