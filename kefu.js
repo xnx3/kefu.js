@@ -1190,7 +1190,7 @@ var kefu = {
 			var data = {
 		    	token:kefu.token.get(),
 		    	type:'MSG',	//消息类型
-		    	//sendId:kefu.user.id,		//发送者ID
+		    	sendId:kefu.user.id,		//发送者ID
 		    	receiveId:kefu.chat.otherUser.id,	//接受者id
 		    	text:text,
 		        time:new Date().getTime()      
