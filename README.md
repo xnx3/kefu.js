@@ -25,8 +25,22 @@ H5做的在线客服，其实就是一个对话窗口，类似百度商桥。结
 [www.kefu.zvo.cn](http://www.kefu.zvo.cn)
 
 ## 使用及开发
-已将所有文档托管到了码云文档中，如图：
-
+#### 懒人极速体验代码
+新建一个HTML文件，其内容如下，直接用浏览器打开即可看到效果。适用于懒人。
+````
+<!DOCTYPE html>
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>DEMO</title>
+</head>
+<body>
+<script src="https://res.weiunity.com/wm/wm.js"></script>
+<script src="https://res.weiunity.com/kefu/dev/h5Pc/h5Pc.js"></script>
+<button onclick="kefu.ui.chat.entry('365fef747a9e493fb631b621ee36eed1');">打开PC端客服聊天窗口</button>
+</body>
+</html>
+````
+更多更详细的文档，已托管在码云文档，请看下面
+#### 码云托管的详细文档
 [![输入图片说明](http://cdn.weiunity.com/site/5348/news/8c53da0c730b4054b12f4ec629dbf7a5.png "在这里输入图片标题")](https://gitee.com/leimingyun/dashboard/wikis/leimingyun/kefujs-api-interface-of/preview?sort_id=3663196&doc_id=1274007)
 文档地址：  
 https://gitee.com/leimingyun/dashboard/wikis/leimingyun/kefujs-api-interface-of/preview?sort_id=3663196&doc_id=1274007
