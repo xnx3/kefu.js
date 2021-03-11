@@ -209,6 +209,7 @@ var request = {
 }
 
 var kefu = {
+	version:1.1, 	//当前kefu.js的版本
 	api:{
 		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
 		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
@@ -257,7 +258,7 @@ var kefu = {
 		kefu.getMyUser(function(data){
 			kefu.user = data.user;
 			kefu.user.otherUserId = data.otherUserId;
-			kefu.socket.connect(socketUrl);	//建立 socket 通讯
+			kefu.socket.connect(kefu.socket.url);	//建立 socket 通讯
 		});
 	},
 	//新消息通知、提醒
@@ -653,7 +654,6 @@ var kefu = {
 				kefu.cache.getUser(message.sendId, function(user){
 					var remindTextDiv = document.getElementById('newMessageRemindText');
 					remindTextDiv.innerHTML = user.nickname + ' : ' + message.text;
-					console.log(remindTextDiv);
 					remindTextDiv.onclick = function(){
 						//点击后跳转到跟这个人的聊天窗口中对话。
 						kefu.ui.chat.render(message.sendId);
@@ -1345,7 +1345,6 @@ var kefu = {
 			if(message['type'] == 'SYSTEM'){
 				return;
 			}
-			console.log(otherUserId);
 			if(otherUserId != '0' && otherUserId.length > 0){
 
 				//保存单独跟这个用户的聊天记录
