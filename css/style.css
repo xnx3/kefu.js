@@ -178,6 +178,7 @@ header .title nickname,header .title #onlineState{
 	padding-left: 0.94rem;
     padding-top: 1.25rem;
     overflow: auto;
+    background-color: #EFF0F1;
 }
 .chat .head{
 	background-repeat: no-repeat;
@@ -255,6 +256,7 @@ header .title nickname,header .title #onlineState{
 /* 系统消息 */
 .systemChat{
     text-align:center;
+    background-color: #EFF0F1;
 }
 .chat .systemText{
     display: inline-block;
@@ -493,7 +495,7 @@ header #windowControl>div{
 	position: inherit;
     height: 30rem;
     padding-bottom: 3rem;
-    background-color: white;
+    background-color: #EFF0F1;
     /* background-color: #ffffff9e; */
     overflow-y: auto;
 	overflow-x: hidden;
@@ -535,6 +537,7 @@ header #windowControl>div{
 #pc #chat_footer #input_area #inputExtend .extendSmallIcon{
     height: 1.4rem;
     padding-top: 0.2rem;
+    display: flex;
 }
 #pc #inputExtend span{
 	line-height:1rem;

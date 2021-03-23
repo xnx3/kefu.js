@@ -211,6 +211,7 @@ var request = {
 var kefu = {
 	version:1.1, 	//当前kefu.js的版本
 	api:{
+		domain:'https://api.kefu.leimingyun.com/',				//domain域名，设置如 https://xxxxxxx.com/   前面要带协议 ，后面要带 /
 		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
 		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
 		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
@@ -1572,6 +1573,92 @@ var kefu = {
 				});
 			}
 		},
+		/* 语音，录音 */
+		luyin : {
+		    name:'语音',	//插件的名字
+		    icon:'<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="598"><path d="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0ZM681.514667 494.016c1.706667 0 3.370667 0.149333 5.205333 0.426667a30.144 30.144 0 0 1 24.32 34.837333 203.093333 203.093333 0 0 1-170.602667 165.610667v68.138666c0 16.64-13.333333 30.037333-29.930666 30.037334h-1.109334c-16.170667-0.554667-28.8-14.378667-28.8-30.741334v-67.861333a202.944 202.944 0 0 1-167.637333-165.184 32.682667 32.682667 0 0 1-0.426667-5.226667c0-16.64 13.354667-30.037333 29.930667-30.037333 14.613333 0 26.986667 10.709333 29.504 25.109333a142.613333 142.613333 0 0 0 114.944 115.392c77.269333 13.952 151.189333-37.802667 165.098667-115.413333a30.293333 30.293333 0 0 1 29.504-25.088z m-171.84-263.082667c56.490667 0 102.293333 45.994667 102.293333 102.698667v155.861333c0 56.704-45.802667 102.698667-102.293333 102.698667s-102.293333-45.994667-102.293334-102.698667V333.653333c0-56.704 45.802667-102.698667 102.293334-102.698666z" p-id="599" fill="{color}"></path></svg>', //插件的图标，一定要用这种svg格式的。
+		    js:'https://res.weiunity.com/kefu/extend/luyin/luyin.js',
+		    onclick:function(){
+				try{
+					HZRecorder.get(function (rec) {
+						kefu.extend.luyin.recorder = rec;
+						kefu.extend.luyin.recorder.start();
+					});
+				}catch(e){
+					console.log(e); 
+					return;
+				}
+		        msg.popups({
+					text:`
+						<div onclick="kefu.extend.luyin.startLuyin(this);" style=" width: 100%; text-align: center; margin-left: 0.15rem; padding-top: 0.5rem; -webkit-touch-callout:none;  -webkit-user-select:none; -khtml-user-select:none;  -moz-user-select:none; -ms-user-select:none; user-select:none;" >
+							<div style="padding-top: 0.5rem;" id="kefu_extend_luyin_svg"><svg style="width: 4rem;" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6364"><path d="M512 512m-512 0a512 512 0 1 0 1024 0 512 512 0 1 0-1024 0ZM681.514667 494.016c1.706667 0 3.370667 0.149333 5.205333 0.426667a30.144 30.144 0 0 1 24.32 34.837333 203.093333 203.093333 0 0 1-170.602667 165.610667v68.138666c0 16.64-13.333333 30.037333-29.930666 30.037334h-1.109334c-16.170667-0.554667-28.8-14.378667-28.8-30.741334v-67.861333a202.944 202.944 0 0 1-167.637333-165.184 32.682667 32.682667 0 0 1-0.426667-5.226667c0-16.64 13.354667-30.037333 29.930667-30.037333 14.613333 0 26.986667 10.709333 29.504 25.109333a142.613333 142.613333 0 0 0 114.944 115.392c77.269333 13.952 151.189333-37.802667 165.098667-115.413333a30.293333 30.293333 0 0 1 29.504-25.088z m-171.84-263.082667c56.490667 0 102.293333 45.994667 102.293333 102.698667v155.861333c0 56.704-45.802667 102.698667-102.293333 102.698667s-102.293333-45.994667-102.293334-102.698667V333.653333c0-56.704 45.802667-102.698667 102.293334-102.698666z" p-id="6365" fill="#eeeeee"></path></svg></div>
+							<div style="font-size: 0.9rem; padding-top: 1.3rem;" id="kefu_extend_luyin_text">点击开始录音</div>
+						</div>`, 
+					width:'8rem',
+					height:'10rem'
+				});
+		    },
+			format:function(message){
+				message.text = '<audio src="'+kefu.filterXSS(message.extend.url)+'" controls="controls" style="max-width: 100%;">您的浏览器不支持 audio 标签。</audio>';
+				return message;
+			},
+			recorder:null,
+			//开始录音
+			startLuyin:function(obj){
+				obj.onclick=function(){
+					kefu.extend.luyin.stopAndSend();
+				};
+				//弹出黑窗的关闭按钮，点击关闭将不在录音
+				if(document.getElementsByClassName('msg_close').length > 0){
+					document.getElementsByClassName('msg_close')[0].onclick=function(){
+						kefu.extend.luyin.recorder.stop();
+						msg.close();
+					}
+				}
+				//onmouseup="console.log('up'); kefu.extend.luyin.stopAndSend();" 
+				document.getElementById('kefu_extend_luyin_text').innerHTML = '录音中...<br/>点击结束录音';
+				document.getElementById('kefu_extend_luyin_text').style.paddingTop = '0.8rem';
+				document.getElementById('kefu_extend_luyin_svg').innerHTML = `<svg style="width: 4rem;" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7813"><path d="M513.97099632 1.80950267C232.79247314 1.80950267 4.54496541 230.05700825 4.54496541 511.23553144s228.24750558 509.42602875 509.42603091 509.42603087 509.42602875-228.24750558 509.42602873-509.42603087c-0.28005843-281.4585816-228.24750558-509.42602875-509.42602873-509.42602877z m-215.6448843 558.15617188c0 15.4032057-14.28297193 27.44571227-32.48676208 27.44571225s-30.52635298-12.32256502-30.52635295-30.52635298v-92.13917796c0-15.4032057 12.32256502-30.52635298 30.52635295-30.52635298 15.4032057 0 32.48676209 12.32256502 32.48676208 30.52635298v95.21981869z m123.78576476 73.93538784c0 18.20378796-14.28297193 30.52635298-32.48676209 30.52635515s-30.52635298-12.32256502-30.52635298-30.52635515v-245.61112036c0-15.4032057 12.32256502-30.52635298 30.52635298-30.52635296 15.4032057 0 32.48676209 12.32256502 32.48676209 30.52635296v245.61112036z m122.94558938 61.61282502c0 18.20378796-12.32256502 30.52635298-30.52635511 30.52635298s-30.52635298-12.32256502-30.52635301-30.52635298V326.67711915c0-15.4032057 12.32256502-30.52635298 30.52635301-30.52635298 15.4032057 0 30.52635298 12.32256502 30.52635511 30.52635298v368.83676826z m124.6259379-61.61282502c0 18.20378796-12.32256502 30.52635298-30.52635297 30.52635515s-30.52635298-12.32256502-30.52635298-30.52635515v-245.61112036c0-15.4032057 12.32256502-30.52635298 30.52635298-30.52635296 15.4032057 0 30.52635298 12.32256502 30.52635297 30.52635296v245.61112036z m122.66553098-73.93538784c0 15.4032057-12.32256502 27.44571227-30.52635299 27.44571225s-30.52635298-12.32256502-30.52635297-30.52635298v-92.13917796c0-15.4032057 12.32256502-30.52635298 30.52635297-30.52635298 15.4032057 0 30.52635298 12.32256502 30.52635299 30.52635298v95.21981869z" fill="#eeeeee" p-id="7814"></path></svg>`; 
+				
+				kefu.extend.luyin.recorder.start();
+			},
+			//结束录音并发送语音
+			stopAndSend:function(){
+				kefu.extend.luyin.recorder.stop();    //结束录音
+				msg.loading('发送中');
+				
+				
+				//获取音频文件
+				var fd = new FormData();
+				fd.append("file", kefu.extend.luyin.recorder.getBlob());
+				var xhr = new XMLHttpRequest();
+				//上传完成回调
+				xhr.addEventListener("load", function (e) {
+					msg.close();
+					console.log('ok');
+					console.log(e);
+					//e.target.responseText即后台返回结果
+					var data = eval('(' + e.target.responseText + ')');
+					if(data.result == '1'){
+						//成功
+						kefu.chat.sendPluginMessage({
+							url:data.url,
+							size:data.size
+						},'luyin');
+						//切换到键盘输入方式
+						kefu.chat.switchToJianpanShuruType();
+					}else{
+						//失败
+						msg.failure(data.info);
+					}
+				}, false);
+			
+				//这里接口接收语音文件
+				xhr.open("POST", kefu.api.domain+'kefu/chat/file/uploadAudio.json');
+				xhr.send(fd);
+			}
+		},
+		
 		/* 订单 */
 		order:{
 			//name:'订单',
