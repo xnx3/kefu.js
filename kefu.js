@@ -396,7 +396,7 @@ var kefu = {
 			msg.popups('请设置 kefu.api.getMyUser 接口，用于获取当前用户(我)的信息');
 			return;
 		}
-		request.post(kefu.api.getMyUser,{token:kefu.token.get()}, function(data){
+		request.post(kefu.api.get(kefu.api.getMyUser),{token:kefu.token.get()}, function(data){
 			kefu.user = data.user;
 			if(typeof(func) == 'function'){
 				func(data);
