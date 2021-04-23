@@ -1825,7 +1825,7 @@ var kefu = {
 		socket:null,
 		//心跳相关
 		heartBeat:{
-			time:50, 	//心跳时间，50秒，单位是秒。每隔50秒自动发一次心跳
+			time:40, 	//心跳时间，40秒，单位是秒。每隔40秒自动发一次心跳
 			text:'{"type":"HEARTBEAT","text":"AreYouThere"}',	//心跳发起，询问服务端的心跳内容，默认是 {"type":"HEARTBEAT","text":"AreYouThere"}
 			isStart:false,	//当前自动发送心跳是否启动了， false：未启动，  true：已启动
 			startHeartBeat:function(){
@@ -1835,7 +1835,7 @@ var kefu = {
 			        	kefu.socket.send(kefu.socket.heartBeat.text);
 			        }, kefu.socket.heartBeat.time*1000);
 			        kefu.socket.heartBeat.isStart = true;
-			        console.log('kefu.socket headrtBeat thread start');
+			        console.log('kefu.socket headrtBeat thread start , time: '+kefu.socket.heartBeat.time+'s');
 				}
 			}
 		},

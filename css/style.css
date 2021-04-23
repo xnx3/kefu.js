@@ -444,6 +444,7 @@ header .title nickname,header .title #onlineState{
 }
 #pc #head #title #otherUserHead{
 	height: 3.7rem;
+	width: 3.7rem;
 	border-radius: 10rem;
 }
 #pc #head #title #headNameState{
