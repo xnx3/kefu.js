@@ -212,10 +212,26 @@ var kefu = {
 	version:1.1, 	//当前kefu.js的版本
 	api:{
 		domain:'https://api.kefu.leimingyun.com/',				//domain域名，设置如 https://xxxxxxx.com/   前面要带协议 ，后面要带 /
-		getMyUser:'',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
-		getChatOtherUser:'',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
-		chatLog:'',				//获取我跟某人的历史聊天记录列表的接口
-		uploadImage:''			//图片上传接口
+		getMyUser:'/kefu/chat/user/init.json',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
+		getChatOtherUser:'/kefu/chat/zuoxi/getUserByZuoxiId.json',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
+		chatLog:'/kefu/chat/log/log.json',				//获取我跟某人的历史聊天记录列表的接口
+		uploadImage:'/kefu/chat/file/uploadImage.json',			//图片上传接口
+		uploadAudio:'/kefu/chat/file/uploadAudio.json',		//语音（录音）上传接口
+		//传入如  kefu.api.uploadImage ,返回请求的绝对路径。有时候用户只是设置了 domain，其他的接口都是用默认的，用这个获取，会自动拼接domain、path
+		get:function(path){
+			//判断是否是带有绝对路径的，如果是，直接原样返回
+			if(path.indexOf('//') == 0 || path.indexOf('https://') == 0 || path.indexOf('http://') == 0){
+				return path;
+			}
+			
+			//没带有绝对路径，那么判断是否是为空，如果为空，那么也直接返回空
+			if(path == null || kefu.api.domain.length < 1){
+				return '';
+			}
+			
+			//剩下一种可能就是相对路径了，进行domain组合
+			return kefu.api.domain + path;
+		}
 	},
 	user:{},	//当前用户信息，如： {"id":"youke_c302af1bb55de708a99fbc7266ddf016","nickname":"游客302a","head":"https://res.hc-cdn.com/cnpm-common-resource/2.0.2/base/header/components/images/logo.png","type":"youke"}
 	currentPage:'list',	//当前所在哪个页面， 有 list 、 chat。 默认是list
@@ -1095,7 +1111,7 @@ var kefu = {
 				msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
 				return;
 			}
-			request.post(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
+			request.post(kefu.api.get(kefu.api.getChatOtherUser),{token:kefu.token.get(), id:userid}, function(data){
 				kefu.chat.otherUser = data.user;
 				if(typeof(func) != 'undefined'){
 					func(data);
@@ -1145,7 +1161,7 @@ var kefu = {
 				chatcontent.insertBefore(section,firstItem);
 
 				//创建网络请求
-				request.post(kefu.api.chatLog,{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
+				request.post(kefu.api.get(kefu.api.chatLog),{token:kefu.token.get(),otherId:kefu.chat.otherUser.id, time:kefu.chat.chatMessageStartTime, type:'before'}, function(data){
 					kefu.chat.currentLoadHistoryList = false;	//标记请求历史记录已请求完成，可以继续请求下一次聊天记录了
 
 					var chatcontent = document.getElementById('chatcontent');
@@ -1432,7 +1448,7 @@ var kefu = {
 			var userStr = kefu.storage.get(cache_key);
 			if(userStr == null || userStr.length < 1){
 				//从网络获取
-				request.send(kefu.api.getChatOtherUser,{token:kefu.token.get(), id:userid}, function(data){
+				request.send(kefu.api.get(kefu.api.getChatOtherUser),{token:kefu.token.get(), id:userid}, function(data){
 					//请求完成
 					if(data.result == '1'){
 						user = data.user;
@@ -1536,7 +1552,7 @@ var kefu = {
 					    if(typeof(e.srcElement.files[0]) != 'undefined'){
 					        var file = e.srcElement.files[0];
 					        msg.loading('上传中');
-					        request.upload(kefu.api.uploadImage, {token:kefu.token.get()}, file,function(data){
+					        request.upload(kefu.api.get(kefu.api.uploadImage), {token:kefu.token.get()}, file,function(data){
 					            msg.close();
 					            if(data.result == '1'){
 					            	//组合extend的消息体
@@ -1654,7 +1670,7 @@ var kefu = {
 				}, false);
 			
 				//这里接口接收语音文件
-				xhr.open("POST", kefu.api.domain+'kefu/chat/file/uploadAudio.json');
+				xhr.open("POST", kefu.api.get(kefu.api.uploadAudio));
 				xhr.send(fd);
 			}
 		},
