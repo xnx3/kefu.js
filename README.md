@@ -45,6 +45,10 @@ H5做的在线客服对话窗口，类似百度商桥。结合后端功能有：
 文档地址：  
 https://gitee.com/leimingyun/dashboard/wikis/leimingyun/kefujs-api-interface-of/preview?sort_id=3663196&doc_id=1274007
 
+## 与第三方系统对接
+如果您已经有现有的系统，想给自己的系统增加一个在线客服功能模块，你可以快速利用本客服系统提供的API接口，快速将云客服嵌入到您自己的系统中去。API文档可参考：  
+https://gitee.com/leimingyun/dashboard/wikis/leimingyun/third-party-system/preview?doc_id=1357285&sort_id=3897564
+
 ## 其他
 当前项目只是开源的前端代码，后端代码尚未开源，还在不断完善，预计后端代码可能会于2021.6月份左右开源，目前已开放帮安装，可以将后端安装到您自己的服务器！
 
