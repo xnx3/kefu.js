@@ -1250,7 +1250,12 @@ var kefu = {
 				extend:data
 			};
 			//更新聊天窗口
-			message.text = kefu.extend[name].format(message);
+			if(kefu.extend[name] != null && typeof(kefu.extend[name]) == 'undefined' && typeof(kefu.extend[name]).format != 'undefined'){
+				message.text = kefu.extend[name].format(message);
+			}else{
+				console.log('提示: '+name+'插件中， format 方法未实现，那么聊天消息体中这个插件的消息将不会出现。如果你想这个插件发送的消息能出现在聊天窗口中，请重写实现这个插件的 format 方法。可参考文档：  https://gitee.com/leimingyun/dashboard/wikis/leimingyun/kefujs-api-interface-of/preview?sort_id=3663420&doc_id=1274007');
+			}
+			
 			kefu.ui.chat.appendMessage(message);
 			
 			//socket发送消息
