@@ -1183,6 +1183,7 @@ var kefu = {
 							//有消息记录，那么绘制出来
 							for(var i = data.list.length-1; i >= 0; i--){
 								var message = data.list[i];
+								msg.from = 'hostory';
 								var msgSection = kefu.ui.chat.generateMessageSection(message);
 								chatcontent.insertBefore(msgSection,firstItem);
 							}
@@ -1368,6 +1369,7 @@ var kefu = {
 				return;
 			}
 			if(otherUserId != '0' && otherUserId.length > 0){
+				message['from'] = 'cache';
 
 				//保存单独跟这个用户的聊天记录
 				var chatUserStr = kefu.storage.get('userid:'+otherUserId);
