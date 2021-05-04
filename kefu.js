@@ -437,6 +437,10 @@ var kefu = {
 	},
 	//将[ul][li][br]等转化为html
 	ubb:function(text){
+		if(text == null || typeof(text) == 'undefined'){
+			return '';
+		}
+		
 		return text.replace(/\[ul\]/g, '<ul>')
 			.replace(/\[\/ul\]/g, '</ul>')
 			.replace(/\[li\]/g, '<li onclick="kefu.chat.question(this);" class="question">')
