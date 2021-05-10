@@ -466,7 +466,10 @@ var kefu = {
 				//已经赋予过了，不需要再执行插件的 format方法
 			}else{
 				//将json变为插件显示的样式
-				message = kefu.extend[message.extend.name].format(message);
+				if(typeof(kefu.extend[message.extend.name]) != 'undefined' && typeof(kefu.extend[message.extend.name].format) == 'function'){
+					//如果实现了 format 方法，则执行其
+					message = kefu.extend[message.extend.name].format(message);
+				}
 			}
 		}
 		//将[ul][li][br]等转化为html
@@ -881,52 +884,48 @@ var kefu = {
 			pc:{
 				html : `
 					<div id="pc">    	
-						<div id="pc_chat_leftmain">
-							<header class="chat_header" id="head">
-								<div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
-								<div class="title" id="title">
-									<img src="https://res.weiunity.com/kefu/images/head.png" id="otherUserHead" />
-									<div id="headNameState">
-										<div id="nickname">在线咨询</div>
-										<div id="onlineState">在线</div>
-									</div>
+						<header class="chat_header" id="head">
+							<div class="back" id="back" onclick="kefu.ui.list.entry();">&nbsp;</div>
+							<div class="title" id="title">
+								<img src="https://res.weiunity.com/kefu/images/head.png" id="otherUserHead" />
+								<div id="headNameState">
+									<div id="nickname">在线咨询</div>
+									<div id="onlineState">在线</div>
 								</div>
-								<div id="windowControl">
-									<div id="close" onclick="kefu.ui.chat.pc.close();">&nbsp;</div>
-								</div>
-							</header>
-							<div id="newMessageRemind">
-								<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
-								<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
 							</div>
-							
-							<section id="chatcontent" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();">
-							</section>
-							
-							<footer id="chat_footer">
-							    <div id="input_area">
-							    	<div id="inputExtend">
-							            <!-- 其他，如图片、商品、订单 -->
-							
-							        </div>
-							        <div id="inputExtendShowArea">
-							            <!-- inputExtend的显示区域，如表情的显示 -->
-							        </div>
-							        <div id="textInput">
-							        	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
-							            <!-- 键盘输入 -->
-							            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>
-							        </div>
-							        <div id="footerButton">
-							        	<div id="copyright" onclick="window.open('http://www.kefu.zvo.cn');">power by 雷鸣云客服</div>
-							        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
-							        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">
-							        </div>
-							    </div>
-							</footer>
+							<div id="windowControl">
+								<div id="close" onclick="kefu.ui.chat.pc.close();">&nbsp;</div>
+							</div>
+						</header>
+						<div id="newMessageRemind">
+							<div id="newMessageRemindText"><!-- 新消息：消息内容消息内容 --></div>
+							<div id="newMessageRemindClose" onclick="document.getElementById('newMessageRemind').style.display='none';">X</div>
 						</div>
-						<div id="pc_chat_right">
-						</div>
+						
+						<section id="chatcontent" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();">
+						</section>
+						
+						<footer id="chat_footer">
+						    <div id="input_area">
+						    	<div id="inputExtend">
+						            <!-- 其他，如图片、商品、订单 -->
+						
+						        </div>
+						        <div id="inputExtendShowArea">
+						            <!-- inputExtend的显示区域，如表情的显示 -->
+						        </div>
+						        <div id="textInput">
+						        	<div id="shuruType" onclick="kefu.chat.shuruTypeChange();"><!--输入方式--></div>
+						            <!-- 键盘输入 -->
+						            <div id="text" contenteditable="true" onclick="kefu.ui.chat.pc.switchToJianpanShuruType();"></div>
+						        </div>
+						        <div id="footerButton">
+						        	<div id="copyright" onclick="window.open('http://www.kefu.zvo.cn');">power by 雷鸣云客服</div>
+						        	<button class="send" onclick="kefu.ui.chat.pc.close();">关&nbsp;闭</button>
+						        	<input type="submit" value="发&nbsp;送" class="send" id="sendButton" onclick="kefu.chat.sendButtonClick(); kefu.ui.chat.pc.switchToJianpanShuruType();">
+						        </div>
+						    </div>
+						</footer>
 					</div>
 					`,
 				//关闭chat窗口
