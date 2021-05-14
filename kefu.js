@@ -214,6 +214,7 @@ var kefu = {
 		domain:'https://api.kefu.leimingyun.com/',				//domain域名，设置如 https://xxxxxxx.com/   前面要带协议 ，后面要带 /
 		getMyUser:'/kefu/chat/user/init.json',			//获取当前用户，我自己的用户信息。传入如 http://xxxx.com/user/getMyUser.json
 		getChatOtherUser:'/kefu/chat/zuoxi/getUserByZuoxiId.json',	//获取chat一对一聊天窗口中，当前跟我沟通的对方的用户信息。传入如 http://xxxx.com/user/getUserById.json 会自动携带当前登录用户的token、以及对方的userid
+		getChatOtherUserByKefuChatid:'/kefu/chat/zuoxi/getUserByKefuChatId.json',	//通过kefu.chatid 来让客服后台自动分配一个当前在线的、且闲置的客服给用户。
 		chatLog:'/kefu/chat/log/log.json',				//获取我跟某人的历史聊天记录列表的接口
 		uploadImage:'/kefu/chat/file/uploadImage.json',			//图片上传接口
 		uploadAudio:'/kefu/chat/file/uploadAudio.json',		//语音（录音）上传接口
@@ -728,6 +729,12 @@ var kefu = {
 				
 			    //获取聊天对方的用户信息
 			    kefu.chat.getOtherUser(otherUserId, function(data){
+			    	if(data.result == 0){
+			    		//接口返回失败响应，弹出失败提示
+			    		msg.failure(data.info);
+			    		return;
+			    	}
+			    	
 			        //设置网页聊天窗title 的对方昵称
 					document.getElementById('nickname').innerHTML = kefu.chat.otherUser.nickname;
 					//对方在线状态
@@ -1115,15 +1122,28 @@ var kefu = {
 		
 		/**
 		 * 获取当前聊天窗口中，跟我聊天的对方的user信息
-		 * @param userid 当前谁在跟谁聊天，对方的userid
+		 * @param chatid 当前谁在跟谁聊天，对方的chatid。 如果是正常的坐席id，那么这里是32位uuid，如果是kefu.chatid，那么这里是 kefuchatid_ + 32位uuid
 		 * @param func 获取到对方的用户信息后，要执行的方法
 		 */
-		getOtherUser:function(userid, func){
-			if(kefu.api.getChatOtherUser == null || kefu.api.getChatOtherUser.length < 1){
-				msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
-				return;
+		getOtherUser:function(chatid, func){
+			var gainApiUrl = '';
+			if(chatid.indexOf('kefuchatid_') == 0){
+				//是kefu.chatid
+				if(kefu.api.getChatOtherUserByKefuChatid == null || kefu.api.getChatOtherUserByKefuChatid.length < 1){
+					msg.popups('请设置 kefu.api.getUserByKefuChatId 接口，用于获取分配的客服坐席');
+					return;
+				}
+				gainApiUrl = kefu.api.get(kefu.api.getChatOtherUserByKefuChatid);
+			}else{
+				//是正常的chatid
+				if(kefu.api.getChatOtherUser == null || kefu.api.getChatOtherUser.length < 1){
+					msg.popups('请设置 kefu.api.getChatOtherUser 接口，用于获取跟我沟通的对方的信息');
+					return;
+				}
+				gainApiUrl = kefu.api.get(kefu.api.getChatOtherUser);
 			}
-			request.post(kefu.api.get(kefu.api.getChatOtherUser),{token:kefu.token.get(), id:userid}, function(data){
+			
+			request.post(gainApiUrl,{token:kefu.token.get(), id:chatid}, function(data){
 				kefu.chat.otherUser = data.user;
 				if(typeof(func) != 'undefined'){
 					func(data);
@@ -1253,10 +1273,19 @@ var kefu = {
 			}else{
 				data = {};
 			}
+			
+			//接收人chatid
+			var receivdId = '';
+			if(kefu.chat.otherUser != null && typeof(kefu.chat.otherUser.id) != 'undefined'){
+				receivdId = kefu.chat.otherUser.id;
+			}else{
+				receivdId = null;
+			}
+			
 			//组合后的消息体
 			var message = {
 				token:kefu.token.get(),
-				receiveId:kefu.chat.otherUser.id,
+				receiveId:receivdId,
 				sendId:kefu.user.id,
 				type:'EXTEND',
 				time:new Date().getTime(),
