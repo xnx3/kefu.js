@@ -218,6 +218,7 @@ var kefu = {
 		chatLog:'/kefu/chat/log/log.json',				//获取我跟某人的历史聊天记录列表的接口
 		uploadImage:'/kefu/chat/file/uploadImage.json',			//图片上传接口
 		uploadAudio:'/kefu/chat/file/uploadAudio.json',		//语音（录音）上传接口
+		uploadFile:'/kefu/chat/file/uploadFile.json',		//文件上传接口
 		//传入如  kefu.api.uploadImage ,返回请求的绝对路径。有时候用户只是设置了 domain，其他的接口都是用默认的，用这个获取，会自动拼接domain、path
 		get:function(path){
 			//判断是否是带有绝对路径的，如果是，直接原样返回
@@ -406,6 +407,9 @@ var kefu = {
 	},
 	//过滤html标签，防XSS攻击
 	filterXSS:function (text) {
+		if(text == null){
+			return null;
+		}
 		text = text.replace(/<\/?[^>]*>/g, ''); //去除HTML Tag
 		text = text.replace(/[|]*\n/, '') //去除行尾空格
 		text = text.replace(/&npsp;/ig, ''); //去掉npsp
@@ -1721,6 +1725,51 @@ var kefu = {
 				xhr.open("POST", kefu.api.get(kefu.api.uploadAudio));
 				xhr.send(fd);
 			}
+		},
+		/* 文件，发送文件 */
+		file : {
+		    name:'文件',	//插件的名字
+		    //icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1619840321163" class="icon" viewBox="0 0 1127 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4177" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M989.541 940.667h-858.923c0 0-68.409 10.642-68.409-80.572v-737.306c0 0 1.521-82.091 85.132-82.091h301.003c0 0 36.486-7.601 66.89 39.525 28.884 45.607 45.607 74.491 45.607 74.491 0 0 10.642 12.161 34.965 12.161-21.283 0 387.655 0 387.655 0 0 0 68.409-7.601 68.409 68.409v629.371c0 0 10.642 76.012-62.33 76.012zM925.692 362.984c0-18.243-15.202-33.445-33.445-33.445h-668.896c-19.763 0-34.965 15.203-34.965 33.445v3.040c0 19.763 15.202 34.965 34.965 34.965h668.896c18.243 0 33.445-15.203 33.445-34.965v-3.040z" fill="{color}" p-id="4178"></path></svg>', //插件的图标，一定要用这种svg格式的。
+		    onclick:function(){
+		    	var input = document.createElement("input");
+		    	input.type = "file";
+		    	input.click();
+		    	input.onchange = function(){
+		    		var file = input.files[0];
+		    		
+		    		var fd = new FormData();
+					fd.append("file", file);
+					var xhr = new XMLHttpRequest();
+					//上传完成回调
+					xhr.addEventListener("load", function (e) {
+						msg.close();
+						console.log(e);
+						//e.target.responseText即后台返回结果
+						var data = eval('(' + e.target.responseText + ')');
+						if(data.result == '1'){
+							//成功
+							kefu.chat.sendPluginMessage({
+								url:data.url,
+								size:data.size,
+								name:data.fileName
+							},'file');
+							//切换到键盘输入方式
+							kefu.chat.switchToJianpanShuruType();
+						}else{
+							//失败
+							msg.failure(data.info);
+						}
+					}, false);
+					//这里接口接收文件
+					xhr.open("POST", kefu.api.get(kefu.api.uploadFile));
+					xhr.send(fd);
+		    	};
+		    },
+			format:function(message){ 
+				message.text = '<div style="width: 12rem;"><div style="width: 3rem; float: left; height: 3rem;">'+kefu.extend.file.icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div style="float: left; text-align: left; padding-left: 1rem; font-size: 0.9rem; line-height: 1.4rem;">'+kefu.filterXSS(message.extend.name)+'<br/>大小:'+ (message.extend.size/1)+'KB</div></div>';
+				return message;
+			}
+
 		},
 		
 		/* 订单 */
