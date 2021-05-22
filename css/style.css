@@ -314,6 +314,7 @@ header .title nickname,header .title #onlineState{
 }
 #chat_footer #input_area #inputExtend .item .iconButton{
 	text-align: center;
+	height: 2.5rem;
 }
 #chat_footer #input_area #inputExtend .item .iconButton>svg{
 	width:2.3rem;

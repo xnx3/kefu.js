@@ -1766,7 +1766,7 @@ var kefu = {
 		    	};
 		    },
 			format:function(message){ 
-				message.text = '<div style="width: 12rem;"><div style="width: 3rem; float: left; height: 3rem;">'+kefu.extend.file.icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div style="float: left; text-align: left; padding-left: 1rem; font-size: 0.9rem; line-height: 1.4rem;">'+kefu.filterXSS(message.extend.name)+'<br/>大小:'+ (message.extend.size/1)+'KB</div></div>';
+				message.text = '<div style="width: 12rem; cursor:pointer; " onclick="window.location.href=\''+message.extend.url+'\';"><div style="width: 3rem; float: left; height: 3rem;">'+kefu.extend.file.icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div style="float: left; text-align: left; padding-left: 1rem; font-size: 0.9rem; line-height: 1.4rem;">'+kefu.filterXSS(message.extend.name)+'<br/>大小:'+ (message.extend.size/1)+'KB</div></div>';
 				return message;
 			}
 
