@@ -648,7 +648,13 @@ var kefu = {
 			},
 			//创建聊天正常沟通收发消息的 section dom 元素
 			generateMessageSection:function(message){
-				message['text'] = kefu.getReceiveMessageText(message);
+				if(message != null && typeof(message.text) != 'undefined' && message.text != ''){
+					//已经有显示出来的消息内容了，那可以直接显示出来
+				}else{
+					//没有直接显示出来的消息内容，需要正则一下，赋予 message.text 消息内容
+					message['text'] = kefu.getReceiveMessageText(message);
+				}
+				
 			    //发送文本消息后绘制对话窗口
 			    var section = document.createElement("section");
 			    //要用kefu.chat.otherUser来判断，不能用 kefu.user, kefu.user 异步获取，有可能kefu.user 还没获取到
@@ -1751,7 +1757,7 @@ var kefu = {
 							kefu.chat.sendPluginMessage({
 								url:data.url,
 								size:data.size,
-								name:data.fileName
+								fileName:data.fileName
 							},'file');
 							//切换到键盘输入方式
 							kefu.chat.switchToJianpanShuruType();
@@ -1766,7 +1772,7 @@ var kefu = {
 		    	};
 		    },
 			format:function(message){ 
-				message.text = '<div style="width: 12rem; cursor:pointer; " onclick="window.location.href=\''+message.extend.url+'\';"><div style="width: 3rem; float: left; height: 3rem;">'+kefu.extend.file.icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div style="float: left; text-align: left; padding-left: 1rem; font-size: 0.9rem; line-height: 1.4rem;">'+kefu.filterXSS(message.extend.name)+'<br/>大小:'+ (message.extend.size/1)+'KB</div></div>';
+				message.text = '<div style="cursor:pointer; " onclick="window.open(\''+message.extend.url+'\');"><div style="width: 3rem; float: left; height: 3rem;">'+kefu.extend.file.icon.replace(/{color}/g,kefu.ui.color.extendIconColor)+'</div><div style="text-align: left; font-size: 0.9rem; line-height: 1.4rem;width: 100%;margin-left: 3.6rem;"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; font-size: 1rem;">'+kefu.filterXSS(message.extend.fileName)+'</div><div style="font-size: 0.7rem;">大小:'+ (message.extend.size/1)+'KB</div></div></div>';
 				return message;
 			}
 
@@ -1969,7 +1975,9 @@ var kefu = {
 				//心跳消息，忽略
 				return;
 			}
-			//message.text = kefu.getReceiveMessageText(message); 去掉，因为在 kefu.ui.chat.appendMessage 时会自动执行此操作。避免 format被执行两次
+			//（2021.5.22 重新开启这个，这是原本的注释：去掉，因为在 kefu.ui.chat.appendMessage 时会自动执行此操作。避免 format被执行两次）
+			message.text = kefu.getReceiveMessageText(message); 
+			
 			message.read = false;	//默认消息就是未读的。false：未读，true已读
 			
 			if(kefu.mode == 'pc'){
@@ -2016,7 +2024,11 @@ var kefu = {
 			}
 			
 			//通知提醒
-			kefu.notification.execute('您有新消息',message.text);
+			if(typeof(message.text) != 'undefined' && message.text != '' && message.text.length > 0){
+				//message.text 有值，那么才算是正常的通知消息，播放消息通知
+				kefu.notification.execute('您有新消息',message.text);
+			}
+			
 		},
 		//连接
 		connect:function(url){
