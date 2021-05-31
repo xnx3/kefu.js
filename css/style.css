@@ -225,7 +225,6 @@ header .title nickname,header .title #onlineState{
 }
 .user .text{
 	background-color: var(--user-chat-background-color);
-	text-align: right;
     float: right;
     margin-right: 0rem;
 	max-width: 50%;
