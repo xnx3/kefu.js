@@ -661,7 +661,7 @@ var kefu = {
 			    if(message['receiveId'] == kefu.chat.otherUser.id){
 			        //是自己发送的这条消息，那么显示在右侧
 			        section.className = 'chat user '+message['type'];
-			        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+message['text']+'</div>';
+			        section.innerHTML = '<div class="head"></div><div class="sanjiao"></div><div class="text">'+kefu.ubb(message['text'])+'</div>';
 			    }else if(message['sendId'] == kefu.chat.otherUser.id){
 			        //是自己接受的这个消息，那么显示在左侧
 			        section.className = 'chat otherUser '+message['type'];
