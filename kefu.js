@@ -1514,6 +1514,8 @@ var kefu = {
 						if(func != null){
 							func(user);
 						}
+					}else{
+						console.log('kefu.api.getChatOtherUser 获取异常：'+data.info);
 					}
 				},'post', true, {'content-type':'application/x-www-form-urlencoded'}, function(xhr){
 					//异常

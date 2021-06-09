@@ -108,6 +108,7 @@ header .title nickname,header .title #onlineState{
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis; 
+    height: 1.1rem;
 }
 
 /* 没有聊天记录 */
