@@ -779,7 +779,7 @@ var kefu = {
 			        //拉取对方设置的自动回复欢迎语
 			        var autoReplyInterval = setInterval(function(){
 			            if(typeof(kefu.chat.otherUser.id) != 'undefined' && kefu.user != null && typeof(kefu.user.id) != 'undefined'){
-			            	if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
+			            	if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket != null && kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
 			            		//socket也已经打开了
 			            		//拉对方的自动回复欢迎语
 			            		kefu.socket.send(JSON.stringify({
@@ -2039,7 +2039,7 @@ var kefu = {
 			
 			//socket断线重连
 	        var socketCloseAgainConnectInterval = setInterval(function(){
-	        	if(kefu.socket.socket.readyState == kefu.socket.socket.CLOSED){
+	        	if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket != null && kefu.socket.socket.readyState == kefu.socket.socket.CLOSED){
 	                console.log('socketCloseAgainConnectInterval : socket closed , again connect ...');
 	                kefu.socket.reconnect.connect();
 	            }
@@ -2067,12 +2067,12 @@ var kefu = {
 		},
 		//发送消息
 		send:function(text){
-			if(kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
+			if(typeof(kefu.socket.socket) != 'undefined' && kefu.socket.socket != null && kefu.socket.socket.readyState == kefu.socket.socket.OPEN){
 				if(typeof(text) == 'object'){
 					text = JSON.stringify(text);
 				}
 				kefu.socket.socket.send(text);
-			}else if(kefu.socket.socket.readyState == kefu.socket.socket.CLOSED || kefu.socket.socket.readyState == kefu.socket.socket.CLOSING){
+			}else if(typeof(kefu.socket.socket) == 'undefined' || kefu.socket.socket == null || kefu.socket.socket.readyState == kefu.socket.socket.CLOSED || kefu.socket.socket.readyState == kefu.socket.socket.CLOSING){
 				console.log('socket 已关闭，正在开启重连');
 				kefu.socket.reconnect.connect();
 				kefu.socket.send(text);	//重新发送
