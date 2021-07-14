@@ -1939,6 +1939,97 @@ var kefu = {
 					alert('待编写。这里应该是跳转到原生app的商品详情中进行查看');
 				}
 			}
+		},
+		//只是实现了format方法，可以看历史记录而已，具体功能需要引入对应功能js文件
+		videoCall:{
+			name:'视频通话',
+			//icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1620038475713" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6099" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M782.378667 106.666667a42.666667 42.666667 0 0 1 42.666666 42.666666v170.666667a42.666667 42.666667 0 0 1-42.666666 42.666667h-213.333334a42.666667 42.666667 0 0 1-42.666666-42.666667v-170.666667a42.666667 42.666667 0 0 1 42.666666-42.666666h213.333334z m149.333333 34.56a21.333333 21.333333 0 0 1 21.333333 21.333333v144.213333a21.333333 21.333333 0 0 1-30.890666 19.114667L825.173333 277.333333v-85.333333l97.024-48.554667a21.333333 21.333333 0 0 1 9.557334-2.261333zM732.032 748.245333a42.666667 42.666667 0 0 1 17.877333 53.845334c-13.568 36.181333-27.264 61.184-41.130666 75.050666a149.290667 149.290667 0 0 1-145.450667 38.357334 637.056 637.056 0 0 1-322.176-174.122667 637.013333 637.013333 0 0 1-174.08-322.218667 149.248 149.248 0 0 1 38.314667-145.408c13.866667-13.866667 38.869333-27.562667 75.008-41.088a42.666667 42.666667 0 0 1 53.802666 17.834667l99.84 172.928c11.349333 19.626667 5.546667 37.76-13.397333 56.746667-16.469333 14.762667-29.866667 25.216-40.192 31.402666 21.12 39.168 48.256 75.989333 81.365333 109.098667 33.152 33.152 69.973333 60.288 109.226667 81.450667 4.522667-8.746667 15.018667-22.058667 31.488-40.064 16-16 33.194667-23.978667 51.968-15.957334l4.608 2.304 172.928 99.84z" p-id="6100" fill="{color}"></path></svg>',
+			format:function(message){
+				if(kefu.user.id == message.sendId){
+					//当前用户是此条消息的发送方
+					
+					if(message.extend.type == 'request'){
+						message.text = '发起视频通话邀请，等待对方接听';
+					}else if(message.extend.type == 'response_yes'){
+						message.text = '已同意接听';
+					}else if(message.extend.type == 'response_no'){
+						message.text = '已拒绝接听';
+					}else if(message.extend.type == 'close'){
+						message.text = '已结束通话';
+					}
+				}else{
+					//当前用户是此条消息的接收方
+					
+					if(message.extend.type == 'request'){
+						message.text = '发起视频通话邀请';
+					}else if(message.extend.type == 'response_yes'){
+						message.text = '对方已同意接听';
+					}else if(message.extend.type == 'response_no'){
+						message.text = '对方已拒绝接听';
+					}else if(message.extend.type == 'close'){
+						message.text = '对方已结束通话';
+					}
+				}
+				
+				return message;
+			}
+		},
+		//只是实现了format方法，可以看历史记录而已，具体功能需要引入对应功能js文件
+		screenShare:{
+			name:'屏幕共享',
+			//icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1623240914776" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1944" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M889.6 127.488H141.696c-38.656 0-70.08 31.488-70.08 70.144v467.392c0 38.656 31.488 70.144 70.08 70.144h342.976v99.456H368.384c-18.688 0-33.792 13.888-33.792 30.976s15.104 30.976 33.792 30.976h294.592c18.688 0 33.792-13.888 33.792-30.976s-15.104-30.976-33.792-30.976H546.688v-99.456H889.6c38.656 0 70.144-31.424 70.144-70.144V197.568c0-38.592-31.424-70.08-70.144-70.08z m4.864 526.592a22.272 22.272 0 0 1-22.272 22.336H159.168a22.272 22.272 0 0 1-22.272-22.336V208.512c0-12.352 10.048-22.272 22.272-22.272h713.024c12.288 0 22.272 9.92 22.272 22.272V654.08zM566.976 313.984c-13.184-10.624-23.936-2.88-23.936 15.872v49.984h-2.176c-77.056 0-208.128 89.024-209.216 168.192 0 6.336 5.12 8.128 10.048 0 24.896-44.416 129.536-67.456 182.848-67.456h18.496v52.736c0 15.744 11.648 26.496 24.896 15.872l121.856-97.792c13.184-10.56 13.184-27.904 0-38.528l-122.816-98.88z" p-id="1945" fill="{color}"></path></svg>',
+			format:function(message){
+				if(message.extend.type == 'request'){
+					//客服服务端发起，请求客户端获取客户端的屏幕
+					message.text = '发起远程协助邀请';
+				}else if(message.extend.type == 'response_yes'){
+					message.text = '已接受远程协助邀请，正在发起...';
+				}else if(message.extend.type == 'response_no'){
+					//客户端拒绝客服坐席的远程协助要求，会返 response_no 消息
+					message.text = '已拒绝远程协助邀请';
+				}else if(message.extend.type == 'openedScreenShare'){
+					message.text = '已发起屏幕分享';
+				}else if(message.extend.type == 'close'){
+					//客户端或客服服务端点击了停止屏幕共享功能，终止屏幕分享
+					message.text = '已结束屏幕分享';
+				}
+				
+				return message;
+			}
+		},
+		//只是实现了format方法，可以看历史记录而已，具体功能需要引入对应功能js文件
+		voiceCall:{
+			name:'语音通话',
+			//icon:'<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1623840306576" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2543" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M512.7 64.2C266.5 64.2 65 262.5 65 511.9c0 249.4 201.5 447.7 447.7 447.7s447.7-201.5 447.7-447.7S759 64.2 512.7 64.2z m210 640c-8.2 16.4-20.5 28.8-45.2 41.1 0 0-16.4 8.2-20.5 12.3-57.5 32.9-180.7-41.1-275.2-168.4-90.4-127.3-115-262.9-57.5-295.7l8.2-4.1 8.2-4.1c28.8-16.4 45.2-24.7 69.8-20.5 24.7 4.1 41.1 20.5 57.5 45.2 32.9 57.5 24.7 86.3-16.4 110.9-4.1 0-12.3 8.2-16.4 8.2-8.2 4.1 8.2 45.2 49.3 102.7 41.1 57.5 73.9 90.4 86.3 82.2 0 0 12.3-8.2 16.4-8.2 4.1-4.1 12.3-4.1 16.4-8.2 32.9-16.4 61.6-4.1 102.7 41.1 20.6 20.3 28.8 45 16.4 65.5z m-46.9-42" p-id="2544" fill="{color}"></path></svg>',
+			format:function(message){
+				if(kefu.user.id == message.sendId){
+					//当前用户是此条消息的发送方
+					
+					if(message.extend.type == 'request'){
+						message.text = '发起语音通话邀请，等待对方接听';
+					}else if(message.extend.type == 'response_yes'){
+						message.text = '已同意接听';
+					}else if(message.extend.type == 'response_no'){
+						message.text = '已拒绝接听';
+					}else if(message.extend.type == 'close'){
+						message.text = '已结束通话';
+					}
+				}else{
+					//当前用户是此条消息的接收方
+					
+					if(message.extend.type == 'request'){
+						message.text = '发起语音通话邀请';
+					}else if(message.extend.type == 'response_yes'){
+						message.text = '对方已同意接听';
+					}else if(message.extend.type == 'response_no'){
+						message.text = '对方已拒绝接听';
+					}else if(message.extend.type == 'close'){
+						message.text = '对方已结束通话';
+					}
+				}
+				
+				return message;
+			}
 		}
 	},
 	socket:{
