@@ -1225,7 +1225,7 @@ var kefu = {
 							//有消息记录，那么绘制出来
 							for(var i = data.list.length-1; i >= 0; i--){
 								var message = data.list[i];
-								msg.from = 'hostory';
+								message.from = 'hostory';
 								var msgSection = kefu.ui.chat.generateMessageSection(message);
 								chatcontent.insertBefore(msgSection,firstItem);
 							}
